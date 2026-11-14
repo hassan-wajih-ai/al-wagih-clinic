@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة المريض | نظام الوجيه</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col justify-between">
+    <!-- Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="../../index.html" class="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-lg">و</a>
+                <div>
+                    <h1 class="text-base font-bold text-slate-800">بوابة المريض الإلكترونية</h1>
+                    <p class="text-xs text-slate-500">حساب موحد لحجز المواعيد ومتابعة الزيارات عبر كافة العيادات</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="user-display-name" class="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg border">المريض</span>
+                <button onclick="Auth.logout()" class="text-xs font-medium text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg border border-rose-200 transition">تسجيل الخروج</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-8 space-y-6 flex-1 w-full">
+        <!-- New Appointment Booking Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div class="flex items-center justify-between border-b pb-4 mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">حجز كشف جديد</h3>
+                    <p class="text-xs text-slate-500">اختر العيادة، الفرع، الطبيب، والموعد المناسب لك</p>
+                </div>
+                <span class="p-2 rounded-xl bg-emerald-50 text-emerald-600 text-lg font-bold">🩺</span>
+            </div>
+
+            <form id="booking-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">العيادة</label>
+                    <select id="clinic-select" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500">
+                        <option value="">اختر العيادة...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">الفرع</label>
+                    <select id="branch-select" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500">
+                        <option value="">اختر الفرع...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">الطبيب</label>
+                    <select id="doctor-select" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500">
+                        <option value="">اختر الطبيب...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">تاريخ الموعد</label>
+                    <input type="date" id="appointment-date" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div class="sm:col-span-2 lg:col-span-4 flex justify-end pt-2">
+                    <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-500/20 transition">
+                        تأكيد طلب الحجز
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- My Appointments History & Feedback Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h3 class="text-base font-bold text-slate-900 mb-4">سجل مواعيدي وزياراتي السابقة</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-right text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                            <th class="py-3 px-4">العيادة والفرع</th>
+                            <th class="py-3 px-4">الطبيب</th>
+                            <th class="py-3 px-4">التاريخ والوقت</th>
+                            <th class="py-3 px-4">الحالة</th>
+                            <th class="py-3 px-4 text-center">التقييم والإجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patient-appointments-table" class="divide-y divide-slate-100">
+                        <!-- يُملأ آلياً بواسطة patient.js -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Feedback & Rating -->
+    <div id="feedback-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h4 class="font-bold text-slate-900 text-sm">تقييم الخدمة والزيارة الطبية</h4>
+                <button onclick="document.getElementById('feedback-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+            <form id="feedback-form" class="space-y-3">
+                <input type="hidden" id="feedback-appointment-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">التقييم الإجمالي</label>
+                    <select id="rating-stars" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500">
+                        <option value="5">⭐⭐⭐⭐⭐ ممتاز (5 نجوم)</option>
+                        <option value="4">⭐⭐⭐⭐ جيد جداً (4 نجوم)</option>
+                        <option value="3">⭐⭐⭐ متوسط (3 نجوم)</option>
+                        <option value="2">⭐⭐ مقبول (نجمتان)</option>
+                        <option value="1">⭐ ضعيف (نجمة واحدة)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">ملاحظاتك واقتراحاتك</label>
+                    <textarea rows="3" required placeholder="شاركنا تجربتك مع الطبيب والعيادة..." class="w-full p-3 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="document.getElementById('feedback-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">إلغاء</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700">إرسال التقييم</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t border-slate-200 py-3 text-center text-xs text-slate-400">
+        بوابة المريض الموحدة — نظام الوجيه لإدارة العيادات
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../../js/config.js"></script>
+    <script src="../../js/utils.js"></script>
+    <script src="../../js/auth.js"></script>
+    <script src="patient.js"></script>
+</body>
+</html>
