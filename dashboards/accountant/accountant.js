@@ -139,23 +139,63 @@ const AccountantApp = {
         document.getElementById('edit-modal').classList.remove('hidden');
     },
 
+    // تصدير اليومية المالية إلى Excel
+    exportFinancialLedgerExcel() {
+        if (window.Reports) {
+            Reports.exportFinancialLedgerToExcel(this.financialRecords);
+        } else {
+            Utils.showToast('جاري تهيئة محرك التصدير...', 'info');
+        }
+    },
+
+    // تصدير السجل الرقابي المالي إلى Excel
+    exportAuditTrailExcel() {
+        if (window.Reports) {
+            Reports.exportAuditTrailToExcel(this.auditLogs);
+        } else {
+            Utils.showToast('جاري تهيئة محرك التصدير...', 'info');
+        }
+    },
+
     // إصدار فاتورة مطالبة للشركة
     generateCorporateClaim() {
-        const contractId = document.getElementById('corporate-invoice-contract-select').value;
-        const contract = this.contracts.find(c => c.id === contractId);
-        if (!contract || !window.Reports) return;
+        const select = document.getElementById('corporate-invoice-contract-select');
+        const contractId = select ? select.value : (this.contracts[0] ? this.contracts[0].id : null);
+        const contract = this.contracts.find(c => c.id === contractId) || this.contracts[0];
+        if (!contract) {
+            Utils.showToast('يرجى تحديد شركة متعاقدة أولاً', 'warning');
+            return;
+        }
+        if (!window.Reports) {
+            Utils.showToast('جاري تحميل محرك التقارير...', 'info');
+            return;
+        }
 
         const appts = this.financialRecords.filter(r => r.payment_type === 'corporate' && r.status !== 'voided');
-        Reports.exportCorporateClaimToExcel(contract, appts, `INV-CORP-${Date.now().toString().slice(-6)}`);
+        const matchingAppts = appts.filter(r => r.contract_name === contract.name);
+        const finalAppts = matchingAppts.length > 0 ? matchingAppts : appts;
+
+        Reports.exportCorporateClaimToExcel(contract, finalAppts, `INV-CORP-${Date.now().toString().slice(-6)}`);
     },
 
     printCorporateClaim() {
-        const contractId = document.getElementById('corporate-invoice-contract-select').value;
-        const contract = this.contracts.find(c => c.id === contractId);
-        if (!contract || !window.Reports) return;
+        const select = document.getElementById('corporate-invoice-contract-select');
+        const contractId = select ? select.value : (this.contracts[0] ? this.contracts[0].id : null);
+        const contract = this.contracts.find(c => c.id === contractId) || this.contracts[0];
+        if (!contract) {
+            Utils.showToast('يرجى تحديد شركة متعاقدة أولاً', 'warning');
+            return;
+        }
+        if (!window.Reports) {
+            Utils.showToast('جاري تحميل محرك التقارير...', 'info');
+            return;
+        }
 
         const appts = this.financialRecords.filter(r => r.payment_type === 'corporate' && r.status !== 'voided');
-        Reports.printCorporateClaimPDF(contract, appts);
+        const matchingAppts = appts.filter(r => r.contract_name === contract.name);
+        const finalAppts = matchingAppts.length > 0 ? matchingAppts : appts;
+
+        Reports.printCorporateClaimPDF(contract, finalAppts, `INV-CORP-${Date.now().toString().slice(-6)}`);
     },
 
     bindEvents() {
