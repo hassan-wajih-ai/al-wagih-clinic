@@ -21,13 +21,29 @@ const DoctorApp = {
         this.bindEvents();
     },
 
+    getStoredAppointments() {
+        const stored = localStorage.getItem('alwagih_appointments');
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch (e) {}
+        }
+        const mock = this.getMockAppointments();
+        localStorage.setItem('alwagih_appointments', JSON.stringify(mock));
+        return mock;
+    },
+
+    saveStoredAppointments() {
+        localStorage.setItem('alwagih_appointments', JSON.stringify(this.appointments));
+    },
+
     /**
      * تحميل قائمة انتظار الطبيب لليوم الحالي
      */
     async loadDoctorWaitingList() {
         const todayStr = new Date().toISOString().split('T')[0];
         try {
-            if (window.db && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
+            if (window.db && window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
                 const { data, error } = await window.db
                     .from('appointments')
                     .select('*, patient:users_profiles!patient_id(full_name, phone)')
@@ -35,15 +51,14 @@ const DoctorApp = {
                     .order('time_slot', { ascending: true });
 
                 if (error) throw error;
-                this.appointments = data || [];
+                this.appointments = data && data.length > 0 ? data : this.getStoredAppointments();
             } else {
-                this.appointments = this.getMockAppointments();
+                this.appointments = this.getStoredAppointments();
             }
 
             this.renderWaitingList();
         } catch (err) {
-            console.error('Error fetching doctor appointments:', err);
-            this.appointments = this.getMockAppointments();
+            this.appointments = this.getStoredAppointments();
             this.renderWaitingList();
         }
     },
@@ -154,6 +169,7 @@ const DoctorApp = {
                         this.activeAppointment.prescription = prescription;
                         this.activeAppointment.doctor_notes = notes;
                     }
+                    this.saveStoredAppointments();
 
                     Utils.showToast('تم حفظ التشخيص والروشتة وإتمام الكشف بنجاح', 'success');
                     
