@@ -1,17 +1,19 @@
 /**
- * منطق لوحة تحكم مدير العيادة الشامل (Clinic Admin Controller)
- * يشمل: الفروع، التعاقدات والخصومات، مطالبات الشركات، جرد المخزن، والموارد البشرية HR
+ * منطق لوحة تحكم مدير العيادة الشامل المتطور (Enterprise Clinic Admin Controller)
+ * يشمل: نظام CRM للمرضى، HR قوي بالبصمة والجزاءات والجدول التشغيلي، المخازن والمشتريات، والتعاقدات بنسبة التحمل Co-pay
  */
 
 const ClinicAdminApp = {
     currentAdmin: null,
-    activeTab: 'analytics',
-    branches: [],
-    contracts: [],
+    activeTab: 'crm',
+    crmPatients: [],
+    attendanceLogs: [],
+    penalties: [],
+    roster: [],
+    suppliers: [],
     inventory: [],
-    employees: [],
+    contracts: [],
     revenueChartInstance: null,
-    attendanceChartInstance: null,
 
     async init() {
         const authData = await Auth.protectRoute(['admin', 'superadmin']);
@@ -20,130 +22,188 @@ const ClinicAdminApp = {
         this.currentAdmin = authData.profile;
         if (this.currentAdmin) {
             document.getElementById('user-display-name').textContent = this.currentAdmin.full_name || 'مدير العيادة';
-            document.getElementById('clinic-title').textContent = this.currentAdmin.clinics ? this.currentAdmin.clinics.name : 'إدارة العيادة وفروعها';
+            document.getElementById('clinic-title').textContent = this.currentAdmin.clinics ? this.currentAdmin.clinics.name : 'إدارة العيادة والمستشفى';
         }
 
-        await this.loadAllData();
-        this.initCharts();
+        await this.loadAllEnterpriseData();
         this.bindEvents();
     },
 
-    async loadAllData() {
-        // تحميل الفروع، الشركات، المخزن، والموظفين
-        this.branches = this.getMockBranches();
-        this.contracts = this.getMockContracts();
+    async loadAllEnterpriseData() {
+        this.crmPatients = this.getMockCRMPatients();
+        this.attendanceLogs = this.getMockAttendanceLogs();
+        this.penalties = this.getMockPenalties();
+        this.roster = this.getMockRoster();
+        this.suppliers = this.getMockSuppliers();
         this.inventory = this.getMockInventory();
-        this.employees = this.getMockEmployees();
+        this.contracts = this.getMockContracts();
 
-        this.renderBranches();
-        this.renderContracts();
+        this.renderCRM();
+        this.renderAttendance();
+        this.renderPenalties();
+        this.renderRoster();
+        this.renderSuppliers();
         this.renderInventory();
-        this.renderEmployees();
+        this.renderContracts();
         this.updateKPIs();
     },
 
     switchTab(tabId) {
         this.activeTab = tabId;
-        const tabs = ['analytics', 'contracts', 'inventory', 'hr', 'branches'];
+        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory'];
         tabs.forEach(t => {
             const el = document.getElementById(`tab-content-${t}`);
             const btn = document.getElementById(`tab-btn-${t}`);
             if (el) el.classList.toggle('hidden', t !== tabId);
             if (btn) {
                 if (t === tabId) {
-                    btn.className = 'px-4 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm transition';
+                    btn.className = 'px-3.5 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm transition';
                 } else {
-                    btn.className = 'px-4 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition';
+                    btn.className = 'px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition';
                 }
             }
         });
     },
 
-    // 1. الشركات والتعاقدات والفواتير
-    renderContracts() {
-        const tbody = document.getElementById('contracts-table-body');
+    // 1. نظام CRM متكامل للمرضى
+    renderCRM() {
+        const tbody = document.getElementById('crm-table-body');
         if (!tbody) return;
 
-        tbody.innerHTML = this.contracts.map(c => `
+        const stageBadges = {
+            new: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800">استفسار جديد</span>',
+            contacted: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">تم التواصل</span>',
+            booked: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800">حجز موعد</span>',
+            visited: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">تم الكشف</span>',
+            follow_up: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">متابعة دورية</span>'
+        };
+
+        const tierBadges = {
+            regular: '<span class="text-slate-500 font-semibold">عادي</span>',
+            vip: '<span class="text-amber-600 font-bold">⭐ VIP</span>',
+            chronic: '<span class="text-rose-600 font-bold">🩺 مزمن</span>',
+            corporate: '<span class="text-purple-600 font-bold">🏢 تعاقد</span>'
+        };
+
+        tbody.innerHTML = this.crmPatients.map(p => `
             <tr class="hover:bg-slate-50 border-b border-slate-100 text-xs">
-                <td class="py-3 px-4 font-bold text-slate-900">${c.name}</td>
-                <td class="py-3 px-4">
-                    <span class="px-2.5 py-1 text-xs font-extrabold rounded-full bg-purple-100 text-purple-800 border border-purple-200">
-                        ${c.discount_percentage}% خصم
-                    </span>
-                </td>
-                <td class="py-3 px-4 text-slate-600">${c.contact_person || '—'} (${c.phone || '—'})</td>
-                <td class="py-3 px-4 text-slate-600 font-mono">${c.active_cases || 15} حالة</td>
-                <td class="py-3 px-4 font-bold text-slate-900">${Utils.formatCurrency(c.total_claim || 3200)}</td>
+                <td class="py-3 px-4 font-bold text-slate-900">${p.full_name}</td>
+                <td class="py-3 px-4 font-mono text-slate-600">${p.phone}</td>
+                <td class="py-3 px-4 text-slate-700">${p.lead_source}</td>
+                <td class="py-3 px-4">${tierBadges[p.patient_tier] || p.patient_tier}</td>
+                <td class="py-3 px-4">${stageBadges[p.stage] || p.stage}</td>
+                <td class="py-3 px-4 font-mono text-slate-500">${p.next_follow_up || '—'}</td>
+                <td class="py-3 px-4 text-slate-500">${p.notes || '—'}</td>
                 <td class="py-3 px-4 text-center">
-                    <div class="flex items-center justify-center gap-1.5">
-                        <button onclick="ClinicAdminApp.issueCorporateInvoice('${c.id}')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition">
-                            📑 إصدار مطالبة
-                        </button>
-                    </div>
+                    <button onclick="Utils.showToast('تم إرسال رسالة تذكير للمريض', 'success')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200">
+                        💬 تواصل
+                    </button>
                 </td>
             </tr>
         `).join('');
-
-        // ملء قائمة الفواتير
-        const select = document.getElementById('claim-contract-select');
-        if (select) {
-            select.innerHTML = this.contracts.map(c => `
-                <option value="${c.id}">${c.name} (خصم ${c.discount_percentage}%)</option>
-            `).join('');
-        }
     },
 
-    issueCorporateInvoice(contractId) {
-        const contract = this.contracts.find(c => c.id === contractId);
-        if (!contract || !window.Reports) return;
+    // 2. نظام HR: البصمة والجزاءات والجدول التشغيلي
+    renderAttendance() {
+        const tbody = document.getElementById('attendance-table-body');
+        if (!tbody) return;
 
-        // توليد كشوفات تجريبية للمطالبة
-        const sampleAppts = [
-            { patient_name: 'أحمد سعيد عبد الفتاح', file_number: 'FILE-1042', amount: 250, date: '2026-11-02', doctor_name: 'د. أحمد الشناوي' },
-            { patient_name: 'هالة محمود مرسي', file_number: 'FILE-1088', amount: 200, date: '2026-11-05', doctor_name: 'د. سارة محمود' },
-            { patient_name: 'محمود عبد العزيز', file_number: 'FILE-1120', amount: 300, date: '2026-11-09', doctor_name: 'د. كريم عبد العزيز' },
-            { patient_name: 'نادية إبراهيم', file_number: 'FILE-1145', amount: 200, date: '2026-11-12', doctor_name: 'د. أحمد الشناوي' }
-        ];
-
-        Reports.exportCorporateClaimToExcel(contract, sampleAppts, `INV-${contract.id}-${Date.now().toString().slice(-4)}`);
+        tbody.innerHTML = this.attendanceLogs.map(log => `
+            <tr class="hover:bg-slate-50 border-b border-slate-100 text-xs">
+                <td class="py-3 px-4 font-bold text-slate-900">${log.employee_name}</td>
+                <td class="py-3 px-4 font-mono">${log.fingerprint_id}</td>
+                <td class="py-3 px-4 font-mono text-emerald-700 font-bold">${log.check_in}</td>
+                <td class="py-3 px-4 font-mono text-slate-700">${log.check_out || '—'}</td>
+                <td class="py-3 px-4 font-mono ${log.late_minutes > 0 ? 'text-rose-600 font-bold' : 'text-slate-500'}">
+                    ${log.late_minutes > 0 ? `${log.late_minutes} دقيقة تأخير` : 'منتظم'}
+                </td>
+                <td class="py-3 px-4 font-mono text-emerald-600">${log.overtime_minutes > 0 ? `+${log.overtime_minutes} دقيقة` : '—'}</td>
+                <td class="py-3 px-4">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold ${log.status === 'present' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                        ${log.status === 'present' ? 'حاضر (بصمة)' : 'متأخر'}
+                    </span>
+                </td>
+            </tr>
+        `).join('');
     },
 
-    printCorporateInvoice(contractId) {
-        const contract = this.contracts.find(c => c.id === contractId) || this.contracts[0];
-        if (!contract || !window.Reports) return;
+    renderPenalties() {
+        const tbody = document.getElementById('penalties-table-body');
+        if (!tbody) return;
 
-        const sampleAppts = [
-            { patient_name: 'أحمد سعيد عبد الفتاح', amount: 250, date: '2026-11-02', doctor_name: 'د. أحمد الشناوي' },
-            { patient_name: 'هالة محمود مرسي', amount: 200, date: '2026-11-05', doctor_name: 'د. سارة محمود' },
-            { patient_name: 'محمود عبد العزيز', amount: 300, date: '2026-11-09', doctor_name: 'د. كريم عبد العزيز' }
-        ];
-
-        Reports.printCorporateClaimPDF(contract, sampleAppts);
+        tbody.innerHTML = this.penalties.map(p => `
+            <tr class="hover:bg-slate-50 border-b border-slate-100 text-xs">
+                <td class="py-2.5 px-4 font-bold text-slate-900">${p.employee_name}</td>
+                <td class="py-2.5 px-4 text-slate-600">${p.date}</td>
+                <td class="py-2.5 px-4 font-bold text-rose-600">${p.penalty_type === 'days' ? `خصم ${p.days} يوم` : `خصم ${Utils.formatCurrency(p.amount)}`}</td>
+                <td class="py-2.5 px-4 text-slate-700">${p.reason}</td>
+                <td class="py-2.5 px-4 text-slate-500">${p.issued_by}</td>
+                <td class="py-2.5 px-4 text-center">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">معتمد ومخصوم</span>
+                </td>
+            </tr>
+        `).join('');
     },
 
-    // 2. جرد المخزن والمستلزمات الطبية
+    renderRoster() {
+        const tbody = document.getElementById('roster-table-body');
+        if (!tbody) return;
+
+        const days = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+        tbody.innerHTML = this.roster.map(r => `
+            <tr class="hover:bg-slate-50 border-b border-slate-100 text-xs">
+                <td class="py-2.5 px-4 font-bold text-slate-900">${r.employee_name}</td>
+                <td class="py-2.5 px-4 text-slate-600">${r.job_title}</td>
+                <td class="py-2.5 px-4 font-semibold text-sky-800">${days[r.day_of_week] || '—'}</td>
+                <td class="py-2.5 px-4">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-50 text-sky-800 border border-sky-200">${r.shift_name}</span>
+                </td>
+                <td class="py-2.5 px-4 font-mono text-slate-700">${r.hours}</td>
+            </tr>
+        `).join('');
+    },
+
+    // 3. نظام المشتريات والموردين
+    renderSuppliers() {
+        const tbody = document.getElementById('suppliers-table-body');
+        if (!tbody) return;
+
+        tbody.innerHTML = this.suppliers.map(s => `
+            <tr class="hover:bg-slate-50 border-b border-slate-100 text-xs">
+                <td class="py-3 px-4 font-bold text-slate-900">${s.name}</td>
+                <td class="py-3 px-4 text-slate-600">${s.contact_name}</td>
+                <td class="py-3 px-4 font-mono text-slate-600">${s.phone}</td>
+                <td class="py-3 px-4 font-mono text-slate-700">${s.last_order_date || '—'}</td>
+                <td class="py-3 px-4 font-mono font-bold text-rose-700">${Utils.formatCurrency(s.balance_due)}</td>
+                <td class="py-3 px-4 text-center">
+                    <button onclick="Utils.showToast('تم فتح أمر شراء جديد للمورد', 'info')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200">
+                        + أمر شراء
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    // 4. جرد المخزن المتقدم مع رقم التشغيلة
     renderInventory() {
         const tbody = document.getElementById('inventory-table-body');
         if (!tbody) return;
 
         tbody.innerHTML = this.inventory.map(item => {
             const isLow = item.quantity <= item.min_threshold;
-            const badge = isLow 
-                ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-100 text-rose-700 animate-pulse">⚠️ رصيد منخفض</span>'
-                : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700">متوفر</span>';
-
             return `
                 <tr class="hover:bg-slate-50 border-b border-slate-100 text-xs">
                     <td class="py-3 px-4 font-bold text-slate-900">${item.name}</td>
                     <td class="py-3 px-4 text-slate-600">${item.category}</td>
+                    <td class="py-3 px-4 font-mono text-slate-500">${item.batch_number || 'BATCH-2026-A'}</td>
                     <td class="py-3 px-4 font-mono font-bold text-slate-800">${item.quantity} ${item.unit}</td>
-                    <td class="py-3 px-4 font-mono text-slate-500">${item.min_threshold} ${item.unit}</td>
-                    <td class="py-3 px-4">${badge}</td>
-                    <td class="py-3 px-4 font-mono">${item.expiry_date || '—'}</td>
+                    <td class="py-3 px-4">
+                        ${isLow ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 animate-pulse">⚠️ رصيد حرج</span>' : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">متوفر</span>'}
+                    </td>
+                    <td class="py-3 px-4 font-mono text-slate-600">${item.expiry_date}</td>
                     <td class="py-3 px-4 text-center">
                         <button onclick="ClinicAdminApp.adjustStock('${item.id}', 10)" class="px-2 py-1 text-[10px] font-bold rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200">
-                            + إضافة 10
+                            + توريد 10
                         </button>
                     </td>
                 </tr>
@@ -155,192 +215,159 @@ const ClinicAdminApp = {
         const item = this.inventory.find(i => i.id === itemId);
         if (item) {
             item.quantity += qty;
-            Utils.showToast(`تمت إضافة ${qty} إلى رصيد: ${item.name}`, 'success');
+            Utils.showToast(`تم توريد ${qty} إلى رصيد: ${item.name}`, 'success');
             this.renderInventory();
         }
     },
 
-    exportInventoryExcel() {
-        if (window.Reports) Reports.exportInventoryToExcel(this.inventory);
-    },
-
-    // 3. الموارد البشرية والرواتب (HR & Payroll)
-    renderEmployees() {
-        const tbody = document.getElementById('hr-table-body');
+    // 5. التعاقدات ونسبة الخصم وتحمل المريض Co-Pay
+    renderContracts() {
+        const tbody = document.getElementById('contracts-table-body');
         if (!tbody) return;
 
-        tbody.innerHTML = this.employees.map(emp => {
-            const base = Number(emp.base_salary || 0);
-            const allow = Number(emp.allowances || 0);
-            const ded = Number(emp.deductions || 0);
-            const net = base + allow - ded;
-
-            return `
-                <tr class="hover:bg-slate-50 border-b border-slate-100 text-xs">
-                    <td class="py-3 px-4 font-bold text-slate-900">${emp.full_name}</td>
-                    <td class="py-3 px-4 text-slate-600">${emp.job_title}</td>
-                    <td class="py-3 px-4 font-mono text-slate-700">${Utils.formatCurrency(base)}</td>
-                    <td class="py-3 px-4 font-mono text-emerald-600">+${Utils.formatCurrency(allow)}</td>
-                    <td class="py-3 px-4 font-mono text-rose-600">-${Utils.formatCurrency(ded)}</td>
-                    <td class="py-3 px-4 font-mono font-bold text-slate-900">${Utils.formatCurrency(net)}</td>
-                    <td class="py-3 px-4 text-center">
-                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700">معتمد</span>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    },
-
-    exportPayrollExcel() {
-        if (window.Reports) Reports.exportPayrollToExcel(this.employees, 'نوفمبر 2026');
-    },
-
-    // 4. الفروع ومؤشرات الأداء
-    renderBranches() {
-        const container = document.getElementById('branches-list');
-        if (!container) return;
-
-        container.innerHTML = this.branches.map(b => `
-            <div class="p-4 rounded-xl border border-slate-200 bg-white shadow-sm flex items-center justify-between">
-                <div>
-                    <h4 class="font-bold text-sm text-slate-800">${b.name}</h4>
-                    <p class="text-xs text-slate-500 mt-0.5">📍 ${b.address} | 📞 ${b.phone}</p>
-                </div>
-                <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">فرع نشط</span>
-            </div>
+        tbody.innerHTML = this.contracts.map(c => `
+            <tr class="hover:bg-slate-50 border-b border-slate-100 text-xs">
+                <td class="py-3 px-4 font-bold text-slate-900">${c.name}</td>
+                <td class="py-3 px-4 font-extrabold text-purple-700 font-mono">${c.discount_percentage}% خصم</td>
+                <td class="py-3 px-4 font-extrabold text-emerald-700 font-mono">${c.patient_copay_percentage}% تحمل المريض</td>
+                <td class="py-3 px-4 font-mono text-slate-600">${Utils.formatCurrency(c.max_coverage || 5000)}</td>
+                <td class="py-3 px-4 text-slate-600">${c.contact_person} (${c.phone})</td>
+                <td class="py-3 px-4 text-center">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">تعاقد نشط</span>
+                </td>
+            </tr>
         `).join('');
     },
 
     updateKPIs() {
-        const totalCash = 4850;
-        const totalCorpClaims = this.contracts.reduce((acc, c) => acc + (c.total_claim || 0), 0);
-        const lowStockCount = this.inventory.filter(i => i.quantity <= i.min_threshold).length;
-
-        document.getElementById('kpi-revenue').textContent = Utils.formatCurrency(totalCash);
-        document.getElementById('kpi-corporate-claims').textContent = Utils.formatCurrency(totalCorpClaims);
+        document.getElementById('kpi-crm-leads').textContent = `${this.crmPatients.length} مرضى`;
+        document.getElementById('kpi-attendance-today').textContent = `${this.attendanceLogs.length} حاضرين بالبصمة`;
+        document.getElementById('kpi-suppliers-balance').textContent = Utils.formatCurrency(48500);
         document.getElementById('kpi-contracts-count').textContent = `${this.contracts.length} شركات`;
-        document.getElementById('kpi-inventory-alerts').textContent = `${lowStockCount} أصناف حرجة`;
-    },
-
-    initCharts() {
-        if (!window.Reports) return;
-
-        this.revenueChartInstance = Reports.initRevenueChart('admin-revenue-chart', 
-            ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'],
-            [3500, 4200, 4800, 5100, 4850, 6400, 2900]
-        );
-
-        this.attendanceChartInstance = Reports.initAttendanceChart('admin-attendance-chart', 82, 6, 12);
-    },
-
-    exportClinicSummaryExcel() {
-        if (typeof XLSX === 'undefined') return;
-
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(this.contracts), 'الشركات المتعاقدة');
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(this.inventory), 'جرد المستلزمات الطبية');
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(this.employees), 'كادر الموظفين والرواتب');
-
-        XLSX.writeFile(wb, `التقرير_الشامل_${new Date().toISOString().split('T')[0]}.xlsx`);
-        Utils.showToast('تم تصدير التقرير الشامل بنجاح', 'success');
     },
 
     bindEvents() {
-        // إضافة شركة متعاقدة جديدة
-        const addContractForm = document.getElementById('add-contract-form');
-        const addContractModal = document.getElementById('add-contract-modal');
-        if (addContractForm && addContractModal) {
-            addContractForm.onsubmit = (e) => {
+        // إضافة مريض جديد في الـ CRM
+        const crmForm = document.getElementById('add-crm-form');
+        const crmModal = document.getElementById('add-crm-modal');
+        if (crmForm && crmModal) {
+            crmForm.onsubmit = (e) => {
                 e.preventDefault();
-                const name = document.getElementById('contract-name-input').value.trim();
-                const discount = parseFloat(document.getElementById('contract-discount-input').value || 0);
-                const contact = document.getElementById('contract-contact-input').value.trim();
-                const phone = document.getElementById('contract-phone-input').value.trim();
+                const name = document.getElementById('crm-name-input').value.trim();
+                const phone = document.getElementById('crm-phone-input').value.trim();
+                const source = document.getElementById('crm-source-input').value;
+                const tier = document.getElementById('crm-tier-input').value;
+                const notes = document.getElementById('crm-notes-input').value.trim();
 
-                const newContract = {
-                    id: 'c_' + Date.now(),
-                    name,
-                    discount_percentage: discount,
-                    contact_person: contact,
+                this.crmPatients.unshift({
+                    id: 'crm_' + Date.now(),
+                    full_name: name,
                     phone,
-                    active_cases: 0,
-                    total_claim: 0
-                };
+                    lead_source: source,
+                    patient_tier: tier,
+                    stage: 'new',
+                    notes
+                });
 
-                this.contracts.unshift(newContract);
-                Utils.showToast(`تمت إضافة شركة ${name} بنسبة خصم ${discount}% بنجاح`, 'success');
-                addContractModal.classList.add('hidden');
-                addContractForm.reset();
-                this.renderContracts();
+                Utils.showToast(`تم تسجيل المريض ${name} بنجاح في نظام الـ CRM ومتابعة الرحلة`, 'success');
+                crmModal.classList.add('hidden');
+                crmForm.reset();
+                this.renderCRM();
                 this.updateKPIs();
             };
         }
 
-        // إضافة صنف مخزن جديد
-        const addStockForm = document.getElementById('add-stock-form');
-        const addStockModal = document.getElementById('add-stock-modal');
-        if (addStockForm && addStockModal) {
-            addStockForm.onsubmit = (e) => {
+        // إضافة جزاء مباشر من المدير
+        const penaltyForm = document.getElementById('add-penalty-form');
+        const penaltyModal = document.getElementById('add-penalty-modal');
+        if (penaltyForm && penaltyModal) {
+            penaltyForm.onsubmit = (e) => {
                 e.preventDefault();
-                const name = document.getElementById('stock-name-input').value.trim();
-                const category = document.getElementById('stock-category-input').value;
-                const qty = parseInt(document.getElementById('stock-qty-input').value || 0, 10);
-                const minThreshold = parseInt(document.getElementById('stock-min-input').value || 10, 10);
-                const unit = document.getElementById('stock-unit-input').value.trim() || 'قطعة';
+                const empName = document.getElementById('penalty-emp-select').value;
+                const type = document.getElementById('penalty-type-select').value;
+                const days = document.getElementById('penalty-days-input').value || 1;
+                const amount = document.getElementById('penalty-amount-input').value || 100;
+                const reason = document.getElementById('penalty-reason-input').value.trim();
 
-                this.inventory.unshift({
-                    id: 'inv_' + Date.now(),
-                    name,
-                    category,
-                    quantity: qty,
-                    min_threshold: minThreshold,
-                    unit,
-                    unit_price: 25,
-                    expiry_date: '2028-01-01'
+                this.penalties.unshift({
+                    id: 'pen_' + Date.now(),
+                    employee_name: empName,
+                    date: new Date().toISOString().split('T')[0],
+                    penalty_type: type,
+                    days: parseFloat(days),
+                    amount: parseFloat(amount),
+                    reason,
+                    issued_by: this.currentAdmin ? this.currentAdmin.full_name : 'المدير المباشر'
                 });
 
-                Utils.showToast(`تمت إضافة الصنف ${name} إلى المخزن`, 'success');
-                addStockModal.classList.add('hidden');
-                addStockForm.reset();
-                this.renderInventory();
-                this.updateKPIs();
+                Utils.showToast(`تم اعتماد الجزاء للموظف ${empName} وترحيله لخصومات الرواتب`, 'success');
+                penaltyModal.classList.add('hidden');
+                penaltyForm.reset();
+                this.renderPenalties();
             };
         }
     },
 
-    getMockContracts() {
+    getMockCRMPatients() {
         return [
-            { id: 'c1', name: 'شركة مصر للتأمين', discount_percentage: 20, contact_person: 'أ. سامح عبد الفتاح', phone: '01011223344', active_cases: 18, total_claim: 3600 },
-            { id: 'c2', name: 'نقابة المهندسين', discount_percentage: 25, contact_person: 'د. طارق مراد', phone: '01122334455', active_cases: 24, total_claim: 4500 },
-            { id: 'c3', name: 'بتروتريد للخدمات البترولية', discount_percentage: 30, contact_person: 'م. خالد جلال', phone: '01233445566', active_cases: 12, total_claim: 2520 },
-            { id: 'c4', name: 'أكسا للتأمين الطبي (AXA)', discount_percentage: 15, contact_person: 'أ. مروة الشريف', phone: '01555667788', active_cases: 31, total_claim: 6580 }
+            { id: '1', full_name: 'طارق حسام مصطفى', phone: '01011223344', lead_source: 'فيسبوك / تواصل اجتماعي', patient_tier: 'vip', stage: 'new', notes: 'مهتم بكشف باطنة واستشارة عظام' },
+            { id: '2', full_name: 'ياسمين عبد الرحمن', phone: '01122334455', lead_source: 'تعاقد شركة', patient_tier: 'corporate', stage: 'booked', notes: 'محولة من شركة مصر للتأمين' },
+            { id: '3', full_name: 'حامد زكريا النمر', phone: '01233445566', lead_source: 'إحالة طبيب', patient_tier: 'chronic', stage: 'follow_up', notes: 'مريض سكري يحتاج متابعة كل أسبوعين' },
+            { id: '4', full_name: 'سلوى محمود شاهين', phone: '01555667788', lead_source: 'ترشيح مريض سابق', patient_tier: 'regular', stage: 'visited', notes: 'تم الكشف مع د. سارة محمود' }
+        ];
+    },
+
+    getMockAttendanceLogs() {
+        return [
+            { employee_name: 'د. أحمد الشناوي', fingerprint_id: 'FP-01', check_in: '08:55 ص', check_out: '04:05 م', late_minutes: 0, overtime_minutes: 10, status: 'present' },
+            { employee_name: 'د. سارة محمود', fingerprint_id: 'FP-02', check_in: '09:18 ص', check_out: '—', late_minutes: 18, overtime_minutes: 0, status: 'late' },
+            { employee_name: 'أحمد فؤاد (استقبال)', fingerprint_id: 'FP-03', check_in: '07:58 ص', check_out: '04:00 م', late_minutes: 0, overtime_minutes: 0, status: 'present' },
+            { employee_name: 'ريم مصطفى (استقبال)', fingerprint_id: 'FP-04', check_in: '03:55 م', check_out: '—', late_minutes: 0, overtime_minutes: 0, status: 'present' },
+            { employee_name: 'أمل إبراهيم (تمريض)', fingerprint_id: 'FP-05', check_in: '08:02 ص', check_out: '—', late_minutes: 2, overtime_minutes: 0, status: 'present' }
+        ];
+    },
+
+    getMockPenalties() {
+        return [
+            { employee_name: 'ريم مصطفى', date: '2026-11-12', penalty_type: 'days', days: 0.5, amount: 0, reason: 'تأخير متكرر عن موعد استلام الوردية الصباحية بدون إذن مسبق', issued_by: 'المدير المباشر' },
+            { employee_name: 'أمل إبراهيم', date: '2026-11-08', penalty_type: 'amount', days: 0, amount: 150, reason: 'عدم الالتزام بزي التعقيم الرسمي الموحد بغرفة العمليات الصغرى', issued_by: 'مدير العيادة' }
+        ];
+    },
+
+    getMockRoster() {
+        return [
+            { employee_name: 'أحمد فؤاد', job_title: 'مشرف استقبال', day_of_week: 0, shift_name: 'صباحي (8 ص - 4 م)', hours: '8 ساعات' },
+            { employee_name: 'ريم مصطفى', job_title: 'موظف استقبال', day_of_week: 0, shift_name: 'مسائي (4 م - 12 ص)', hours: '8 ساعات' },
+            { employee_name: 'د. أحمد الشناوي', job_title: 'استشاري باطنة', day_of_week: 1, shift_name: 'صباحي (8 ص - 4 م)', hours: '8 ساعات' },
+            { employee_name: 'د. سارة محمود', job_title: 'أخصائي أطفال', day_of_week: 1, shift_name: 'مسائي (4 م - 12 ص)', hours: '8 ساعات' },
+            { employee_name: 'محمود عبد الرازق', job_title: 'تمريض طوارئ', day_of_week: 2, shift_name: 'ليلي / طوارئ (12 ص - 8 ص)', hours: '8 ساعات' }
+        ];
+    },
+
+    getMockSuppliers() {
+        return [
+            { name: 'شركة المتحدة للأدوية والمستلزمات', contact_name: 'د. هاني رضوان', phone: '01099881122', last_order_date: '2026-11-10', balance_due: 28500 },
+            { name: 'مؤسسة الشفاء لتجهيزات المعامل والتعقيم', contact_name: 'م. عماد شكري', phone: '01122334466', last_order_date: '2026-11-05', balance_due: 12000 },
+            { name: 'الشركة الطبية الحديثة للسرنجات والمستهلكات', contact_name: 'أ. طارق زيدان', phone: '01244556677', last_order_date: '2026-11-12', balance_due: 8000 }
         ];
     },
 
     getMockInventory() {
         return [
-            { id: 'i1', name: 'شاش طبي معقم 10*10سم', category: 'مستلزمات طبية', quantity: 8, min_threshold: 20, unit: 'علبة', unit_price: 35, expiry_date: '2027-06-30' },
-            { id: 'i2', name: 'سرنجات طبية 5 سم (معقمة)', category: 'مستلزمات طبية', quantity: 150, min_threshold: 50, unit: 'قطعة', unit_price: 5, expiry_date: '2028-12-31' },
-            { id: 'i3', name: 'محلول ملحي معقم (Saline 0.9%)', category: 'أدوية ومحاليل', quantity: 5, min_threshold: 15, unit: 'زجاجة', unit_price: 25, expiry_date: '2026-12-15' },
-            { id: 'i4', name: 'جوانتيات طبية لاتكس (مقاس M)', category: 'مستلزمات وقاية', quantity: 45, min_threshold: 20, unit: 'علبة', unit_price: 90, expiry_date: '2029-05-20' },
-            { id: 'i5', name: 'كانيولا وريدية زرقاء مقاس 22', category: 'مستلزمات طبية', quantity: 12, min_threshold: 25, unit: 'قطعة', unit_price: 15, expiry_date: '2027-11-01' }
+            { id: 'i1', name: 'شاش طبي معقم 10*10سم', category: 'مستلزمات طبية', batch_number: 'BCH-2026-88', quantity: 8, min_threshold: 25, unit: 'علبة', expiry_date: '2027-06-30' },
+            { id: 'i2', name: 'سرنجات طبية 5 سم (معقمة)', category: 'مستلزمات طبية', batch_number: 'BCH-2026-102', quantity: 180, min_threshold: 50, unit: 'قطعة', expiry_date: '2028-12-31' },
+            { id: 'i3', name: 'محلول ملحي معقم (Saline 0.9%)', category: 'أدوية ومحاليل', batch_number: 'BCH-2026-44', quantity: 5, min_threshold: 20, unit: 'زجاجة', expiry_date: '2026-12-15' },
+            { id: 'i4', name: 'جوانتيات طبية لاتكس (مقاس M)', category: 'مستلزمات وقاية', batch_number: 'BCH-2026-71', quantity: 45, min_threshold: 20, unit: 'علبة', expiry_date: '2029-05-20' },
+            { id: 'i5', name: 'كانيولا وريدية زرقاء مقاس 22', category: 'مستلزمات طبية', batch_number: 'BCH-2026-39', quantity: 12, min_threshold: 30, unit: 'قطعة', expiry_date: '2027-11-01' }
         ];
     },
 
-    getMockEmployees() {
+    getMockContracts() {
         return [
-            { id: 'e1', full_name: 'د. أحمد الشناوي', job_title: 'استشاري باطنة وجهاز هضمي', base_salary: 15000, allowances: 2500, deductions: 0 },
-            { id: 'e2', full_name: 'د. سارة محمود', job_title: 'أخصائي طب الأطفال', base_salary: 12000, allowances: 1800, deductions: 200 },
-            { id: 'e3', full_name: 'أحمد فؤاد', job_title: 'مشرف استقبال (وردية صباحية)', base_salary: 5000, allowances: 800, deductions: 150 },
-            { id: 'e4', full_name: 'ريم مصطفى', job_title: 'موظف استقبال وخزينة (وردية مسائية)', base_salary: 4800, allowances: 600, deductions: 0 },
-            { id: 'e5', full_name: 'أمل إبراهيم', job_title: 'تمريض العيادة ومسؤول التعقيم', base_salary: 4500, allowances: 500, deductions: 100 }
-        ];
-    },
-
-    getMockBranches() {
-        return [
-            { id: 'b1', name: 'فرع المعادي الرئيسي', address: 'شارع النصر، المعادي', phone: '01011112222' },
-            { id: 'b2', name: 'فرع التجمع الخامس', address: 'التسعين الشمالي، مول النخيل', phone: '01033334444' }
+            { id: 'c1', name: 'شركة مصر للتأمين', discount_percentage: 20, patient_copay_percentage: 20, max_coverage: 5000, contact_person: 'أ. سامح عبد الفتاح', phone: '01011223344' },
+            { id: 'c2', name: 'نقابة المهندسين', discount_percentage: 25, patient_copay_percentage: 20, max_coverage: 4000, contact_person: 'د. طارق مراد', phone: '01122334455' },
+            { id: 'c3', name: 'بتروتريد للخدمات البترولية', discount_percentage: 30, patient_copay_percentage: 20, max_coverage: 6000, contact_person: 'م. خالد جلال', phone: '01233445566' },
+            { id: 'c4', name: 'أكسا للتأمين الطبي (AXA)', discount_percentage: 15, patient_copay_percentage: 10, max_coverage: 8000, contact_person: 'أ. مروة الشريف', phone: '01555667788' }
         ];
     }
 };
