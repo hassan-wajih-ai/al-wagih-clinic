@@ -155,6 +155,25 @@ const SuperAdminApp = {
         document.getElementById('kpi-appointments').textContent = '3,890';
     },
 
+    exportAllClinicsExcel() {
+        if (!window.Reports) {
+            Utils.showToast('جاري تحميل محرك التقارير...', 'info');
+            return;
+        }
+
+        const rows = this.clinics.map((c, idx) => ({
+            'م': idx + 1,
+            'اسم العيادة / المركز': c.name,
+            'الحالة': c.status === 'active' ? 'نشطة' : 'معلقة',
+            'عدد الفروع': c.branches_count || (c.branches ? c.branches.length : 1),
+            'تاريخ الانضمام للمنصة': Utils.formatDate(c.created_at)
+        }));
+
+        Reports.downloadExcel(`سجل_عيادات_المنصة_${new Date().toISOString().split('T')[0]}.xlsx`, [
+            { name: 'العيادات المسجلة', data: rows }
+        ]);
+    },
+
     async toggleStatus(clinicId) {
         const clinic = this.clinics.find(c => c.id === clinicId);
         if (!clinic) return;
