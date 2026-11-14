@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="../../css/style.css">
 </head>
@@ -107,9 +107,14 @@
                         <h3 class="text-base font-bold text-slate-900">نظام إدارة علاقات المرضى (Medical CRM)</h3>
                         <p class="text-xs text-slate-500">تتبع مراحل رحلة المريض، تصنيف الحالات (VIP / مزمنين)، ومصادر الإحالة والاستقطاب</p>
                     </div>
-                    <button onclick="document.getElementById('add-crm-modal').classList.remove('hidden')" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
-                        <span>+ إضافة مريض / استفسار جديد</span>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="ClinicAdminApp.exportCRMExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                            <span>📗 تصدير Excel</span>
+                        </button>
+                        <button onclick="document.getElementById('add-crm-modal').classList.remove('hidden')" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                            <span>+ إضافة مريض / استفسار جديد</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -146,6 +151,9 @@
                         </h3>
                         <p class="text-xs text-slate-500">احتساب أوقات الحضور الفعلي، دقائق التأخير، والساعات الإضافية آلياً</p>
                     </div>
+                    <button onclick="ClinicAdminApp.exportAttendanceExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                        <span>📗 تصدير سجل البصمة (Excel)</span>
+                    </button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-xs">
@@ -174,9 +182,14 @@
                         <h3 class="text-base font-bold text-rose-900">سجل الخصومات والجزاءات المعتمدة من المدير المباشر</h3>
                         <p class="text-xs text-slate-500">إضافة قرارات الخصم والإنذارات مع ذكر السبب وترحيلها تلقائياً لمسير الرواتب</p>
                     </div>
-                    <button onclick="document.getElementById('add-penalty-modal').classList.remove('hidden')" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-sm transition">
-                        + تطبيق جزاء / خصم
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="ClinicAdminApp.exportPenaltiesExcel()" class="px-3.5 py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 rounded-xl text-xs font-bold transition flex items-center gap-1">
+                            <span>📗 تصدير الجزاءات (Excel)</span>
+                        </button>
+                        <button onclick="document.getElementById('add-penalty-modal').classList.remove('hidden')" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-sm transition">
+                            + تطبيق جزاء / خصم
+                        </button>
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-xs">
@@ -199,9 +212,14 @@
 
             <!-- Staff Operational Roster -->
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-                <div class="border-b pb-3">
-                    <h3 class="text-base font-bold text-slate-900">الجداول التشغيلية وتوزيع الورديات (Staff Operational Roster)</h3>
-                    <p class="text-xs text-slate-500">توزيع الورديات الصباحية والمسائية والطوارئ الأسبوعية لكادر العيادة</p>
+                <div class="flex items-center justify-between border-b pb-3">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">الجداول التشغيلية وتوزيع الورديات (Staff Operational Roster)</h3>
+                        <p class="text-xs text-slate-500">توزيع الورديات الصباحية والمسائية والطوارئ الأسبوعية لكادر العيادة</p>
+                    </div>
+                    <button onclick="ClinicAdminApp.exportRosterExcel()" class="px-3.5 py-2 bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 rounded-xl text-xs font-bold transition flex items-center gap-1">
+                        <span>📗 تصدير الورديات (Excel)</span>
+                    </button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-xs">
@@ -230,6 +248,9 @@
                         <h3 class="text-base font-bold text-slate-900">نظام المشتريات وإدارة الموردين الطبيين</h3>
                         <p class="text-xs text-slate-500">متابعة فواتير التوريد، أرصدة الموردين، وإصدار أوامر الشراء</p>
                     </div>
+                    <button onclick="ClinicAdminApp.exportSuppliersExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                        <span>📗 تصدير كشف الموردين (Excel)</span>
+                    </button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-xs">
@@ -259,6 +280,9 @@
                         <h3 class="text-base font-bold text-slate-900">جرد المخازن وكارت الصنف ومتابعة التشغيلات (Batch Tracking)</h3>
                         <p class="text-xs text-slate-500">تتبع رقم التشغيلة، تواريخ الصلاحية، وأرصدة المستلزمات الطبية والأدوية</p>
                     </div>
+                    <button onclick="ClinicAdminApp.exportInventoryExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                        <span>📗 تصدير جرد المخزن (Excel)</span>
+                    </button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-xs">
@@ -289,6 +313,9 @@
                         <h3 class="text-base font-bold text-slate-900">نظام التعاقدات ونسب الخصم والتحمل (Patient Co-Pay)</h3>
                         <p class="text-xs text-slate-500">تحديد نسبة خصم الشركة + نسبة تحمل المريض نقداً وسقف التغطية</p>
                     </div>
+                    <button onclick="ClinicAdminApp.exportContractsExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                        <span>📗 تصدير دليل التعاقدات (Excel)</span>
+                    </button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-xs">
