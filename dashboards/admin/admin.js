@@ -1,13 +1,18 @@
 /**
  * منطق لوحة تحكم مدير العيادة الشامل المتطور (Enterprise Clinic Admin Controller)
- * يشمل: نظام CRM للمرضى، HR قوي بالبصمة والجزاءات والجدول التشغيلي، المخازن والمشتريات، والتعاقدات بنسبة التحمل Co-pay
- * يدعم التصدير الكامل لجميع الجداول والشيتات إلى ملفات Excel
+ * يشمل: نظام Medical CRM متكامل (واتساب طبي، كول سنتر، وخدمة عملاء)،
+ * ونظام HR قوي بالبصمة والجزاءات والجدول التشغيلي، المخازن والمشتريات، والتعاقدات
  */
 
 const ClinicAdminApp = {
     currentAdmin: null,
     activeTab: 'crm',
+    activeCrmSubTab: 'pipeline',
     crmPatients: [],
+    callLogs: [],
+    supportTickets: [],
+    sentWhatsAppMessages: [],
+    activeWhatsAppPatientId: null,
     attendanceLogs: [],
     penalties: [],
     roster: [],
@@ -35,6 +40,9 @@ const ClinicAdminApp = {
 
     async loadAllEnterpriseData() {
         this.crmPatients = this.getMockCRMPatients();
+        this.callLogs = this.getMockCallLogs();
+        this.supportTickets = this.getMockSupportTickets();
+        this.sentWhatsAppMessages = this.getMockWhatsAppMessages();
         this.attendanceLogs = this.getMockAttendanceLogs();
         this.penalties = this.getMockPenalties();
         this.roster = this.getMockRoster();
@@ -44,6 +52,10 @@ const ClinicAdminApp = {
         this.employees = this.getMockEmployees();
 
         this.renderCRM();
+        this.renderCallCenter();
+        this.renderHelpDesk();
+        this.renderWhatsAppHistory();
+        this.populateWhatsAppPatients();
         this.renderAttendance();
         this.renderPenalties();
         this.renderRoster();
@@ -62,6 +74,23 @@ const ClinicAdminApp = {
             if (el) el.classList.toggle('hidden', t !== tabId);
             if (btn) {
                 if (t === tabId) {
+                    btn.className = 'px-3.5 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm transition';
+                } else {
+                    btn.className = 'px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition';
+                }
+            }
+        });
+    },
+
+    switchCrmSubTab(subTabId) {
+        this.activeCrmSubTab = subTabId;
+        const subviews = ['pipeline', 'whatsapp', 'callcenter', 'helpdesk'];
+        subviews.forEach(s => {
+            const el = document.getElementById(`crm-subview-${s}`);
+            const btn = document.getElementById(`crm-sub-btn-${s}`);
+            if (el) el.classList.toggle('hidden', s !== subTabId);
+            if (btn) {
+                if (s === subTabId) {
                     btn.className = 'px-3.5 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm transition';
                 } else {
                     btn.className = 'px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition';
@@ -100,15 +129,293 @@ const ClinicAdminApp = {
                 <td class="py-3 px-4 font-mono text-slate-500">${p.next_follow_up || '—'}</td>
                 <td class="py-3 px-4 text-slate-500">${p.notes || '—'}</td>
                 <td class="py-3 px-4 text-center">
-                    <button onclick="Utils.showToast('تم إرسال رسالة تذكير للمريض', 'success')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200">
-                        💬 تواصل
-                    </button>
+                    <div class="flex items-center justify-center gap-1.5">
+                        <button onclick="ClinicAdminApp.openWhatsAppModal('${p.id}')" title="مراسلة عبر واتساب" class="px-2 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition flex items-center gap-1">
+                            <span>💬 واتساب</span>
+                        </button>
+                        <button onclick="ClinicAdminApp.openCallModal('${p.id}')" title="تسجيل مكالمة كول سنتر" class="px-2 py-1 text-[11px] font-bold rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition flex items-center gap-1">
+                            <span>📞 اتصال</span>
+                        </button>
+                        <button onclick="ClinicAdminApp.openTicketModal('${p.id}')" title="تذكرة شكوى أو دعم" class="px-2 py-1 text-[11px] font-bold rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 transition flex items-center gap-1">
+                            <span>🎧 تذكرة</span>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `).join('');
     },
 
-    // 2. نظام HR: البصمة والجزاءات والجدول التشغيلي
+    // 2. كول سنتر ومركز الاتصالات (Call Center)
+    renderCallCenter() {
+        const tbody = document.getElementById('callcenter-table-body');
+        if (!tbody) return;
+
+        const outcomeBadges = {
+            booked: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">✓ حجز موعد كشف</span>',
+            confirmed: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800">تأكيد حجز قائم</span>',
+            callback: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">⏳ طلب معاودة لاحقاً</span>',
+            no_answer: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">لم يرد / مغلق</span>',
+            busy: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">الرقم مشغول</span>',
+            inquiry: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800">استفسار خدمات وأسعار</span>',
+            cancelled: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">إلغاء حجز</span>'
+        };
+
+        tbody.innerHTML = this.callLogs.map(c => `
+            <tr class="hover:bg-slate-50 border-b border-slate-100 text-xs">
+                <td class="py-3 px-4 font-bold text-slate-900">${c.patient_name}</td>
+                <td class="py-3 px-4 font-mono text-slate-600">${c.phone}</td>
+                <td class="py-3 px-4 font-semibold text-slate-700">${c.call_type === 'inbound' ? '📥 واردة' : '📤 صادرة'}</td>
+                <td class="py-3 px-4">${outcomeBadges[c.outcome] || c.outcome}</td>
+                <td class="py-3 px-4 font-mono text-slate-600">${c.duration || '01:30'}</td>
+                <td class="py-3 px-4 text-slate-700">${c.agent}</td>
+                <td class="py-3 px-4 font-mono text-slate-500">${c.timestamp}</td>
+                <td class="py-3 px-4 text-slate-600">${c.notes || '—'}</td>
+            </tr>
+        `).join('');
+    },
+
+    // 3. خدمة العملاء والشكاوى (Customer Service & Help Desk)
+    renderHelpDesk() {
+        const tbody = document.getElementById('helpdesk-table-body');
+        if (!tbody) return;
+
+        const priorityBadges = {
+            urgent: '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-800">🔴 عاجل جداً</span>',
+            medium: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">🟡 متوسط</span>',
+            normal: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">🟢 عادي</span>'
+        };
+
+        const statusBadges = {
+            open: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800">مفتوحة</span>',
+            in_progress: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">قيد المتابعة</span>',
+            resolved: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">✓ تم الحل والرضا</span>'
+        };
+
+        tbody.innerHTML = this.supportTickets.map(t => `
+            <tr class="hover:bg-slate-50 border-b border-slate-100 text-xs">
+                <td class="py-3 px-4 font-mono font-bold text-slate-800">#${t.id}</td>
+                <td class="py-3 px-4">
+                    <div class="font-bold text-slate-900">${t.patient_name}</div>
+                    <div class="text-[11px] font-mono text-slate-500">${t.phone}</div>
+                </td>
+                <td class="py-3 px-4 font-semibold text-slate-700">${t.category}</td>
+                <td class="py-3 px-4">${priorityBadges[t.priority] || t.priority}</td>
+                <td class="py-3 px-4">${statusBadges[t.status] || t.status}</td>
+                <td class="py-3 px-4 font-mono text-slate-500">${t.created_at}</td>
+                <td class="py-3 px-4 text-slate-700">${t.issue}</td>
+                <td class="py-3 px-4 text-slate-600 font-medium">${t.resolution || 'قيد بحث الشكوى'}</td>
+                <td class="py-3 px-4 text-center">
+                    ${t.status !== 'resolved' ? `
+                        <button onclick="ClinicAdminApp.resolveTicket('${t.id}')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition">
+                            ✓ حل الشكوى
+                        </button>
+                    ` : '<span class="text-emerald-700 font-bold text-xs">⭐⭐⭐⭐⭐ ممتاز</span>'}
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    resolveTicket(ticketId) {
+        const t = this.supportTickets.find(item => item.id === ticketId);
+        if (t) {
+            t.status = 'resolved';
+            t.resolution = 'تم التواصل مع المريض وتقديم حل مرضي والتأكد من رضاه التام';
+            t.csat = 5;
+            Utils.showToast(`تم حل التذكرة #${ticketId} بنجاح وتسجيل رضا العميل`, 'success');
+            this.renderHelpDesk();
+            this.updateKPIs();
+        }
+    },
+
+    // 4. استوديو واتساب الطبي المباشر (WhatsApp Messenger Studio)
+    populateWhatsAppPatients() {
+        const select = document.getElementById('wa-patient-select');
+        if (!select) return;
+
+        select.innerHTML = '<option value="">-- اختر مريضاً من القائمة --</option>' +
+            this.crmPatients.map(p => `
+                <option value="${p.id}" data-phone="${p.phone}" data-name="${p.full_name}">${p.full_name} (${p.phone})</option>
+            `).join('');
+    },
+
+    onWhatsAppPatientChange() {
+        const select = document.getElementById('wa-patient-select');
+        if (!select || !select.value) return;
+
+        const opt = select.options[select.selectedIndex];
+        const phone = opt.getAttribute('data-phone') || '';
+        const phoneInput = document.getElementById('wa-phone-input');
+        if (phoneInput) phoneInput.value = phone;
+
+        this.applyWhatsAppTemplate('reminder');
+    },
+
+    applyWhatsAppTemplate(templateKey) {
+        const select = document.getElementById('wa-patient-select');
+        let patientName = 'عزيزي المريض';
+        if (select && select.selectedIndex > 0) {
+            patientName = select.options[select.selectedIndex].getAttribute('data-name') || patientName;
+        }
+
+        const msgInput = document.getElementById('wa-message-input');
+        if (!msgInput) return;
+
+        msgInput.value = this.getTemplateText(templateKey, patientName);
+        this.updateWhatsAppPreview();
+    },
+
+    getTemplateText(key, name) {
+        switch (key) {
+            case 'reminder':
+                return `مرحباً بك أستاذ/ة ${name} في عيادات الشفاء التخصصية 🏥\nنود تذكير سيادتكم بموعد الكشف الطبي القادم غداً الساعة 11:00 ص.\n🩺 الطبيب المعالج: د. أحمد الشناوي (استشاري باطنة وجهاز هضمي)\n📍 العنوان: فرع المعادي الرئيسي - شارع النصر\nلتأكيد الحضور نرجو الرد بكلمة (تأكيد) أو (تعديل). نتمنى لكم دوام الصحة!`;
+            case 'instructions':
+                return `عزيزي المريض ${name} 🩺\nحرصاً على دقة نتائج الفحوصات والتحاليل الطبية المقررة لسيادتكم:\n1- يرجى الصيام لمدة 8 ساعات قبل الموعد.\n2- شرب الماء مسموح.\n3- يرجى إحضار أي تحاليل أو أشعات سابقة.\nفريق عيادات الشفاء في خدمتكم دائماً.`;
+            case 'followup':
+                return `أهلاً بك أستاذ/ة ${name} 🌸\nفريق المتابعة والاطمئنان بعيادات الشفاء يتمنى لكم السلامة ويسأل عن صحتكم بعد زيارتكم الأخيرة.\nهل بدأتم في تناول العلاج الموصوف؟ وإذا كان لديكم أي استفسار دوائي يسعدنا التواصل معكم والرد فوراً.`;
+            case 'copay':
+                return `مرحباً أستاذ/ة ${name} 🏢\nنود إعلامكم باعتماد خطاب التغطية الطبية التابع لشركة التأمين / التعاقد بنسبة خصم معتمدة ونسبة تحمل المريض (Co-Pay).\nيرجى إبراز بطاقة التأمين عند شباك الاستقبال. دمتم بصحة وعافية!`;
+            default:
+                return `مرحباً أستاذ/ة ${name}، نتواصل معكم من عيادات الشفاء التخصصية بخصوص متابعتكم الطبية.`;
+        }
+    },
+
+    updateWhatsAppPreview() {
+        const text = document.getElementById('wa-message-input').value;
+        const previewEl = document.getElementById('wa-preview-text');
+        if (previewEl) {
+            previewEl.textContent = text || 'معاينة نص الرسالة...';
+        }
+    },
+
+    sendWhatsAppDirect() {
+        const phoneInput = document.getElementById('wa-phone-input');
+        const textInput = document.getElementById('wa-message-input');
+        if (!phoneInput || !textInput) return;
+
+        const phone = phoneInput.value.trim();
+        const text = textInput.value.trim();
+
+        if (!phone || !text) {
+            Utils.showToast('يرجى التأكد من كتابة رقم الهاتف ونص الرسالة', 'warning');
+            return;
+        }
+
+        const cleanPhone = this.formatWhatsAppPhone(phone);
+        const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+
+        this.sentWhatsAppMessages.unshift({
+            phone,
+            text,
+            timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+            status: 'تم الإرسال عبر WhatsApp'
+        });
+
+        Utils.showToast(`تم فتح تطبيق واتساب ومراسلة الرقم: ${phone}`, 'success');
+        this.renderWhatsAppHistory();
+        this.updateKPIs();
+    },
+
+    copyWhatsAppText() {
+        const text = document.getElementById('wa-message-input').value;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text);
+            Utils.showToast('تم نسخ نص الرسالة إلى الحافظة بنجاح', 'success');
+        }
+    },
+
+    renderWhatsAppHistory() {
+        const container = document.getElementById('wa-history-list');
+        if (!container) return;
+
+        if (this.sentWhatsAppMessages.length === 0) {
+            container.innerHTML = '<div class="text-xs text-slate-400 py-2">لا توجد رسائل واتساب مرسلة حديثاً.</div>';
+            return;
+        }
+
+        container.innerHTML = this.sentWhatsAppMessages.slice(0, 5).map(m => `
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="text-emerald-600 font-bold">💬</span>
+                    <span class="font-mono font-bold text-slate-800">${m.phone}</span>
+                    <span class="text-slate-500 truncate max-w-xs sm:max-w-md">${m.text.slice(0, 60)}...</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="font-mono text-[10px] text-slate-400">${m.timestamp}</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">${m.status}</span>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    formatWhatsAppPhone(phone) {
+        let clean = phone.replace(/[^\d]/g, '');
+        if (clean.startsWith('01')) clean = '20' + clean.slice(1);
+        else if (clean.startsWith('1')) clean = '20' + clean;
+        return clean;
+    },
+
+    // أزرار المودال السريع لمراسلة المريض بالواتساب
+    openWhatsAppModal(patientId) {
+        const p = this.crmPatients.find(item => item.id === patientId);
+        if (!p) return;
+
+        this.activeWhatsAppPatientId = patientId;
+        document.getElementById('modal-wa-patient-name').textContent = p.full_name;
+        document.getElementById('modal-wa-patient-phone').textContent = p.phone;
+
+        this.setModalWhatsAppTemplate('reminder');
+        document.getElementById('whatsapp-modal').classList.remove('hidden');
+    },
+
+    setModalWhatsAppTemplate(templateKey) {
+        const p = this.crmPatients.find(item => item.id === this.activeWhatsAppPatientId);
+        const name = p ? p.full_name : 'عزيزي المريض';
+        const msgText = this.getTemplateText(templateKey, name);
+        document.getElementById('modal-wa-message-text').value = msgText;
+    },
+
+    sendModalWhatsApp() {
+        const p = this.crmPatients.find(item => item.id === this.activeWhatsAppPatientId);
+        if (!p) return;
+
+        const text = document.getElementById('modal-wa-message-text').value.trim();
+        const cleanPhone = this.formatWhatsAppPhone(p.phone);
+        const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+
+        this.sentWhatsAppMessages.unshift({
+            phone: p.phone,
+            text,
+            timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+            status: 'تم الإرسال عبر WhatsApp'
+        });
+
+        Utils.showToast(`تم فتح محادثة واتساب مع المريض: ${p.full_name}`, 'success');
+        document.getElementById('whatsapp-modal').classList.add('hidden');
+        this.renderWhatsAppHistory();
+        this.updateKPIs();
+    },
+
+    openCallModal(patientId) {
+        const p = this.crmPatients.find(item => item.id === patientId);
+        if (p) {
+            document.getElementById('call-patient-name').value = p.full_name;
+            document.getElementById('call-patient-phone').value = p.phone;
+        }
+        document.getElementById('callcenter-modal').classList.remove('hidden');
+    },
+
+    openTicketModal(patientId) {
+        const p = this.crmPatients.find(item => item.id === patientId);
+        if (p) {
+            document.getElementById('ticket-patient-name').value = p.full_name;
+            document.getElementById('ticket-patient-phone').value = p.phone;
+        }
+        document.getElementById('ticket-modal').classList.remove('hidden');
+    },
+
+    // 5. نظام HR: البصمة والجزاءات والجدول التشغيلي
     renderAttendance() {
         const tbody = document.getElementById('attendance-table-body');
         if (!tbody) return;
@@ -168,7 +475,7 @@ const ClinicAdminApp = {
         `).join('');
     },
 
-    // 3. نظام المشتريات والموردين
+    // 6. نظام المشتريات والموردين
     renderSuppliers() {
         const tbody = document.getElementById('suppliers-table-body');
         if (!tbody) return;
@@ -189,7 +496,7 @@ const ClinicAdminApp = {
         `).join('');
     },
 
-    // 4. جرد المخزن المتقدم مع رقم التشغيلة
+    // 7. جرد المخزن المتقدم مع رقم التشغيلة
     renderInventory() {
         const tbody = document.getElementById('inventory-table-body');
         if (!tbody) return;
@@ -225,7 +532,7 @@ const ClinicAdminApp = {
         }
     },
 
-    // 5. التعاقدات ونسبة الخصم وتحمل المريض Co-Pay
+    // 8. التعاقدات ونسبة الخصم وتحمل المريض Co-Pay
     renderContracts() {
         const tbody = document.getElementById('contracts-table-body');
         if (!tbody) return;
@@ -254,6 +561,17 @@ const ClinicAdminApp = {
         if (kpiAtt) kpiAtt.textContent = `${this.attendanceLogs.length} حاضرين بالبصمة`;
         if (kpiSup) kpiSup.textContent = Utils.formatCurrency(48500);
         if (kpiCon) kpiCon.textContent = `${this.contracts.length} شركات`;
+
+        // Mini CRM KPIs
+        const crmTotal = document.getElementById('crm-kpi-total');
+        const crmWa = document.getElementById('crm-kpi-wa-count');
+        const crmCalls = document.getElementById('crm-kpi-calls-count');
+        const crmTickets = document.getElementById('crm-kpi-tickets-count');
+
+        if (crmTotal) crmTotal.textContent = `${this.crmPatients.length} مرضى`;
+        if (crmWa) crmWa.textContent = `${this.sentWhatsAppMessages.length} رسالة`;
+        if (crmCalls) crmCalls.textContent = `${this.callLogs.length} مكالمة`;
+        if (crmTickets) crmTickets.textContent = `⭐⭐⭐⭐⭐ 4.9`;
     },
 
     // ==========================================
@@ -262,6 +580,22 @@ const ClinicAdminApp = {
     exportCRMExcel() {
         if (window.Reports) {
             Reports.exportCRMToExcel(this.crmPatients);
+        } else {
+            Utils.showToast('جاري تهيئة محرك التصدير...', 'info');
+        }
+    },
+
+    exportCallCenterExcel() {
+        if (window.Reports) {
+            Reports.exportCallCenterToExcel(this.callLogs);
+        } else {
+            Utils.showToast('جاري تهيئة محرك التصدير...', 'info');
+        }
+    },
+
+    exportHelpDeskExcel() {
+        if (window.Reports) {
+            Reports.exportHelpDeskToExcel(this.supportTickets);
         } else {
             Utils.showToast('جاري تهيئة محرك التصدير...', 'info');
         }
@@ -350,6 +684,83 @@ const ClinicAdminApp = {
                 crmModal.classList.add('hidden');
                 crmForm.reset();
                 this.renderCRM();
+                this.populateWhatsAppPatients();
+                this.updateKPIs();
+            };
+        }
+
+        // تسجيل مكالمة كول سنتر جديدة
+        const callForm = document.getElementById('callcenter-form');
+        const callModal = document.getElementById('callcenter-modal');
+        if (callForm && callModal) {
+            callForm.onsubmit = (e) => {
+                e.preventDefault();
+                const name = document.getElementById('call-patient-name').value.trim();
+                const phone = document.getElementById('call-patient-phone').value.trim();
+                const callType = document.getElementById('call-type-select').value;
+                const outcome = document.getElementById('call-outcome-select').value;
+                const duration = document.getElementById('call-duration-input').value.trim();
+                const agent = document.getElementById('call-agent-input').value.trim();
+                const notes = document.getElementById('call-notes-input').value.trim();
+
+                this.callLogs.unshift({
+                    id: 'call_' + Date.now(),
+                    patient_name: name,
+                    phone,
+                    call_type: callType,
+                    outcome,
+                    duration,
+                    agent,
+                    timestamp: new Date().toLocaleString('ar-EG'),
+                    notes
+                });
+
+                // إذا كانت النتيجة حجز موعد، يتم تحديث مرحلة المريض في الـ CRM تلقائياً
+                const p = this.crmPatients.find(item => item.phone === phone || item.full_name === name);
+                if (p && outcome === 'booked') {
+                    p.stage = 'booked';
+                    this.renderCRM();
+                }
+
+                Utils.showToast(`تم توثيق المكالمة مع المريض ${name} في سجل الكول سنتر`, 'success');
+                callModal.classList.add('hidden');
+                callForm.reset();
+                this.renderCallCenter();
+                this.updateKPIs();
+            };
+        }
+
+        // فتح تذكرة خدمة عملاء جديدة
+        const ticketForm = document.getElementById('ticket-form');
+        const ticketModal = document.getElementById('ticket-modal');
+        if (ticketForm && ticketModal) {
+            ticketForm.onsubmit = (e) => {
+                e.preventDefault();
+                const name = document.getElementById('ticket-patient-name').value.trim();
+                const phone = document.getElementById('ticket-patient-phone').value.trim();
+                const category = document.getElementById('ticket-category-select').value;
+                const priority = document.getElementById('ticket-priority-select').value;
+                const issue = document.getElementById('ticket-issue-input').value.trim();
+
+                const newId = 'TICK-' + Math.floor(100 + Math.random() * 900);
+                this.supportTickets.unshift({
+                    id: newId,
+                    patient_name: name,
+                    phone,
+                    category,
+                    priority,
+                    status: 'open',
+                    agent: this.currentAdmin ? this.currentAdmin.full_name : 'فريق خدمة العملاء',
+                    created_at: new Date().toLocaleString('ar-EG'),
+                    issue,
+                    resolution: '',
+                    csat: 0
+                });
+
+                Utils.showToast(`تم فتح تذكرة خدمة العملاء #${newId} وتعيينها للمتابعة`, 'success');
+                ticketModal.classList.add('hidden');
+                ticketForm.reset();
+                this.renderHelpDesk();
                 this.updateKPIs();
             };
         }
@@ -387,10 +798,35 @@ const ClinicAdminApp = {
 
     getMockCRMPatients() {
         return [
-            { id: '1', full_name: 'طارق حسام مصطفى', phone: '01011223344', lead_source: 'فيسبوك / تواصل اجتماعي', patient_tier: 'vip', stage: 'new', notes: 'مهتم بكشف باطنة واستشارة عظام' },
-            { id: '2', full_name: 'ياسمين عبد الرحمن', phone: '01122334455', lead_source: 'تعاقد شركة', patient_tier: 'corporate', stage: 'booked', notes: 'محولة من شركة مصر للتأمين' },
-            { id: '3', full_name: 'حامد زكريا النمر', phone: '01233445566', lead_source: 'إحالة طبيب', patient_tier: 'chronic', stage: 'follow_up', notes: 'مريض سكري يحتاج متابعة كل أسبوعين' },
-            { id: '4', full_name: 'سلوى محمود شاهين', phone: '01555667788', lead_source: 'ترشيح مريض سابق', patient_tier: 'regular', stage: 'visited', notes: 'تم الكشف مع د. سارة محمود' }
+            { id: '1', full_name: 'طارق حسام مصطفى', phone: '01011223344', lead_source: 'فيسبوك / تواصل اجتماعي', patient_tier: 'vip', stage: 'new', next_follow_up: '2026-11-16', notes: 'مهتم بكشف باطنة وسونار' },
+            { id: '2', full_name: 'ياسمين عبد الرحمن', phone: '01122334455', lead_source: 'تعاقد شركة', patient_tier: 'corporate', stage: 'booked', next_follow_up: '2026-11-18', notes: 'محولة من شركة مصر للتأمين' },
+            { id: '3', full_name: 'حامد زكريا النمر', phone: '01233445566', lead_source: 'إحالة طبيب', patient_tier: 'chronic', stage: 'follow_up', next_follow_up: '2026-11-20', notes: 'مريض سكري يحتاج متابعة كل أسبوعين' },
+            { id: '4', full_name: 'سلوى محمود شاهين', phone: '01555667788', lead_source: 'ترشيح مريض سابق', patient_tier: 'regular', stage: 'visited', next_follow_up: '—', notes: 'تم الكشف مع د. سارة محمود' }
+        ];
+    },
+
+    getMockCallLogs() {
+        return [
+            { id: 'call_1', patient_name: 'طارق حسام مصطفى', phone: '01011223344', call_type: 'outbound', outcome: 'booked', duration: '02:15', agent: 'أحمد فؤاد (كول سنتر)', timestamp: '14/11/2026 10:30 ص', notes: 'تم حجز كشف باطنة مع د. أحمد الشناوي يوم الأحد القادم' },
+            { id: 'call_2', patient_name: 'ياسمين عبد الرحمن', phone: '01122334455', call_type: 'inbound', outcome: 'confirmed', duration: '01:10', agent: 'ريم مصطفى (خدمة عملاء)', timestamp: '14/11/2026 11:15 ص', notes: 'تأكيد الحضور واستفسار عن نسبة تحمل شركة مصر للتأمين' },
+            { id: 'call_3', patient_name: 'حامد زكريا النمر', phone: '01233445566', call_type: 'outbound', outcome: 'callback', duration: '00:45', agent: 'أحمد فؤاد (كول سنتر)', timestamp: '14/11/2026 12:00 م', notes: 'طلب معاودة الاتصال بعد الساعة 5 مساءً لمراجعة مواعيد التحاليل' },
+            { id: 'call_4', patient_name: 'سلوى محمود شاهين', phone: '01555667788', call_type: 'inbound', outcome: 'inquiry', duration: '03:20', agent: 'ريم مصطفى (خدمة عملاء)', timestamp: '14/11/2026 01:40 م', notes: 'استفسار عن أسعار السونار وتواجد استشاري الأطفال' }
+        ];
+    },
+
+    getMockSupportTickets() {
+        return [
+            { id: 'TICK-101', patient_name: 'طارق حسام مصطفى', phone: '01011223344', category: 'استفسار مالي وفواتير', priority: 'medium', status: 'resolved', agent: 'أحمد فؤاد', created_at: '14/11/2026 09:15 ص', issue: 'استفسار عن فاتورة الكشف والخصم المعتمد للتعاقد', resolution: 'تم شرح تفاصيل الخصم 20% وإرسال الفاتورة عبر واتساب', csat: 5 },
+            { id: 'TICK-102', patient_name: 'خالد مصطفى العوضي', phone: '01099887711', category: 'شكوى تأخير مواعيد', priority: 'urgent', status: 'in_progress', agent: 'ريم مصطفى', created_at: '14/11/2026 11:30 ص', issue: 'تأخر موعد الدخول لغرفة الفحص 20 دقيقة عن الموعد المحدد', resolution: 'جاري التنسيق مع الاستقبال لتقديم اعتذار ودخوله فوراً', csat: 3 },
+            { id: 'TICK-103', patient_name: 'منار السيد عبد ربه', phone: '01288776655', category: 'نتائج تحاليل وأشعة', priority: 'normal', status: 'open', agent: 'أحمد فؤاد', created_at: '14/11/2026 02:10 م', issue: 'طلب استلام نتائج تحاليل السكر التراكمي إلكترونياً عبر واتساب', resolution: 'في انتظار توقيع استشاري المعمل لإرسالها فوراً', csat: 4 }
+        ];
+    },
+
+    getMockWhatsAppMessages() {
+        return [
+            { phone: '01011223344', text: 'مرحباً أستاذ طارق، نود تذكيرك بموعد كشفك القادم غداً الساعة 11:00 ص بعيادات الشفاء...', timestamp: '10:45 ص', status: 'تم الإرسال عبر WhatsApp' },
+            { phone: '01122334455', text: 'أهلاً أستاذة ياسمين، تم اعتماد نسبة الخصم التعاقدية 20% لشركة مصر للتأمين...', timestamp: '11:20 ص', status: 'تم الإرسال عبر WhatsApp' },
+            { phone: '01233445566', text: 'عزيزي المريض حامد النمر، تذكيراً بالصيام 8 ساعات قبل تحاليل السكر الصباحية...', timestamp: '12:10 م', status: 'تم الإرسال عبر WhatsApp' }
         ];
     },
 
