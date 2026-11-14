@@ -97,12 +97,12 @@
                 <div class="p-4 rounded-xl bg-slate-900 text-white shadow-lg">
                     <h4 class="text-xs font-bold text-slate-300 mb-2">روابط سريعة للمعاينة المباشرة للأدوار:</h4>
                     <div class="flex flex-wrap gap-1.5 text-xs">
-                        <a href="dashboards/superadmin/index.html" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">المدير العام</a>
-                        <a href="dashboards/accountant/index.html" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-md transition font-bold">💼 المحاسب المالي</a>
-                        <a href="dashboards/admin/index.html" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">مدير العيادة (ERP)</a>
-                        <a href="dashboards/receptionist/index.html" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">الاستقبال</a>
-                        <a href="dashboards/doctor/index.html" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">الطبيب</a>
-                        <a href="dashboards/patient/index.html" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">المريض</a>
+                        <button type="button" onclick="Auth.quickLogin('superadmin')" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">المدير العام</button>
+                        <button type="button" onclick="Auth.quickLogin('accountant')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-md transition font-bold">💼 المحاسب المالي</button>
+                        <button type="button" onclick="Auth.quickLogin('admin')" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">مدير العيادة (ERP)</button>
+                        <button type="button" onclick="Auth.quickLogin('receptionist')" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">الاستقبال</button>
+                        <button type="button" onclick="Auth.quickLogin('doctor')" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">الطبيب</button>
+                        <button type="button" onclick="Auth.quickLogin('patient')" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">المريض</button>
                     </div>
                 </div>
             </div>
