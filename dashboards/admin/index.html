@@ -3,26 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة مدير العيادة | نظام الوجيه</title>
+    <title>لوحة مدير العيادة | نظام الوجيه الشامل</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Chart.js for Visual KPIs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS for Excel Export -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-    <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="../../css/style.css">
 </head>
 <body class="bg-slate-100 min-h-screen">
     <!-- Navbar -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <a href="../../index.html" class="w-9 h-9 rounded-lg bg-sky-600 text-white flex items-center justify-center font-bold text-lg">و</a>
+                <a href="../../index.html" class="w-9 h-9 rounded-lg bg-sky-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">و</a>
                 <div>
-                    <h1 class="text-base font-bold text-slate-800" id="clinic-title">إدارة العيادة وفروعها</h1>
-                    <p class="text-xs text-slate-500">لوحة تحكم مدير العيادة (Clinic Admin)</p>
+                    <h1 class="text-base font-bold text-slate-800" id="clinic-title">إدارة العيادة الشاملة</h1>
+                    <p class="text-xs text-slate-500">نظام الوجيه — العيادات، التعاقدات، الجرد، والموارد البشرية</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
@@ -33,82 +30,224 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        <!-- KPIs Row -->
+        
+        <!-- Top Stats KPIs Row -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-slate-500">إيرادات اليوم التقديرية</span>
-                    <span class="p-2 rounded-xl bg-emerald-50 text-emerald-600 text-sm">💰</span>
+                    <span class="text-xs font-bold text-slate-500">التحصيلات النقدية (Cash)</span>
+                    <span class="p-2 rounded-xl bg-emerald-50 text-emerald-600 text-sm">💵</span>
                 </div>
                 <div class="text-2xl font-black text-slate-900 mt-2" id="kpi-revenue">0 ج.م</div>
-                <div class="text-xs text-slate-500 mt-1">المحصل اليوم بكافة الفروع</div>
+                <div class="text-xs text-slate-500 mt-1">المحصل بالخزينة لليوم</div>
             </div>
 
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-slate-500">حجوزات وكشوفات اليوم</span>
-                    <span class="p-2 rounded-xl bg-sky-50 text-sky-600 text-sm">📅</span>
+                    <span class="text-xs font-bold text-slate-500">مطالبات الشركات الآجلة</span>
+                    <span class="p-2 rounded-xl bg-purple-50 text-purple-600 text-sm">🏢</span>
                 </div>
-                <div class="text-2xl font-black text-slate-900 mt-2" id="kpi-today-appts">0</div>
-                <div class="text-xs text-slate-500 mt-1">موزعة على الأطباء بالعيادة</div>
+                <div class="text-2xl font-black text-purple-900 mt-2" id="kpi-corporate-claims">0 ج.م</div>
+                <div class="text-xs text-slate-500 mt-1">مستحقات للتحصيل بنهاية الشهر</div>
             </div>
 
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-slate-500">طاقم الأطباء</span>
-                    <span class="p-2 rounded-xl bg-purple-50 text-purple-600 text-sm">🩺</span>
+                    <span class="text-xs font-bold text-slate-500">الشركات المتعاقدة النشطة</span>
+                    <span class="p-2 rounded-xl bg-sky-50 text-sky-600 text-sm">🤝</span>
                 </div>
-                <div class="text-2xl font-black text-slate-900 mt-2" id="kpi-doctors">0</div>
-                <div class="text-xs text-slate-500 mt-1">أطباء مسجلين بالعيادة</div>
+                <div class="text-2xl font-black text-slate-900 mt-2" id="kpi-contracts-count">0 شركات</div>
+                <div class="text-xs text-slate-500 mt-1">بنسب خصم معتمدة للعيادة</div>
             </div>
 
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-slate-500">طاقم الاستقبال</span>
-                    <span class="p-2 rounded-xl bg-teal-50 text-teal-600 text-sm">💼</span>
+                    <span class="text-xs font-bold text-slate-500">تنبيهات جرد المخزن</span>
+                    <span class="p-2 rounded-xl bg-rose-50 text-rose-600 text-sm">📦</span>
                 </div>
-                <div class="text-2xl font-black text-slate-900 mt-2" id="kpi-receptionists">0</div>
-                <div class="text-xs text-slate-500 mt-1">ورديات 8 ساعات منتظمة</div>
+                <div class="text-2xl font-black text-rose-600 mt-2" id="kpi-inventory-alerts">0 أصناف</div>
+                <div class="text-xs text-slate-500 mt-1">وصلت للحد الأدنى لإعادة الطلب</div>
             </div>
         </div>
 
-        <!-- Visual Analytics & Charts Row (Phase 4 & 5) -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <!-- Revenue Growth Chart (Col 8) -->
-            <div class="lg:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-                <div class="flex items-center justify-between border-b pb-4">
-                    <div>
-                        <h3 class="font-bold text-slate-900 text-base">معدل الإيرادات اليومية والأسبوعية</h3>
-                        <p class="text-xs text-slate-500">مؤشر نمو التحصيلات النقدية بكافة الفروع</p>
-                    </div>
-                    <button onclick="ClinicAdminApp.exportClinicSummaryExcel()" class="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                        <span>📗 تصدير التقرير (Excel)</span>
+        <!-- Navigation Tabs Header -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-3">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                <div class="flex flex-wrap gap-2">
+                    <button id="tab-btn-analytics" onclick="ClinicAdminApp.switchTab('analytics')" class="px-4 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm transition">
+                        📊 لوحة المؤشرات والإيرادات
+                    </button>
+                    <button id="tab-btn-contracts" onclick="ClinicAdminApp.switchTab('contracts')" class="px-4 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition">
+                        🏢 التعاقدات والخصومات ومطالبات الشركات
+                    </button>
+                    <button id="tab-btn-inventory" onclick="ClinicAdminApp.switchTab('inventory')" class="px-4 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition">
+                        📦 جرد المخزن والمستلزمات الطبية
+                    </button>
+                    <button id="tab-btn-hr" onclick="ClinicAdminApp.switchTab('hr')" class="px-4 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition">
+                        👥 الموارد البشرية والرواتب (HR)
+                    </button>
+                    <button id="tab-btn-branches" onclick="ClinicAdminApp.switchTab('branches')" class="px-4 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition">
+                        📍 فروع العيادة
                     </button>
                 </div>
-                <div class="relative h-64 w-full">
-                    <canvas id="admin-revenue-chart"></canvas>
-                </div>
+                <button onclick="ClinicAdminApp.exportClinicSummaryExcel()" class="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <span>📗 تصدير التقرير الشامل (Excel)</span>
+                </button>
             </div>
-
-            <!-- Attendance vs Cancellation Chart (Col 4) -->
-            <div class="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-                <div class="border-b pb-4">
-                    <h3 class="font-bold text-slate-900 text-base">معدلات الحضور والإلغاء</h3>
-                    <p class="text-xs text-slate-500">نسبة الالتزام بالمواعيد الطبية</p>
-                </div>
-                <div class="relative h-64 w-full flex items-center justify-center">
-                    <canvas id="admin-attendance-chart"></canvas>
-                </div>
-            </div>
-
         </div>
 
-        <!-- Management Sections (Branches & Staff) -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <!-- Branches Section (Col 7) -->
-            <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <!-- TAB 1: Analytics & Charts -->
+        <div id="tab-content-analytics" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-base">معدل نمو الإيرادات اليومية والأسبوعية</h3>
+                        <p class="text-xs text-slate-500">حركة تحصيلات الخزينة النقدية والشركات</p>
+                    </div>
+                    <div class="relative h-64 w-full">
+                        <canvas id="admin-revenue-chart"></canvas>
+                    </div>
+                </div>
+                <div class="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-base">معدلات الحضور ونوع السداد</h3>
+                        <p class="text-xs text-slate-500">نسب الالتزام والمحاسبة (نقدي / تعاقد)</p>
+                    </div>
+                    <div class="relative h-64 w-full flex items-center justify-center">
+                        <canvas id="admin-attendance-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Corporate Contracts & Billing Invoices -->
+        <div id="tab-content-contracts" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b pb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">الشركات والجهات المتعاقدة ونسب الخصم</h3>
+                        <p class="text-xs text-slate-500">إدارة تعاقدات التأمين والنقابات وتحديد نسبة الخصم المعتمدة</p>
+                    </div>
+                    <button onclick="document.getElementById('add-contract-modal').classList.remove('hidden')" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                        <span>+ إضافة شركة متعاقدة جديدة</span>
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                                <th class="py-3 px-4">اسم الشركة / الجهة</th>
+                                <th class="py-3 px-4">نسبة الخصم %</th>
+                                <th class="py-3 px-4">مسؤول التواصل والهاتف</th>
+                                <th class="py-3 px-4">الكشوفات المنفذة</th>
+                                <th class="py-3 px-4">المستحق للمطالبة</th>
+                                <th class="py-3 px-4 text-center">إصدار مطالبة مالية</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contracts-table-body" class="divide-y divide-slate-100">
+                            <!-- تُملأ آلياً بواسطة admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Fast Corporate Claim Generator Card -->
+            <div class="bg-purple-50/60 rounded-2xl border border-purple-200 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <h4 class="font-bold text-purple-900 text-sm">إصدار وتصدير فواتير نهاية الشهر / اليوم للشركات المتعاقدة</h4>
+                    <p class="text-xs text-purple-700">توليد مطالبة مالية رسمية وكشف حساب مفصل بأسماء المرضى وأرقام الكشوفات للتحصيل من الشركة</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <select id="claim-contract-select" class="px-3 py-2 text-xs rounded-xl border border-purple-300 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <!-- خيارات الشركات -->
+                    </select>
+                    <button onclick="ClinicAdminApp.issueCorporateInvoice(document.getElementById('claim-contract-select').value)" class="px-3.5 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
+                        <span>📗 كشف Excel</span>
+                    </button>
+                    <button onclick="ClinicAdminApp.printCorporateInvoice(document.getElementById('claim-contract-select').value)" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
+                        <span>🖨️ طباعة PDF</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: Inventory & Medical Stock Control -->
+        <div id="tab-content-inventory" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b pb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">جرد المخزن والمستلزمات الطبية والأدوية</h3>
+                        <p class="text-xs text-slate-500">متابعة الأرصدة، الصلاحية، والتنبيه التلقائي عند نقص الكميات</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="ClinicAdminApp.exportInventoryExcel()" class="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition flex items-center gap-1">
+                            <span>📗 تصدير الجرد Excel</span>
+                        </button>
+                        <button onclick="document.getElementById('add-stock-modal').classList.remove('hidden')" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                            <span>+ إضافة صنف طبي جديد</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                                <th class="py-3 px-4">اسم الصنف / المستلزم</th>
+                                <th class="py-3 px-4">التصنيف</th>
+                                <th class="py-3 px-4">الرصيد المتاح</th>
+                                <th class="py-3 px-4">حد إعادة الطلب</th>
+                                <th class="py-3 px-4">حالة المخزون</th>
+                                <th class="py-3 px-4">تاريخ الصلاحية</th>
+                                <th class="py-3 px-4 text-center">إجراء سريع</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body" class="divide-y divide-slate-100">
+                            <!-- تُملأ بواسطة admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: HR & Payroll System -->
+        <div id="tab-content-hr" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b pb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">إدارة الكادر الطبي والموظفين والرواتب (HR)</h3>
+                        <p class="text-xs text-slate-500">مسير الرواتب الشهري، البدلات، الاستقطاعات، وصافي المستحقات</p>
+                    </div>
+                    <button onclick="ClinicAdminApp.exportPayrollExcel()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                        <span>📗 تصدير مسير الرواتب (Excel)</span>
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                                <th class="py-3 px-4">اسم الموظف / الطبيب</th>
+                                <th class="py-3 px-4">المسمى الوظيفي</th>
+                                <th class="py-3 px-4">الراتب الأساسي</th>
+                                <th class="py-3 px-4">البدلات والمكافآت</th>
+                                <th class="py-3 px-4">الاستقطاعات والغياب</th>
+                                <th class="py-3 px-4">صافي الراتب المستحق</th>
+                                <th class="py-3 px-4 text-center">حالة الصرف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hr-table-body" class="divide-y divide-slate-100">
+                            <!-- تُملأ بواسطة admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: Branches -->
+        <div id="tab-content-branches" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
                 <div class="flex items-center justify-between border-b pb-4">
                     <div>
                         <h3 class="font-bold text-slate-900 text-base">فروع العيادة (Branches)</h3>
@@ -118,26 +257,90 @@
                         <span>+ إضافة فرع</span>
                     </button>
                 </div>
-
                 <div id="branches-list" class="space-y-3">
-                    <!-- تُملأ آلياً بواسطة admin.js -->
+                    <!-- تُملأ بواسطة admin.js -->
                 </div>
             </div>
-
-            <!-- Staff Section (Col 5) -->
-            <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-                <div class="border-b pb-4">
-                    <h3 class="font-bold text-slate-900 text-base">الكادر الطبي والإداري</h3>
-                    <p class="text-xs text-slate-500">الأطباء وموظفو الاستقبال بالعيادة</p>
-                </div>
-
-                <div id="staff-list" class="space-y-2.5">
-                    <!-- يُملأ آلياً بواسطة admin.js -->
-                </div>
-            </div>
-
         </div>
+
     </main>
+
+    <!-- Modal: Add Corporate Contract -->
+    <div id="add-contract-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h4 class="font-bold text-slate-900 text-sm">إضافة شركة أو جهة تعاقد جديدة</h4>
+                <button onclick="document.getElementById('add-contract-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+            <form id="add-contract-form" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">اسم الشركة / جهة التعاقد</label>
+                    <input type="text" id="contract-name-input" required placeholder="مثال: شركة مصر للتأمين، نقابة المعلمين" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">نسبة الخصم المعتمدة للشركة (%)</label>
+                    <input type="number" id="contract-discount-input" required min="0" max="100" value="20" placeholder="مثال: 20" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-purple-500 focus:outline-none font-bold">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">مسؤول التواصل بالشركة</label>
+                    <input type="text" id="contract-contact-input" placeholder="اسم مسؤول التأمين أو الموارد البشرية" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">رقم الهاتف للتواصل</label>
+                    <input type="tel" id="contract-phone-input" placeholder="01xxxxxxxxx" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="document.getElementById('add-contract-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">إلغاء</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700">حفظ التعاقد</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Add Inventory Stock Item -->
+    <div id="add-stock-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h4 class="font-bold text-slate-900 text-sm">إضافة صنف / مستلزم طبي للمخزن</h4>
+                <button onclick="document.getElementById('add-stock-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+            <form id="add-stock-form" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">اسم الصنف أو المستلزم</label>
+                    <input type="text" id="stock-name-input" required placeholder="مثال: كانيولا وريدية، شاش معقم" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">التصنيف</label>
+                        <select id="stock-category-input" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                            <option value="مستلزمات طبية">مستلزمات طبية</option>
+                            <option value="أدوية ومحاليل">أدوية ومحاليل</option>
+                            <option value="مستلزمات وقاية">مستلزمات وقاية</option>
+                            <option value="أدوات تعقيم">أدوات تعقيم</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">الوحدة</label>
+                        <input type="text" id="stock-unit-input" value="قطعة" placeholder="قطعة، علبة، أمبول" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">الرصيد الأولي</label>
+                        <input type="number" id="stock-qty-input" required min="0" value="50" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">حد التنبيه الأدنى</label>
+                        <input type="number" id="stock-min-input" required min="1" value="15" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:outline-none font-bold">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="document.getElementById('add-stock-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">إلغاء</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-sky-600 hover:bg-sky-700">إضافة للمخزن</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Modal: Add Branch -->
     <div id="add-branch-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
