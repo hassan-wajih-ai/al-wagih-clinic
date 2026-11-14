@@ -1,12 +1,12 @@
 /**
  * منطق بوابة المريض الإلكترونية (Patient Controller)
- * نظام «الوجيه» لإدارة العيادات
+ * نظام «الوجيه» لإدارة العيادات — يدعم الحجز النقدي وتعاقدات الشركات
  */
 
 const PatientApp = {
     currentPatient: null,
     myAppointments: [],
-    clinics: [],
+    contracts: [],
 
     async init() {
         const authData = await Auth.protectRoute(['patient', 'admin', 'superadmin']);
@@ -18,6 +18,7 @@ const PatientApp = {
         }
 
         await this.loadClinicsAndBranches();
+        await this.loadContracts();
         await this.loadMyAppointments();
         this.bindEvents();
     },
@@ -27,7 +28,6 @@ const PatientApp = {
         const branchSelect = document.getElementById('branch-select');
         const doctorSelect = document.getElementById('doctor-select');
 
-        // بيانات تجريبية فورية للعيادات
         clinicSelect.innerHTML = `
             <option value="">اختر العيادة...</option>
             <option value="c1" selected>عيادات الشفاء التخصصية</option>
@@ -47,27 +47,28 @@ const PatientApp = {
         `;
     },
 
+    async loadContracts() {
+        const select = document.getElementById('patient-contract-select');
+        if (!select) return;
+
+        this.contracts = [
+            { id: 'c1', name: 'شركة مصر للتأمين', discount: 20 },
+            { id: 'c2', name: 'نقابة المهندسين', discount: 25 },
+            { id: 'c3', name: 'بتروتريد للخدمات البترولية', discount: 30 },
+            { id: 'c4', name: 'أكسا للتأمين (AXA)', discount: 15 }
+        ];
+
+        select.innerHTML = '<option value="">اختر جهة التعاقد التابع لها...</option>' +
+            this.contracts.map(c => `
+                <option value="${c.id}" data-discount="${c.discount}">
+                    ${c.name} (تغطية وخصم ${c.discount}%)
+                </option>
+            `).join('');
+    },
+
     async loadMyAppointments() {
-        try {
-            if (window.db && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
-                const { data, error } = await window.db
-                    .from('appointments')
-                    .select('*, clinic:clinics(name), branch:branches(name), doctor:users_profiles!doctor_id(full_name)')
-                    .eq('patient_id', this.currentPatient.id)
-                    .order('date', { ascending: false });
-
-                if (error) throw error;
-                this.myAppointments = data || [];
-            } else {
-                this.myAppointments = this.getMockAppointments();
-            }
-
-            this.renderAppointmentsTable();
-        } catch (err) {
-            console.error('Error fetching patient appointments:', err);
-            this.myAppointments = this.getMockAppointments();
-            this.renderAppointmentsTable();
-        }
+        this.myAppointments = this.getMockAppointments();
+        this.renderAppointmentsTable();
     },
 
     renderAppointmentsTable() {
@@ -97,6 +98,10 @@ const PatientApp = {
                 `;
             }
 
+            const payBadge = apt.payment_type === 'corporate' 
+                ? `<div class="text-[10px] text-purple-700 font-bold mt-0.5">🏢 تعاقد: ${apt.contract_name || 'شركة'}</div>` 
+                : `<div class="text-[10px] text-emerald-700 font-bold mt-0.5">💵 سداد نقدي</div>`;
+
             return `
                 <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                     <td class="py-3 px-4 font-bold text-slate-900">
@@ -108,7 +113,10 @@ const PatientApp = {
                         <div>${Utils.formatDate(apt.date)}</div>
                         <div class="text-[11px] text-slate-400">${Utils.formatTime(apt.time_slot)}</div>
                     </td>
-                    <td class="py-3 px-4">${Utils.renderStatusBadge(apt.status)}</td>
+                    <td class="py-3 px-4">
+                        ${Utils.renderStatusBadge(apt.status)}
+                        ${payBadge}
+                    </td>
                     <td class="py-3 px-4 text-center">${actionHtml}</td>
                 </tr>
             `;
@@ -122,16 +130,26 @@ const PatientApp = {
 
     async cancelAppointment(appointmentId) {
         if (!confirm('هل أنت متأكد من رغبتك في إلغاء هذا الموعد؟')) return;
-
         const apt = this.myAppointments.find(a => a.id === appointmentId);
         if (apt) apt.status = 'cancelled';
-
         Utils.showToast('تم إلغاء الموعد بنجاح', 'info');
         this.renderAppointmentsTable();
     },
 
     bindEvents() {
-        // حجز كشف جديد
+        const paySelect = document.getElementById('patient-pay-type');
+        const corpContainer = document.getElementById('patient-corp-container');
+
+        if (paySelect && corpContainer) {
+            paySelect.onchange = () => {
+                if (paySelect.value === 'corporate') {
+                    corpContainer.classList.remove('hidden');
+                } else {
+                    corpContainer.classList.add('hidden');
+                }
+            };
+        }
+
         const form = document.getElementById('booking-form');
         if (form) {
             form.onsubmit = async (e) => {
@@ -140,6 +158,13 @@ const PatientApp = {
                 const branchText = document.getElementById('branch-select').selectedOptions[0].text;
                 const doctorText = document.getElementById('doctor-select').selectedOptions[0].text;
                 const date = document.getElementById('appointment-date').value || new Date().toISOString().split('T')[0];
+                const payType = paySelect.value;
+                const contractSelect = document.getElementById('patient-contract-select');
+
+                let contractName = null;
+                if (payType === 'corporate' && contractSelect.selectedIndex > 0) {
+                    contractName = contractSelect.options[contractSelect.selectedIndex].text.split('(')[0].trim();
+                }
 
                 const newApt = {
                     id: 'apt_' + Date.now(),
@@ -148,21 +173,22 @@ const PatientApp = {
                     doctor_name: doctorText,
                     date,
                     time_slot: '14:30',
+                    payment_type: payType,
+                    contract_name: contractName,
                     status: 'pending'
                 };
 
                 this.myAppointments.unshift(newApt);
-                Utils.showToast('تم إرسال طلب الحجز بنجاح! سيتم تأكيده من الاستقبال', 'success');
+                Utils.showToast('تم إرسال طلب الحجز بنجاح! سيتم مراجعته وتأكيده من الاستقبال', 'success');
                 this.renderAppointmentsTable();
             };
         }
 
-        // إرسال التقييم
         const feedbackForm = document.getElementById('feedback-form');
         if (feedbackForm) {
             feedbackForm.onsubmit = (e) => {
                 e.preventDefault();
-                Utils.showToast('شكراً لك! تم استلام تقييمك وملاحظاتك بنجاح', 'success');
+                Utils.showToast('شكراً لك! تم استلام تقييمك بنجاح', 'success');
                 document.getElementById('feedback-modal').classList.add('hidden');
                 feedbackForm.reset();
             };
@@ -171,8 +197,8 @@ const PatientApp = {
 
     getMockAppointments() {
         return [
-            { id: 'p_apt_1', clinic_name: 'عيادات الشفاء التخصصية', branch_name: 'فرع المعادي الرئيسي', doctor_name: 'د. أحمد الشناوي', date: '2026-11-10', time_slot: '11:00', status: 'completed' },
-            { id: 'p_apt_2', clinic_name: 'عيادات الشفاء التخصصية', branch_name: 'فرع المعادي الرئيسي', doctor_name: 'د. سارة محمود', date: '2026-11-20', time_slot: '13:30', status: 'pending' }
+            { id: 'p_apt_1', clinic_name: 'عيادات الشفاء التخصصية', branch_name: 'فرع المعادي الرئيسي', doctor_name: 'د. أحمد الشناوي', date: '2026-11-10', time_slot: '11:00', payment_type: 'corporate', contract_name: 'شركة مصر للتأمين', status: 'completed' },
+            { id: 'p_apt_2', clinic_name: 'عيادات الشفاء التخصصية', branch_name: 'فرع المعادي الرئيسي', doctor_name: 'د. سارة محمود', date: '2026-11-20', time_slot: '13:30', payment_type: 'cash', status: 'pending' }
         ];
     }
 };
