@@ -1,15 +1,12 @@
 -- ==============================================================================
 -- نظام «الوجيه» لإدارة العيادات (Al Wagih for Clinic Management)
--- المرحلة 1: إنشاء وتجهيز هيكل قاعدة البيانات الكامل (Database Schema)
+-- هيكل قاعدة البيانات المتكامل (يشمل: المخازن، الموارد البشرية، التعاقدات، والفواتير)
 -- منصة: Supabase (PostgreSQL 15+)
 -- ==============================================================================
 
--- تفعيل الامتدادات المطلوبة لتوليد المعرفات الفريدة UUID
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- ==============================================================================
--- 1. جدول العيادات والمراكز الطبية (Clinics)
--- ==============================================================================
+-- 1. جدول العيادات (Clinics)
 CREATE TABLE IF NOT EXISTS public.clinics (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
@@ -17,11 +14,7 @@ CREATE TABLE IF NOT EXISTS public.clinics (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
-COMMENT ON TABLE public.clinics IS 'تسجيل بيانات العيادات والمراكز الطبية المستقلة على المنصة';
-
--- ==============================================================================
 -- 2. جدول الفروع (Branches)
--- ==============================================================================
 CREATE TABLE IF NOT EXISTS public.branches (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
@@ -31,11 +24,40 @@ CREATE TABLE IF NOT EXISTS public.branches (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
-COMMENT ON TABLE public.branches IS 'ربط كل فرع بالعيادة الأم التابع لها';
+-- 3. جدول الشركات والجهات المتعاقدة ونسب الخصم (Corporate Contracts & Insurance)
+CREATE TABLE IF NOT EXISTS public.corporate_contracts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    discount_percentage NUMERIC(5, 2) NOT NULL DEFAULT 0.00 CHECK (discount_percentage >= 0 AND discount_percentage <= 100),
+    contact_person VARCHAR(255),
+    phone VARCHAR(50),
+    billing_cycle VARCHAR(50) NOT NULL DEFAULT 'monthly' CHECK (billing_cycle IN ('daily', 'weekly', 'monthly')),
+    status VARCHAR(50) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
 
--- ==============================================================================
--- 3. جدول الملفات الشخصية للمستخدمين والأدوار (Users Profiles)
--- ==============================================================================
+COMMENT ON TABLE public.corporate_contracts IS 'إدارة الشركات المتعاقدة (تأمين، نقابات، هيئات) ونسب الخصم المعتمدة';
+
+-- 4. جدول فواتير ومطالبات الشركات الدورية (Corporate Claim Invoices)
+CREATE TABLE IF NOT EXISTS public.corporate_invoices (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
+    contract_id UUID NOT NULL REFERENCES public.corporate_contracts(id) ON DELETE CASCADE,
+    invoice_number VARCHAR(100) NOT NULL UNIQUE,
+    period_start DATE NOT NULL,
+    period_end DATE NOT NULL,
+    total_cases INT NOT NULL DEFAULT 0,
+    gross_amount NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    discount_total NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    net_claim_amount NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    status VARCHAR(50) NOT NULL DEFAULT 'issued' CHECK (status IN ('draft', 'issued', 'collected', 'partially_collected')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+COMMENT ON TABLE public.corporate_invoices IS 'إصدار الفواتير المجمعة بنهاية الشهر أو اليوم باسم الشركة المتعاقدة للتحصيل';
+
+-- 5. جدول الملفات الشخصية للمستخدمين والأدوار (Users Profiles)
 CREATE TABLE IF NOT EXISTS public.users_profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     full_name VARCHAR(255) NOT NULL,
@@ -46,12 +68,7 @@ CREATE TABLE IF NOT EXISTS public.users_profiles (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
-COMMENT ON TABLE public.users_profiles IS 'تخزين بيانات المستخدمين وتحديد الدور ونطاق العمل (العيادة والفرع)';
-
--- ==============================================================================
--- 4. جدول ربط المرضى بالعيادات (Clinic Patients)
--- علاقة Many-to-Many تسمح للمريض بمراجعة أكثر من عيادة بحسابه الواحد مع رقم ملف خاص بكل عيادة
--- ==============================================================================
+-- 6. جدول ربط المرضى بالعيادات (Clinic Patients)
 CREATE TABLE IF NOT EXISTS public.clinic_patients (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
@@ -61,29 +78,19 @@ CREATE TABLE IF NOT EXISTS public.clinic_patients (
     CONSTRAINT unique_clinic_patient UNIQUE (clinic_id, patient_id)
 );
 
-COMMENT ON TABLE public.clinic_patients IS 'جدول وسيط يتيح للمريض الانتماء لأكثر من عيادة برقم ملف مستقل';
-
--- ==============================================================================
--- 5. جدول ورديات وساعات العمل (Shifts)
--- إدارة جداول عمل الأطباء وموظفي الاستقبال (ورديات 8 ساعات)
--- ==============================================================================
+-- 7. جدول الورديات (Shifts)
 CREATE TABLE IF NOT EXISTS public.shifts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
     branch_id UUID NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
     staff_id UUID NOT NULL REFERENCES public.users_profiles(id) ON DELETE CASCADE,
-    day_of_week SMALLINT NOT NULL CHECK (day_of_week BETWEEN 0 AND 6), -- 0: الأحد، 6: السبت
+    day_of_week SMALLINT NOT NULL CHECK (day_of_week BETWEEN 0 AND 6),
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
-COMMENT ON TABLE public.shifts IS 'إدارة جداول عمل الأطباء وموظفي الاستقبال وورديات الـ 8 ساعات';
-
--- ==============================================================================
--- 6. جدول الحجوزات والمواعيد والكشوفات (Appointments)
--- يشمل الحقول الأساسية + حقول التشخيص والروشتة الطبية التي تم إقرارها في المرحلة 0
--- ==============================================================================
+-- 8. جدول الحجوزات والمواعيد والكشوفات المطوّر (Appointments with Corporate Billing)
 CREATE TABLE IF NOT EXISTS public.appointments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
@@ -94,8 +101,18 @@ CREATE TABLE IF NOT EXISTS public.appointments (
     time_slot TIME NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'pending' 
         CHECK (status IN ('pending', 'confirmed', 'in_progress', 'completed', 'cancelled')),
-    amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
-    -- حقول الكشف الطبي والروشتة الاختيارية للطبيب
+    
+    -- نظام التحصيل والتعاقدات
+    payment_type VARCHAR(50) NOT NULL DEFAULT 'cash' CHECK (payment_type IN ('cash', 'corporate')),
+    contract_id UUID REFERENCES public.corporate_contracts(id) ON DELETE SET NULL,
+    corporate_invoice_id UUID REFERENCES public.corporate_invoices(id) ON DELETE SET NULL,
+    
+    gross_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,       -- إجمالي قيمة الكشف قبل الخصم
+    discount_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,    -- قيمة الخصم بناء على نسبة التعاقد
+    patient_paid_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,-- المسدد نقداً من المريض (Co-pay)
+    company_claim_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,-- المبلغ المتبقي للمطالبة من الشركة
+    
+    -- حقول الكشف الطبي والروشتة
     diagnosis TEXT,
     prescription TEXT,
     doctor_notes TEXT,
@@ -103,12 +120,70 @@ CREATE TABLE IF NOT EXISTS public.appointments (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
-COMMENT ON TABLE public.appointments IS 'تسجيل الحجوزات ومتابعة حالتها وقيمة الكشف والملاحظات الطبية والروشتة';
+-- 9. جدول المخزن وجرد المستلزمات الطبية (Inventory & Stock)
+CREATE TABLE IF NOT EXISTS public.inventory_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
+    branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL,
+    name VARCHAR(255) NOT NULL,
+    category VARCHAR(100) NOT NULL DEFAULT 'مستلزمات طبية',
+    unit VARCHAR(50) NOT NULL DEFAULT 'قطعة',               -- علبة، شريط، أمبول، قطعة
+    quantity INT NOT NULL DEFAULT 0,                        -- الرصيد الحالي
+    min_threshold INT NOT NULL DEFAULT 10,                  -- حد إعادة الطلب للتنبيه عند النقص
+    unit_cost NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    unit_price NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    expiry_date DATE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
 
--- ==============================================================================
--- 7. جدول التقييمات والملاحظات (Feedback)
--- حفظ تقييمات واستفسارات المرضى المرتبطة بالمواعيد المنتهية
--- ==============================================================================
+COMMENT ON TABLE public.inventory_items IS 'إدارة أصناف ومخزون الأدوية والمستلزمات الطبية وتنبيهات الجرد';
+
+-- 10. جدول حركات وصرف المخزن (Inventory Transactions)
+CREATE TABLE IF NOT EXISTS public.inventory_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
+    item_id UUID NOT NULL REFERENCES public.inventory_items(id) ON DELETE CASCADE,
+    transaction_type VARCHAR(50) NOT NULL CHECK (transaction_type IN ('in', 'out', 'adjustment')),
+    quantity INT NOT NULL,
+    notes TEXT,
+    performed_by UUID REFERENCES public.users_profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 11. جدول موظفي الموارد البشرية (HR Employees)
+CREATE TABLE IF NOT EXISTS public.hr_employees (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
+    branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL,
+    user_id UUID REFERENCES public.users_profiles(id) ON DELETE SET NULL,
+    full_name VARCHAR(255) NOT NULL,
+    job_title VARCHAR(100) NOT NULL,
+    phone VARCHAR(50),
+    base_salary NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    hire_date DATE DEFAULT CURRENT_DATE,
+    status VARCHAR(50) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'on_leave', 'terminated')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+COMMENT ON TABLE public.hr_employees IS 'إدارة ملفات الكادر الطبي والإداري ومسيرات الرواتب';
+
+-- 12. جدول مسيرات الرواتب الشهرية (HR Payroll)
+CREATE TABLE IF NOT EXISTS public.hr_payrolls (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
+    employee_id UUID NOT NULL REFERENCES public.hr_employees(id) ON DELETE CASCADE,
+    month_year VARCHAR(7) NOT NULL,                         -- مثال: 2026-11
+    base_salary NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    allowances NUMERIC(10, 2) NOT NULL DEFAULT 0.00,        -- بدلات ومكافآت
+    deductions NUMERIC(10, 2) NOT NULL DEFAULT 0.00,        -- استقطاعات وخصومات
+    net_salary NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid')),
+    payment_date DATE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    CONSTRAINT unique_employee_month_payroll UNIQUE (employee_id, month_year)
+);
+
+-- 13. جدول التقييمات والملاحظات (Feedback)
 CREATE TABLE IF NOT EXISTS public.feedback (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     appointment_id UUID NOT NULL REFERENCES public.appointments(id) ON DELETE CASCADE,
@@ -120,43 +195,12 @@ CREATE TABLE IF NOT EXISTS public.feedback (
     CONSTRAINT unique_appointment_feedback UNIQUE (appointment_id)
 );
 
-COMMENT ON TABLE public.feedback IS 'حفظ تقييمات وملاحظات المرضى على الخدمة والمواعيد';
-
 -- ==============================================================================
 -- الفهارس لتحسين سرعة الاستعلامات (Indexes)
 -- ==============================================================================
-CREATE INDEX IF NOT EXISTS idx_branches_clinic_id ON public.branches(clinic_id);
-CREATE INDEX IF NOT EXISTS idx_users_clinic_branch ON public.users_profiles(clinic_id, branch_id);
-CREATE INDEX IF NOT EXISTS idx_users_role ON public.users_profiles(role);
-CREATE INDEX IF NOT EXISTS idx_clinic_patients_clinic ON public.clinic_patients(clinic_id);
-CREATE INDEX IF NOT EXISTS idx_clinic_patients_patient ON public.clinic_patients(patient_id);
-CREATE INDEX IF NOT EXISTS idx_shifts_staff ON public.shifts(staff_id, day_of_week);
-CREATE INDEX IF NOT EXISTS idx_appointments_lookup ON public.appointments(clinic_id, branch_id, date);
-CREATE INDEX IF NOT EXISTS idx_appointments_doctor_date ON public.appointments(doctor_id, date, time_slot);
-CREATE INDEX IF NOT EXISTS idx_appointments_patient ON public.appointments(patient_id);
-CREATE INDEX IF NOT EXISTS idx_feedback_clinic ON public.feedback(clinic_id);
-
--- ==============================================================================
--- مشغل تلقائي (Trigger): مزامنة المستخدمين الجدد عند التسجيل في Supabase Auth
--- ==============================================================================
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger AS $$
-BEGIN
-    INSERT INTO public.users_profiles (id, full_name, phone, role, clinic_id, branch_id)
-    VALUES (
-        new.id,
-        COALESCE(new.raw_user_meta_data->>'full_name', 'مستخدم جديد'),
-        new.raw_user_meta_data->>'phone',
-        COALESCE(new.raw_user_meta_data->>'role', 'patient'),
-        (new.raw_user_meta_data->>'clinic_id')::uuid,
-        (new.raw_user_meta_data->>'branch_id')::uuid
-    );
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- ربط المشغل بجدول auth.users
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
-    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+CREATE INDEX IF NOT EXISTS idx_contracts_clinic ON public.corporate_contracts(clinic_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_clinic_contract ON public.corporate_invoices(clinic_id, contract_id);
+CREATE INDEX IF NOT EXISTS idx_appointments_payment ON public.appointments(payment_type, contract_id);
+CREATE INDEX IF NOT EXISTS idx_inventory_clinic_branch ON public.inventory_items(clinic_id, branch_id);
+CREATE INDEX IF NOT EXISTS idx_hr_clinic ON public.hr_employees(clinic_id);
+CREATE INDEX IF NOT EXISTS idx_payroll_month ON public.hr_payrolls(clinic_id, month_year);
