@@ -99,20 +99,84 @@
             </div>
         </div>
 
-        <!-- TAB 1: CRM & Patient Journey -->
+        <!-- TAB 1: Enterprise Medical CRM (Pipeline, WhatsApp, Call Center, Customer Service) -->
         <div id="tab-content-crm" class="space-y-6">
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+            
+            <!-- CRM Overview Mini KPIs -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="text-xs text-slate-500 font-bold">إجمالي مرضى CRM</div>
+                        <div class="text-xl font-black text-slate-900 mt-1" id="crm-kpi-total">0 مرضى</div>
+                        <div class="text-[11px] text-emerald-600 mt-0.5">VIP ومزمنين وتعاقدات</div>
+                    </div>
+                    <span class="p-3 bg-sky-50 text-sky-600 rounded-xl text-lg font-bold">👥</span>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="text-xs text-slate-500 font-bold">رسائل واتساب المباشرة</div>
+                        <div class="text-xl font-black text-emerald-700 mt-1" id="crm-kpi-wa-count">0 رسالة</div>
+                        <div class="text-[11px] text-slate-500 mt-0.5">تذكير ومتابعة دورية</div>
+                    </div>
+                    <span class="p-3 bg-emerald-50 text-emerald-600 rounded-xl text-lg font-bold">💬</span>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="text-xs text-slate-500 font-bold">مكالمات الكول سنتر</div>
+                        <div class="text-xl font-black text-indigo-700 mt-1" id="crm-kpi-calls-count">0 مكالمة</div>
+                        <div class="text-[11px] text-indigo-600 mt-0.5">واردة وصادرة للعيادة</div>
+                    </div>
+                    <span class="p-3 bg-indigo-50 text-indigo-600 rounded-xl text-lg font-bold">📞</span>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="text-xs text-slate-500 font-bold">تذاكر خدمة العملاء والرضا</div>
+                        <div class="text-xl font-black text-amber-700 mt-1" id="crm-kpi-tickets-count">⭐⭐⭐⭐⭐ 4.9</div>
+                        <div class="text-[11px] text-emerald-600 mt-0.5">مؤشر الرضا العام CSAT</div>
+                    </div>
+                    <span class="p-3 bg-amber-50 text-amber-600 rounded-xl text-lg font-bold">🎧</span>
+                </div>
+            </div>
+
+            <!-- CRM Sub-navigation Bar -->
+            <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-wrap gap-2">
+                    <button id="crm-sub-btn-pipeline" onclick="ClinicAdminApp.switchCrmSubTab('pipeline')" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm transition">
+                        📇 رحلة المرضى والمتابعات
+                    </button>
+                    <button id="crm-sub-btn-whatsapp" onclick="ClinicAdminApp.switchCrmSubTab('whatsapp')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition">
+                        💬 استوديو واتساب الطبي المباشر
+                    </button>
+                    <button id="crm-sub-btn-callcenter" onclick="ClinicAdminApp.switchCrmSubTab('callcenter')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition">
+                        📞 مركز الاتصالات والكول سنتر
+                    </button>
+                    <button id="crm-sub-btn-helpdesk" onclick="ClinicAdminApp.switchCrmSubTab('helpdesk')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition">
+                        🎧 خدمة العملاء والتذاكر والشكاوى
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="document.getElementById('add-crm-modal').classList.remove('hidden')" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                        <span>+ مريض جديد</span>
+                    </button>
+                    <button onclick="document.getElementById('callcenter-modal').classList.remove('hidden')" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                        <span>+ تسجيل مكالمة</span>
+                    </button>
+                    <button onclick="document.getElementById('ticket-modal').classList.remove('hidden')" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                        <span>+ تذكرة شكوى</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 1: Patient Pipeline -->
+            <div id="crm-subview-pipeline" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b pb-4">
                     <div>
-                        <h3 class="text-base font-bold text-slate-900">نظام إدارة علاقات المرضى (Medical CRM)</h3>
-                        <p class="text-xs text-slate-500">تتبع مراحل رحلة المريض، تصنيف الحالات (VIP / مزمنين)، ومصادر الإحالة والاستقطاب</p>
+                        <h3 class="text-base font-bold text-slate-900">قاعدة بيانات المرضى والمراحل العلاجية</h3>
+                        <p class="text-xs text-slate-500">تتبع مراحل رحلة المريض، تصنيف الحالات، وإرسال رسائل وتوثيق الاتصالات</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <button onclick="ClinicAdminApp.exportCRMExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
                             <span>📗 تصدير Excel</span>
-                        </button>
-                        <button onclick="document.getElementById('add-crm-modal').classList.remove('hidden')" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
-                            <span>+ إضافة مريض / استفسار جديد</span>
                         </button>
                     </div>
                 </div>
@@ -128,7 +192,7 @@
                                 <th class="py-3 px-4">مرحلة المتابعة</th>
                                 <th class="py-3 px-4">موعد المتابعة القادم</th>
                                 <th class="py-3 px-4">ملاحظات</th>
-                                <th class="py-3 px-4 text-center">الإجراء</th>
+                                <th class="py-3 px-4 text-center">قنوات التواصل الذكية</th>
                             </tr>
                         </thead>
                         <tbody id="crm-table-body" class="divide-y divide-slate-100">
@@ -137,6 +201,188 @@
                     </table>
                 </div>
             </div>
+
+            <!-- SUB-VIEW 2: WhatsApp Messenger Studio -->
+            <div id="crm-subview-whatsapp" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+                <div class="border-b pb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-base font-bold text-emerald-900 flex items-center gap-2">
+                            <span>💬 استوديو وتطبيقات واتساب الطبية المباشرة (WhatsApp Messenger)</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">مباشر 1-Click</span>
+                        </h3>
+                        <p class="text-xs text-slate-500">إرسال قوالب تذكير المواعيد، تعليمات التحاليل، والمتابعات الطبية عبر WhatsApp Web & Mobile</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Templates & Composer (Col 7) -->
+                    <div class="lg:col-span-7 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">اختر المريض من الـ CRM</label>
+                                <select id="wa-patient-select" onchange="ClinicAdminApp.onWhatsAppPatientChange()" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500">
+                                    <!-- يُملأ بالمرضى -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">رقم الهاتف (WhatsApp)</label>
+                                <input type="tel" id="wa-phone-input" placeholder="01xxxxxxxxx" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 font-mono">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">اختر نموذج الرسالة الطبية المعتمد:</label>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                                <button type="button" onclick="ClinicAdminApp.applyWhatsAppTemplate('reminder')" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 font-bold text-slate-700 hover:text-emerald-800 text-center transition">
+                                    📅 تذكير بالموعد
+                                </button>
+                                <button type="button" onclick="ClinicAdminApp.applyWhatsAppTemplate('instructions')" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 font-bold text-slate-700 hover:text-emerald-800 text-center transition">
+                                    💊 تعليمات الصيام
+                                </button>
+                                <button type="button" onclick="ClinicAdminApp.applyWhatsAppTemplate('followup')" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 font-bold text-slate-700 hover:text-emerald-800 text-center transition">
+                                    🩺 متابعة واطمئنان
+                                </button>
+                                <button type="button" onclick="ClinicAdminApp.applyWhatsAppTemplate('copay')" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 font-bold text-slate-700 hover:text-emerald-800 text-center transition">
+                                    🏢 اعتماد التعاقد
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">نص الرسالة المرسلة (قابل للتعديل)</label>
+                            <textarea id="wa-message-input" rows="6" oninput="ClinicAdminApp.updateWhatsAppPreview()" class="w-full p-3 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 leading-relaxed font-sans"></textarea>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="ClinicAdminApp.sendWhatsAppDirect()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-500/20 transition flex items-center gap-2">
+                                <span>🚀 إرسال عبر واتساب الآن (فتح WhatsApp)</span>
+                            </button>
+                            <button type="button" onclick="ClinicAdminApp.copyWhatsAppText()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">
+                                📋 نسخ النص
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- WhatsApp Phone Chat Preview (Col 5) -->
+                    <div class="lg:col-span-5 bg-slate-100 p-4 rounded-2xl border border-slate-200 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-3">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">و</div>
+                                    <div>
+                                        <div class="text-xs font-bold text-slate-800">عيادات الشفاء التخصصية</div>
+                                        <div class="text-[10px] text-emerald-600 font-bold">متصل الآن (Online)</div>
+                                    </div>
+                                </div>
+                                <span class="text-xs text-slate-400">معاينة الشات</span>
+                            </div>
+
+                            <!-- WhatsApp Message Bubble -->
+                            <div class="bg-emerald-50 border border-emerald-200 p-3.5 rounded-2xl rounded-tr-none text-xs text-slate-800 leading-relaxed shadow-sm relative">
+                                <p id="wa-preview-text" class="whitespace-pre-line">اختر مريضاً أو قالباً للمعاينة المباشرة للرسالة...</p>
+                                <div class="text-left mt-2 text-[10px] text-slate-400">12:30 م ✓✓</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-200 text-[11px] text-slate-500 flex items-center gap-1.5">
+                            <span>🔒</span>
+                            <span>متوافق مع الهواتف الذكية وتطبيق WhatsApp Web تلقائياً بنقرة واحدة.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Sent Messages Log -->
+                <div class="pt-4 border-t space-y-3">
+                    <h4 class="text-xs font-bold text-slate-800">سجل رسائل الواتساب المرسلة مؤخراً:</h4>
+                    <div id="wa-history-list" class="space-y-2">
+                        <!-- يُملأ بواسطة admin.js -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 3: Call Center Studio -->
+            <div id="crm-subview-callcenter" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b pb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-indigo-950 flex items-center gap-2">
+                            <span>📞 مركز الاتصالات والكول سنتر الطبي (Call Center Studio)</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800">نشط</span>
+                        </h3>
+                        <p class="text-xs text-slate-500">تسجيل وتوثيق المكالمات الواردة والصادرة، نتائج المكالمات، ومواعيد إعادة الاتصال</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="ClinicAdminApp.exportCallCenterExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                            <span>📗 تصدير سجل المكالمات (Excel)</span>
+                        </button>
+                        <button onclick="document.getElementById('callcenter-modal').classList.remove('hidden')" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition">
+                            + تسجيل مكالمة جديدة
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                                <th class="py-3 px-4">المريض</th>
+                                <th class="py-3 px-4">الهاتف</th>
+                                <th class="py-3 px-4">نوع المكالمة</th>
+                                <th class="py-3 px-4">نتيجة المكالمة</th>
+                                <th class="py-3 px-4">المدة</th>
+                                <th class="py-3 px-4">موظف الكول سنتر</th>
+                                <th class="py-3 px-4">التوقيت</th>
+                                <th class="py-3 px-4">ملاحظات والتوصية</th>
+                            </tr>
+                        </thead>
+                        <tbody id="callcenter-table-body" class="divide-y divide-slate-100">
+                            <!-- يُملأ بواسطة admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 4: Customer Service & Help Desk -->
+            <div id="crm-subview-helpdesk" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b pb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-amber-950 flex items-center gap-2">
+                            <span>🎧 إدارة خدمة العملاء والدعم والشكاوى (Customer Service & Help Desk)</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">متابعة فورية</span>
+                        </h3>
+                        <p class="text-xs text-slate-500">إدارة تذاكر الشكاوى والاستفسارات وقياس مؤشر رضا المرضى (CSAT)</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="ClinicAdminApp.exportHelpDeskExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                            <span>📗 تصدير التذاكر (Excel)</span>
+                        </button>
+                        <button onclick="document.getElementById('ticket-modal').classList.remove('hidden')" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition">
+                            + فتح تذكرة جديدة
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                                <th class="py-3 px-4">رقم التذكرة</th>
+                                <th class="py-3 px-4">المريض</th>
+                                <th class="py-3 px-4">التصنيف</th>
+                                <th class="py-3 px-4">الأولوية</th>
+                                <th class="py-3 px-4">الحالة</th>
+                                <th class="py-3 px-4">تاريخ الفتح</th>
+                                <th class="py-3 px-4">موضوع الشكوى / الاستفسار</th>
+                                <th class="py-3 px-4">إجراء الحل المتخذ</th>
+                                <th class="py-3 px-4 text-center">الإجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="helpdesk-table-body" class="divide-y divide-slate-100">
+                            <!-- يُملأ بواسطة admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
 
         <!-- TAB 2: HR, Biometrics, Penalties & Rosters -->
@@ -424,6 +670,171 @@
                 <div class="flex justify-end gap-2 pt-3 border-t">
                     <button type="button" onclick="document.getElementById('add-penalty-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">إلغاء</button>
                     <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700">اعتماد الجزاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: WhatsApp Quick Sender -->
+    <div id="whatsapp-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h4 class="font-bold text-emerald-800 text-sm flex items-center gap-1.5">
+                    <span>💬</span>
+                    <span>مراسلة المريض عبر واتساب الطبي</span>
+                </h4>
+                <button onclick="document.getElementById('whatsapp-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+            <div class="space-y-3">
+                <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs">
+                    <div>المريض: <strong id="modal-wa-patient-name" class="text-emerald-950">—</strong></div>
+                    <div class="mt-0.5">الهاتف: <span id="modal-wa-patient-phone" class="font-mono text-emerald-800 font-bold">—</span></div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">اختر القالب الطبي الجاهز:</label>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <button type="button" onclick="ClinicAdminApp.setModalWhatsAppTemplate('reminder')" class="p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-emerald-50 text-slate-700 font-semibold text-right">📅 تذكير بالموعد</button>
+                        <button type="button" onclick="ClinicAdminApp.setModalWhatsAppTemplate('instructions')" class="p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-emerald-50 text-slate-700 font-semibold text-right">💊 تعليمات الصيام</button>
+                        <button type="button" onclick="ClinicAdminApp.setModalWhatsAppTemplate('followup')" class="p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-emerald-50 text-slate-700 font-semibold text-right">🩺 متابعة واطمئنان</button>
+                        <button type="button" onclick="ClinicAdminApp.setModalWhatsAppTemplate('copay')" class="p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-emerald-50 text-slate-700 font-semibold text-right">🏢 اعتماد التعاقد</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">نص الرسالة</label>
+                    <textarea id="modal-wa-message-text" rows="5" class="w-full p-2.5 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 leading-relaxed"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="document.getElementById('whatsapp-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">إلغاء</button>
+                    <button type="button" onclick="ClinicAdminApp.sendModalWhatsApp()" class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm flex items-center gap-1.5">
+                        <span>🚀 فتح تطبيق واتساب والإرسال</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Call Center Call Logger -->
+    <div id="callcenter-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h4 class="font-bold text-indigo-900 text-sm flex items-center gap-1.5">
+                    <span>📞</span>
+                    <span>تسجيل مكالمة كول سنتر</span>
+                </h4>
+                <button onclick="document.getElementById('callcenter-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+            <form id="callcenter-form" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">اسم المريض</label>
+                        <input type="text" id="call-patient-name" required placeholder="اسم المتصل أو المريض" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">رقم الهاتف</label>
+                        <input type="tel" id="call-patient-phone" required placeholder="01xxxxxxxxx" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 font-mono">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">نوع المكالمة</label>
+                        <select id="call-type-select" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500">
+                            <option value="outbound">صادرة (Outbound)</option>
+                            <option value="inbound">واردة (Inbound)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">نتيجة المكالمة</label>
+                        <select id="call-outcome-select" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500">
+                            <option value="booked">تم الرد وحجز موعد كشف</option>
+                            <option value="confirmed">تم الرد وتأكيد الحجز القائم</option>
+                            <option value="callback">طلب معاودة الاتصال لاحقاً</option>
+                            <option value="no_answer">لم يرد / مغلق</option>
+                            <option value="busy">الرقم مشغول</option>
+                            <option value="inquiry">استفسار عن أسعار وتخصصات</option>
+                            <option value="cancelled">إلغاء حجز</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">مدة المكالمة</label>
+                        <input type="text" id="call-duration-input" value="01:30" placeholder="مثال: 02:15" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">موظف الكول سنتر</label>
+                        <input type="text" id="call-agent-input" value="أحمد فؤاد (كول سنتر)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">ملاحظات وتفاصيل المكالمة</label>
+                    <textarea id="call-notes-input" rows="2" placeholder="ما تم الاتفاق عليه مع المريض والتوصية القادمة..." class="w-full p-2.5 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="document.getElementById('callcenter-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">إلغاء</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700">حفظ المكالمة بالـ CRM</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Customer Service Support Ticket -->
+    <div id="ticket-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b pb-3">
+                <h4 class="font-bold text-amber-900 text-sm flex items-center gap-1.5">
+                    <span>🎧</span>
+                    <span>فتح تذكرة خدمة عملاء / شكوى</span>
+                </h4>
+                <button onclick="document.getElementById('ticket-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+            <form id="ticket-form" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">اسم المريض</label>
+                        <input type="text" id="ticket-patient-name" required placeholder="اسم المريض صاحب التذكرة" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">رقم الهاتف</label>
+                        <input type="tel" id="ticket-patient-phone" required placeholder="01xxxxxxxxx" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 font-mono">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">تصنيف الشكوى / الطلب</label>
+                        <select id="ticket-category-select" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500">
+                            <option value="استفسار مالي وفواتير">استفسار مالي وفواتير</option>
+                            <option value="شكوى تأخير مواعيد">شكوى تأخير مواعيد</option>
+                            <option value="تعامل الطاقم والتمريض">تعامل الطاقم والتمريض</option>
+                            <option value="نتائج تحاليل وأشعة">نتائج تحاليل وأشعة</option>
+                            <option value="اقتراح تطوير">اقتراح تطوير</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">درجة الأولوية</label>
+                        <select id="ticket-priority-select" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500 font-bold">
+                            <option value="urgent" class="text-rose-600">🔴 عاجل جداً</option>
+                            <option value="medium" class="text-amber-600" selected>🟡 متوسط</option>
+                            <option value="normal" class="text-slate-600">🟢 عادي</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">تفاصيل الشكوى أو طلب المريض</label>
+                    <textarea id="ticket-issue-input" required rows="3" placeholder="سجل المشكلة أو الشكوى بدقة لمتابعة حلها..." class="w-full p-2.5 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-amber-500"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t">
+                    <button type="button" onclick="document.getElementById('ticket-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">إلغاء</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700">فتح التذكرة وبدء المتابعة</button>
                 </div>
             </form>
         </div>
