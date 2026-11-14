@@ -312,6 +312,53 @@ const Reports = {
     },
 
     /**
+     * تصدير سجل مكالمات الكول سنتر (Call Center Logs)
+     */
+    exportCallCenterToExcel(calls) {
+        const rows = (calls || []).map((c, idx) => ({
+            'م': idx + 1,
+            'اسم المريض': c.patient_name,
+            'رقم الهاتف': c.phone,
+            'نوع المكالمة': c.call_type === 'inbound' ? 'واردة (Inbound)' : 'صادرة (Outbound)',
+            'نتيجة المكالمة': c.outcome_label || c.outcome,
+            'مدة المكالمة': c.duration || '—',
+            'الموظف / الوكيل': c.agent,
+            'التوقيت': c.timestamp,
+            'ملاحظات المكالمة': c.notes || '—'
+        }));
+
+        const dateStr = new Date().toISOString().split('T')[0];
+        this.downloadExcel(`سجل_مكالمات_الكول_سنتر_${dateStr}.xlsx`, [
+            { name: 'مكالمات الكول سنتر', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد مكالمات مسجلة' }] }
+        ]);
+    },
+
+    /**
+     * تصدير تذاكر خدمة العملاء والشكاوى (Customer Service & Help Desk)
+     */
+    exportHelpDeskToExcel(tickets) {
+        const rows = (tickets || []).map((t, idx) => ({
+            'م': idx + 1,
+            'رقم التذكرة': t.id,
+            'اسم المريض': t.patient_name,
+            'رقم الهاتف': t.phone,
+            'التصنيف': t.category,
+            'الأولوية': t.priority === 'urgent' ? 'عاجل' : (t.priority === 'medium' ? 'متوسط' : 'عادي'),
+            'الحالة': t.status === 'resolved' ? 'تم الحل والرضا' : (t.status === 'in_progress' ? 'قيد المعالجة' : 'مفتوحة'),
+            'تاريخ الفتح': t.created_at,
+            'مسؤول المتابعة': t.agent,
+            'موضوع الشكوى / الطلب': t.issue,
+            'إجراء الحل المعتمد': t.resolution || '—',
+            'مؤشر الرضا (CSAT)': t.csat ? `${t.csat} من 5 نجوم` : '—'
+        }));
+
+        const dateStr = new Date().toISOString().split('T')[0];
+        this.downloadExcel(`تذاكر_خدمة_العملاء_والشكاوى_${dateStr}.xlsx`, [
+            { name: 'تذاكر خدمة العملاء', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد تذاكر مسجلة' }] }
+        ]);
+    },
+
+    /**
      * 6. تصدير سجل حضور وانصراف جهاز البصمة
      */
     exportAttendanceToExcel(logs) {
