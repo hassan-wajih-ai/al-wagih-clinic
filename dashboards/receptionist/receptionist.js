@@ -74,13 +74,29 @@ const ReceptionistApp = {
         }
     },
 
+    getStoredAppointments() {
+        const stored = localStorage.getItem('alwagih_appointments');
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch (e) {}
+        }
+        const mock = this.getMockAppointments();
+        localStorage.setItem('alwagih_appointments', JSON.stringify(mock));
+        return mock;
+    },
+
+    saveStoredAppointments() {
+        localStorage.setItem('alwagih_appointments', JSON.stringify(this.appointments));
+    },
+
     async loadTodayAppointments() {
         const todayStr = new Date().toISOString().split('T')[0];
         const tbody = document.getElementById('appointments-table-body');
         tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">جاري تحميل كشوفات اليوم...</td></tr>`;
 
         try {
-            if (window.db && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
+            if (window.db && window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
                 const { data, error } = await window.db
                     .from('appointments')
                     .select('*, patient:users_profiles!patient_id(full_name, phone), doctor:users_profiles!doctor_id(full_name), corporate_contracts(name, discount_percentage)')
@@ -88,15 +104,15 @@ const ReceptionistApp = {
                     .order('time_slot', { ascending: true });
 
                 if (error) throw error;
-                this.appointments = data || [];
+                this.appointments = data && data.length > 0 ? data : this.getStoredAppointments();
             } else {
-                this.appointments = this.getMockAppointments();
+                this.appointments = this.getStoredAppointments();
             }
 
             this.renderAppointmentsTable();
             this.updateShiftSummaryKPIs();
         } catch (err) {
-            this.appointments = this.getMockAppointments();
+            this.appointments = this.getStoredAppointments();
             this.renderAppointmentsTable();
             this.updateShiftSummaryKPIs();
         }
@@ -167,12 +183,12 @@ const ReceptionistApp = {
 
     async updateStatus(apptId, newStatus) {
         try {
-            if (window.db && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
+            if (window.db && window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
                 await window.db.from('appointments').update({ status: newStatus }).eq('id', apptId);
-            } else {
-                const item = this.appointments.find(a => a.id === apptId);
-                if (item) item.status = newStatus;
             }
+            const item = this.appointments.find(a => a.id === apptId);
+            if (item) item.status = newStatus;
+            this.saveStoredAppointments();
 
             Utils.showToast(`تم تحديث حالة الكشف إلى: ${newStatus}`, 'success');
             this.renderAppointmentsTable();
@@ -337,7 +353,8 @@ const ReceptionistApp = {
                     status: 'pending'
                 };
 
-                this.appointments.push(newApt);
+                this.appointments.unshift(newApt);
+                this.saveStoredAppointments();
                 Utils.showToast('تم تسجيل الحجز بنجاح واحتساب الخصم التعاقدي آلياً', 'success');
                 modal.classList.add('hidden');
                 form.reset();
