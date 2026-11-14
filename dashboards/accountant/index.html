@@ -6,7 +6,7 @@
     <title>لوحة المحاسب المالي والرقابة | نظام الوجيه</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="../../css/style.css">
 </head>
@@ -80,6 +80,9 @@
                     <p class="text-xs text-slate-500">صلاحية حصرية للمحاسب والمدير العام لتعديل قيمة أو إلغاء كشف مع توثيق السبب رقابياً</p>
                 </div>
                 <div class="flex items-center gap-2">
+                    <button onclick="AccountantApp.exportFinancialLedgerExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                        <span>📗 تصدير اليومية (Excel)</span>
+                    </button>
                     <span class="text-xs text-amber-700 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200 font-semibold">
                         🔒 الاستقبال مقفل من التعديل المالي
                     </span>
@@ -133,9 +136,14 @@
 
         <!-- Section 3: Financial Audit Trail (السجل الرقابي) -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-            <div class="border-b pb-3">
-                <h3 class="text-base font-bold text-slate-900">سجل التدقيق والرقابة المالية (Financial Audit Trail)</h3>
-                <p class="text-xs text-slate-500">سجل غير قابل للتعديل يوثق كل حركة إلغاء أو تعديل مالي واسم المصرح بها وسبب الإلغاء</p>
+            <div class="flex items-center justify-between border-b pb-3">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">سجل التدقيق والرقابة المالية (Financial Audit Trail)</h3>
+                    <p class="text-xs text-slate-500">سجل غير قابل للتعديل يوثق كل حركة إلغاء أو تعديل مالي واسم المصرح بها وسبب الإلغاء</p>
+                </div>
+                <button onclick="AccountantApp.exportAuditTrailExcel()" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                    <span>📗 تصدير السجل الرقابي (Excel)</span>
+                </button>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-right text-xs">
