@@ -38,7 +38,7 @@ const Utils = {
                 <span class="font-bold text-lg">${icons[type] || '•'}</span>
                 <span class="text-sm font-medium leading-relaxed">${message}</span>
             </div>
-            <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white mr-2 text-sm font-bold">✕</button>
+            <button onclick="if(this.parentElement.remove) this.parentElement.remove(); else if(this.parentElement.parentNode) this.parentElement.parentNode.removeChild(this.parentElement);" class="text-white/80 hover:text-white mr-2 text-sm font-bold">✕</button>
         `;
 
         container.appendChild(toast);
@@ -51,7 +51,10 @@ const Utils = {
         // إخفاء تلقائي بعد 4 ثوانٍ
         setTimeout(() => {
             toast.classList.add('opacity-0', 'translate-y-2');
-            setTimeout(() => toast.remove(), 300);
+            setTimeout(() => {
+                if (toast.remove) toast.remove();
+                else if (toast.parentNode) toast.parentNode.removeChild(toast);
+            }, 300);
         }, 4000);
     },
 
