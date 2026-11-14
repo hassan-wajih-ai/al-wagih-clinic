@@ -1,6 +1,7 @@
 /**
  * منطق لوحة تحكم مدير العيادة الشامل المتطور (Enterprise Clinic Admin Controller)
  * يشمل: نظام CRM للمرضى، HR قوي بالبصمة والجزاءات والجدول التشغيلي، المخازن والمشتريات، والتعاقدات بنسبة التحمل Co-pay
+ * يدعم التصدير الكامل لجميع الجداول والشيتات إلى ملفات Excel
  */
 
 const ClinicAdminApp = {
@@ -13,6 +14,7 @@ const ClinicAdminApp = {
     suppliers: [],
     inventory: [],
     contracts: [],
+    employees: [],
     revenueChartInstance: null,
 
     async init() {
@@ -21,8 +23,10 @@ const ClinicAdminApp = {
 
         this.currentAdmin = authData.profile;
         if (this.currentAdmin) {
-            document.getElementById('user-display-name').textContent = this.currentAdmin.full_name || 'مدير العيادة';
-            document.getElementById('clinic-title').textContent = this.currentAdmin.clinics ? this.currentAdmin.clinics.name : 'إدارة العيادة والمستشفى';
+            const nameEl = document.getElementById('user-display-name');
+            const titleEl = document.getElementById('clinic-title');
+            if (nameEl) nameEl.textContent = this.currentAdmin.full_name || 'مدير العيادة';
+            if (titleEl) titleEl.textContent = this.currentAdmin.clinics ? this.currentAdmin.clinics.name : 'إدارة العيادة والمستشفى';
         }
 
         await this.loadAllEnterpriseData();
@@ -37,6 +41,7 @@ const ClinicAdminApp = {
         this.suppliers = this.getMockSuppliers();
         this.inventory = this.getMockInventory();
         this.contracts = this.getMockContracts();
+        this.employees = this.getMockEmployees();
 
         this.renderCRM();
         this.renderAttendance();
@@ -240,10 +245,82 @@ const ClinicAdminApp = {
     },
 
     updateKPIs() {
-        document.getElementById('kpi-crm-leads').textContent = `${this.crmPatients.length} مرضى`;
-        document.getElementById('kpi-attendance-today').textContent = `${this.attendanceLogs.length} حاضرين بالبصمة`;
-        document.getElementById('kpi-suppliers-balance').textContent = Utils.formatCurrency(48500);
-        document.getElementById('kpi-contracts-count').textContent = `${this.contracts.length} شركات`;
+        const kpiCrm = document.getElementById('kpi-crm-leads');
+        const kpiAtt = document.getElementById('kpi-attendance-today');
+        const kpiSup = document.getElementById('kpi-suppliers-balance');
+        const kpiCon = document.getElementById('kpi-contracts-count');
+
+        if (kpiCrm) kpiCrm.textContent = `${this.crmPatients.length} مرضى`;
+        if (kpiAtt) kpiAtt.textContent = `${this.attendanceLogs.length} حاضرين بالبصمة`;
+        if (kpiSup) kpiSup.textContent = Utils.formatCurrency(48500);
+        if (kpiCon) kpiCon.textContent = `${this.contracts.length} شركات`;
+    },
+
+    // ==========================================
+    // دوال تصدير شيتات Excel لجميع الأنظمة
+    // ==========================================
+    exportCRMExcel() {
+        if (window.Reports) {
+            Reports.exportCRMToExcel(this.crmPatients);
+        } else {
+            Utils.showToast('جاري تهيئة محرك التصدير...', 'info');
+        }
+    },
+
+    exportAttendanceExcel() {
+        if (window.Reports) {
+            Reports.exportAttendanceToExcel(this.attendanceLogs);
+        } else {
+            Utils.showToast('جاري تهيئة محرك التصدير...', 'info');
+        }
+    },
+
+    exportPenaltiesExcel() {
+        if (window.Reports) {
+            Reports.exportPenaltiesToExcel(this.penalties);
+        } else {
+            Utils.showToast('جاري تهيئة محرك التصدير...', 'info');
+        }
+    },
+
+    exportRosterExcel() {
+        if (window.Reports) {
+            Reports.exportRosterToExcel(this.roster);
+        } else {
+            Utils.showToast('جاري تهيئة محرك التصدير...', 'info');
+        }
+    },
+
+    exportSuppliersExcel() {
+        if (window.Reports) {
+            Reports.exportSuppliersToExcel(this.suppliers);
+        } else {
+            Utils.showToast('جاري تهيئة محرك التصدير...', 'info');
+        }
+    },
+
+    exportInventoryExcel() {
+        if (window.Reports) {
+            Reports.exportInventoryToExcel(this.inventory);
+        } else {
+            Utils.showToast('جاري تهيئة محرك التصدير...', 'info');
+        }
+    },
+
+    exportContractsExcel() {
+        if (window.Reports) {
+            Reports.exportContractsToExcel(this.contracts);
+        } else {
+            Utils.showToast('جاري تهيئة محرك التصدير...', 'info');
+        }
+    },
+
+    exportPayrollExcel() {
+        if (window.Reports) {
+            Reports.exportPayrollToExcel(this.employees, 'نوفمبر_2026');
+        } else {
+            Utils.showToast('جاري تهيئة محرك التصدير...', 'info');
+        }
     },
 
     bindEvents() {
@@ -368,6 +445,16 @@ const ClinicAdminApp = {
             { id: 'c2', name: 'نقابة المهندسين', discount_percentage: 25, patient_copay_percentage: 20, max_coverage: 4000, contact_person: 'د. طارق مراد', phone: '01122334455' },
             { id: 'c3', name: 'بتروتريد للخدمات البترولية', discount_percentage: 30, patient_copay_percentage: 20, max_coverage: 6000, contact_person: 'م. خالد جلال', phone: '01233445566' },
             { id: 'c4', name: 'أكسا للتأمين الطبي (AXA)', discount_percentage: 15, patient_copay_percentage: 10, max_coverage: 8000, contact_person: 'أ. مروة الشريف', phone: '01555667788' }
+        ];
+    },
+
+    getMockEmployees() {
+        return [
+            { full_name: 'د. أحمد الشناوي', job_title: 'استشاري باطنة', base_salary: 15000, allowances: 2500, deductions: 0, payroll_status: 'معتمد' },
+            { full_name: 'د. سارة محمود', job_title: 'أخصائي أطفال', base_salary: 12000, allowances: 1800, deductions: 0, payroll_status: 'معتمد' },
+            { full_name: 'أحمد فؤاد', job_title: 'مشرف استقبال', base_salary: 6000, allowances: 800, deductions: 0, payroll_status: 'معتمد' },
+            { full_name: 'ريم مصطفى', job_title: 'موظف استقبال', base_salary: 4500, allowances: 500, deductions: 150, payroll_status: 'معتمد' },
+            { full_name: 'أمل إبراهيم', job_title: 'تمريض', base_salary: 5000, allowances: 600, deductions: 150, payroll_status: 'معتمد' }
         ];
     }
 };
