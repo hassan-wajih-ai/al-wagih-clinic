@@ -1,6 +1,7 @@
 -- ==============================================================================
--- نظام «الوجيه» لإدارة العيادات (Al Wagih for Clinic Management)
--- هيكل قاعدة البيانات المتكامل (يشمل: المخازن، الموارد البشرية، التعاقدات، والفواتير)
+-- نظام «الوجيه» لإدارة العيادات والمراكز الطبية (Al Wagih ERP & Clinic Suite)
+-- قاعدة البيانات الشاملة: CRM، شؤون الموظفين والبصمة، المخازن والمشتريات،
+-- التعاقدات والتحمل، والمحاسبة المالية المستقلة والتدقيق المالي
 -- منصة: Supabase (PostgreSQL 15+)
 -- ==============================================================================
 
@@ -24,73 +25,165 @@ CREATE TABLE IF NOT EXISTS public.branches (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- 3. جدول الشركات والجهات المتعاقدة ونسب الخصم (Corporate Contracts & Insurance)
-CREATE TABLE IF NOT EXISTS public.corporate_contracts (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    name VARCHAR(255) NOT NULL,
-    discount_percentage NUMERIC(5, 2) NOT NULL DEFAULT 0.00 CHECK (discount_percentage >= 0 AND discount_percentage <= 100),
-    contact_person VARCHAR(255),
-    phone VARCHAR(50),
-    billing_cycle VARCHAR(50) NOT NULL DEFAULT 'monthly' CHECK (billing_cycle IN ('daily', 'weekly', 'monthly')),
-    status VARCHAR(50) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
-);
-
-COMMENT ON TABLE public.corporate_contracts IS 'إدارة الشركات المتعاقدة (تأمين، نقابات، هيئات) ونسب الخصم المعتمدة';
-
--- 4. جدول فواتير ومطالبات الشركات الدورية (Corporate Claim Invoices)
-CREATE TABLE IF NOT EXISTS public.corporate_invoices (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    contract_id UUID NOT NULL REFERENCES public.corporate_contracts(id) ON DELETE CASCADE,
-    invoice_number VARCHAR(100) NOT NULL UNIQUE,
-    period_start DATE NOT NULL,
-    period_end DATE NOT NULL,
-    total_cases INT NOT NULL DEFAULT 0,
-    gross_amount NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
-    discount_total NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
-    net_claim_amount NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
-    status VARCHAR(50) NOT NULL DEFAULT 'issued' CHECK (status IN ('draft', 'issued', 'collected', 'partially_collected')),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
-);
-
-COMMENT ON TABLE public.corporate_invoices IS 'إصدار الفواتير المجمعة بنهاية الشهر أو اليوم باسم الشركة المتعاقدة للتحصيل';
-
--- 5. جدول الملفات الشخصية للمستخدمين والأدوار (Users Profiles)
+-- 3. جدول الملفات الشخصية والأدوار (يشمل المحاسب المالي accountant)
 CREATE TABLE IF NOT EXISTS public.users_profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     full_name VARCHAR(255) NOT NULL,
     phone VARCHAR(50),
-    role VARCHAR(50) NOT NULL DEFAULT 'patient' CHECK (role IN ('superadmin', 'admin', 'receptionist', 'doctor', 'patient')),
+    role VARCHAR(50) NOT NULL DEFAULT 'patient' 
+        CHECK (role IN ('superadmin', 'admin', 'accountant', 'receptionist', 'doctor', 'patient')),
     clinic_id UUID REFERENCES public.clinics(id) ON DELETE SET NULL,
     branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- 6. جدول ربط المرضى بالعيادات (Clinic Patients)
-CREATE TABLE IF NOT EXISTS public.clinic_patients (
+-- 4. جدول إدارة علاقات المرضى (Medical CRM & Leads)
+CREATE TABLE IF NOT EXISTS public.crm_patients (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    patient_id UUID NOT NULL REFERENCES public.users_profiles(id) ON DELETE CASCADE,
-    file_number VARCHAR(100),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
-    CONSTRAINT unique_clinic_patient UNIQUE (clinic_id, patient_id)
+    full_name VARCHAR(255) NOT NULL,
+    phone VARCHAR(50) NOT NULL,
+    lead_source VARCHAR(100) DEFAULT 'تواصل مباشر' CHECK (lead_source IN ('فيسبوك / تواصل اجتماعي', 'إحالة طبيب', 'تعاقد شركة', 'ترشيح مريض سابق', 'تواصل مباشر / هاتف')),
+    stage VARCHAR(50) DEFAULT 'new' CHECK (stage IN ('new', 'contacted', 'booked', 'visited', 'follow_up', 'lost')),
+    patient_tier VARCHAR(50) DEFAULT 'regular' CHECK (patient_tier IN ('regular', 'vip', 'chronic', 'corporate')),
+    last_contact_date TIMESTAMPTZ,
+    next_follow_up_date DATE,
+    notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- 7. جدول الورديات (Shifts)
-CREATE TABLE IF NOT EXISTS public.shifts (
+COMMENT ON TABLE public.crm_patients IS 'إدارة رحلة المريض والتواصل والمتابعات ومصادر الاستقطاب';
+
+-- 5. جدول الموارد البشرية وموظفي الكادر (HR Employees)
+CREATE TABLE IF NOT EXISTS public.hr_employees (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    branch_id UUID NOT NULL REFERENCES public.branches(id) ON DELETE CASCADE,
-    staff_id UUID NOT NULL REFERENCES public.users_profiles(id) ON DELETE CASCADE,
+    branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL,
+    user_id UUID REFERENCES public.users_profiles(id) ON DELETE SET NULL,
+    fingerprint_id VARCHAR(50), -- رقم البصمة بجهاز البصمة
+    full_name VARCHAR(255) NOT NULL,
+    job_title VARCHAR(100) NOT NULL,
+    department VARCHAR(100) NOT NULL DEFAULT 'طبي',
+    base_salary NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    hire_date DATE DEFAULT CURRENT_DATE,
+    status VARCHAR(50) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'on_leave', 'terminated')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 6. جدول سجلات حضور وانصراف جهاز البصمة (Biometric Attendance Logs)
+CREATE TABLE IF NOT EXISTS public.hr_attendance_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
+    employee_id UUID NOT NULL REFERENCES public.hr_employees(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    check_in TIME NOT NULL,
+    check_out TIME,
+    late_minutes INT NOT NULL DEFAULT 0,
+    overtime_minutes INT NOT NULL DEFAULT 0,
+    status VARCHAR(50) NOT NULL DEFAULT 'present' CHECK (status IN ('present', 'late', 'absent', 'excused')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 7. جدول الجزاءات والخصومات المباشرة من المدير (HR Penalties & Deductions)
+CREATE TABLE IF NOT EXISTS public.hr_penalties (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
+    employee_id UUID NOT NULL REFERENCES public.hr_employees(id) ON DELETE CASCADE,
+    issued_by UUID NOT NULL REFERENCES public.users_profiles(id), -- المدير المباشر
+    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    penalty_type VARCHAR(50) NOT NULL CHECK (penalty_type IN ('deduction_days', 'fixed_amount', 'warning')),
+    days_deducted NUMERIC(4, 1) DEFAULT 0,
+    amount_deducted NUMERIC(10, 2) DEFAULT 0.00,
+    reason TEXT NOT NULL,
+    approved BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 8. جدول الجداول التشغيلية وتوزيع الورديات (Operational Staff Rosters)
+CREATE TABLE IF NOT EXISTS public.hr_roster (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
+    employee_id UUID NOT NULL REFERENCES public.hr_employees(id) ON DELETE CASCADE,
     day_of_week SMALLINT NOT NULL CHECK (day_of_week BETWEEN 0 AND 6),
+    shift_name VARCHAR(50) NOT NULL CHECK (shift_name IN ('صباحي (8 ص - 4 م)', 'مسائي (4 م - 12 ص)', 'ليلي / طوارئ (12 ص - 8 ص)')),
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- 8. جدول الحجوزات والمواعيد والكشوفات المطوّر (Appointments with Corporate Billing)
+-- 9. جدول الموردين وإدارة المشتريات (Procurement & Suppliers)
+CREATE TABLE IF NOT EXISTS public.procurement_suppliers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    contact_name VARCHAR(255),
+    phone VARCHAR(50),
+    tax_number VARCHAR(100),
+    address TEXT,
+    balance_due NUMERIC(12, 2) DEFAULT 0.00,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 10. جدول أوامر الشراء وفواتير الموردين (Purchase Orders)
+CREATE TABLE IF NOT EXISTS public.procurement_orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
+    supplier_id UUID NOT NULL REFERENCES public.procurement_suppliers(id) ON DELETE CASCADE,
+    order_number VARCHAR(100) NOT NULL UNIQUE,
+    order_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    total_amount NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    paid_amount NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    status VARCHAR(50) NOT NULL DEFAULT 'received' CHECK (status IN ('draft', 'ordered', 'received', 'cancelled')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 11. جدول أصناف المخزن وكارت الصنف (Inventory Items & Ledger)
+CREATE TABLE IF NOT EXISTS public.inventory_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
+    branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL,
+    name VARCHAR(255) NOT NULL,
+    category VARCHAR(100) NOT NULL DEFAULT 'مستلزمات طبية',
+    batch_number VARCHAR(100),                            -- رقم التشغيلة
+    unit VARCHAR(50) NOT NULL DEFAULT 'قطعة',
+    quantity INT NOT NULL DEFAULT 0,
+    min_threshold INT NOT NULL DEFAULT 15,
+    unit_cost NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    unit_price NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    expiry_date DATE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 12. جدول حركات كارت الصنف (Item Card Transactions Ledger)
+CREATE TABLE IF NOT EXISTS public.inventory_ledger (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
+    item_id UUID NOT NULL REFERENCES public.inventory_items(id) ON DELETE CASCADE,
+    movement_type VARCHAR(50) NOT NULL CHECK (movement_type IN ('in_purchase', 'out_clinic', 'out_operation', 'inventory_adjustment')),
+    quantity INT NOT NULL,
+    balance_after INT NOT NULL,
+    notes TEXT,
+    performed_by UUID REFERENCES public.users_profiles(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 13. جدول التعاقدات والشركات المتقدم (مع نسبة تحمل المريض Co-Pay)
+CREATE TABLE IF NOT EXISTS public.corporate_contracts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    discount_percentage NUMERIC(5, 2) NOT NULL DEFAULT 0.00,     -- نسبة خصم الشركة
+    patient_copay_percentage NUMERIC(5, 2) NOT NULL DEFAULT 0.00,-- نسبة تحمل المريض (Co-pay %)
+    max_coverage_limit NUMERIC(10, 2) DEFAULT 0.00,             -- الحد الأقصى للتغطية
+    contact_person VARCHAR(255),
+    phone VARCHAR(50),
+    status VARCHAR(50) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+COMMENT ON TABLE public.corporate_contracts IS 'إدارة نسب خصم الشركات وتحمل المريض وسقوف التغطية';
+
+-- 14. جدول كشوفات المواعيد المتكامل (Appointments with Full Financial Breakdown)
 CREATE TABLE IF NOT EXISTS public.appointments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
@@ -102,17 +195,19 @@ CREATE TABLE IF NOT EXISTS public.appointments (
     status VARCHAR(50) NOT NULL DEFAULT 'pending' 
         CHECK (status IN ('pending', 'confirmed', 'in_progress', 'completed', 'cancelled')),
     
-    -- نظام التحصيل والتعاقدات
     payment_type VARCHAR(50) NOT NULL DEFAULT 'cash' CHECK (payment_type IN ('cash', 'corporate')),
     contract_id UUID REFERENCES public.corporate_contracts(id) ON DELETE SET NULL,
-    corporate_invoice_id UUID REFERENCES public.corporate_invoices(id) ON DELETE SET NULL,
     
-    gross_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,       -- إجمالي قيمة الكشف قبل الخصم
-    discount_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,    -- قيمة الخصم بناء على نسبة التعاقد
-    patient_paid_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,-- المسدد نقداً من المريض (Co-pay)
-    company_claim_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,-- المبلغ المتبقي للمطالبة من الشركة
+    gross_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,          -- إجمالي الكشف
+    discount_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,       -- خصم التعاقد
+    patient_copay_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,  -- المطلوب من المريض نقداً
+    company_claim_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,  -- المستحق على الشركة
     
-    -- حقول الكشف الطبي والروشتة
+    -- قفل الإلغاء والتعديل (محمي للمحاسب والمدير فقط)
+    is_locked BOOLEAN NOT NULL DEFAULT false,
+    void_reason TEXT,
+    modified_by UUID REFERENCES public.users_profiles(id),
+    
     diagnosis TEXT,
     prescription TEXT,
     doctor_notes TEXT,
@@ -120,87 +215,42 @@ CREATE TABLE IF NOT EXISTS public.appointments (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- 9. جدول المخزن وجرد المستلزمات الطبية (Inventory & Stock)
-CREATE TABLE IF NOT EXISTS public.inventory_items (
+-- 15. جدول الفواتير والمطالبات المجمعة للشركات (Corporate Claim Invoices)
+CREATE TABLE IF NOT EXISTS public.corporate_invoices (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL,
-    name VARCHAR(255) NOT NULL,
-    category VARCHAR(100) NOT NULL DEFAULT 'مستلزمات طبية',
-    unit VARCHAR(50) NOT NULL DEFAULT 'قطعة',               -- علبة، شريط، أمبول، قطعة
-    quantity INT NOT NULL DEFAULT 0,                        -- الرصيد الحالي
-    min_threshold INT NOT NULL DEFAULT 10,                  -- حد إعادة الطلب للتنبيه عند النقص
-    unit_cost NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
-    unit_price NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
-    expiry_date DATE,
+    contract_id UUID NOT NULL REFERENCES public.corporate_contracts(id) ON DELETE CASCADE,
+    invoice_number VARCHAR(100) NOT NULL UNIQUE,
+    issue_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    period_start DATE NOT NULL,
+    period_end DATE NOT NULL,
+    total_cases INT NOT NULL DEFAULT 0,
+    gross_amount NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    discount_amount NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    net_claim_amount NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    status VARCHAR(50) NOT NULL DEFAULT 'issued' CHECK (status IN ('issued', 'collected', 'partially_collected')),
+    created_by UUID REFERENCES public.users_profiles(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
-COMMENT ON TABLE public.inventory_items IS 'إدارة أصناف ومخزون الأدوية والمستلزمات الطبية وتنبيهات الجرد';
-
--- 10. جدول حركات وصرف المخزن (Inventory Transactions)
-CREATE TABLE IF NOT EXISTS public.inventory_transactions (
+-- 16. سجل التدقيق المالي وحركات الإلغاء/التعديل (Financial Audit Logs)
+CREATE TABLE IF NOT EXISTS public.financial_audit_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    item_id UUID NOT NULL REFERENCES public.inventory_items(id) ON DELETE CASCADE,
-    transaction_type VARCHAR(50) NOT NULL CHECK (transaction_type IN ('in', 'out', 'adjustment')),
-    quantity INT NOT NULL,
-    notes TEXT,
-    performed_by UUID REFERENCES public.users_profiles(id) ON DELETE SET NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+    action_type VARCHAR(100) NOT NULL, -- VOID_APPOINTMENT, EDIT_AMOUNT, OVERRIDE_CLAIM
+    record_id UUID NOT NULL,
+    previous_value JSONB,
+    new_value JSONB,
+    reason TEXT NOT NULL,
+    authorized_by UUID NOT NULL REFERENCES public.users_profiles(id), -- المحاسب أو المدير العام فقط
+    timestamp TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- 11. جدول موظفي الموارد البشرية (HR Employees)
-CREATE TABLE IF NOT EXISTS public.hr_employees (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    branch_id UUID REFERENCES public.branches(id) ON DELETE SET NULL,
-    user_id UUID REFERENCES public.users_profiles(id) ON DELETE SET NULL,
-    full_name VARCHAR(255) NOT NULL,
-    job_title VARCHAR(100) NOT NULL,
-    phone VARCHAR(50),
-    base_salary NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
-    hire_date DATE DEFAULT CURRENT_DATE,
-    status VARCHAR(50) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'on_leave', 'terminated')),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
-);
+COMMENT ON TABLE public.financial_audit_logs IS 'سجل رقابي غير قابل للحذف لجميع التعديلات والإلغاءات المالية';
 
-COMMENT ON TABLE public.hr_employees IS 'إدارة ملفات الكادر الطبي والإداري ومسيرات الرواتب';
-
--- 12. جدول مسيرات الرواتب الشهرية (HR Payroll)
-CREATE TABLE IF NOT EXISTS public.hr_payrolls (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    employee_id UUID NOT NULL REFERENCES public.hr_employees(id) ON DELETE CASCADE,
-    month_year VARCHAR(7) NOT NULL,                         -- مثال: 2026-11
-    base_salary NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
-    allowances NUMERIC(10, 2) NOT NULL DEFAULT 0.00,        -- بدلات ومكافآت
-    deductions NUMERIC(10, 2) NOT NULL DEFAULT 0.00,        -- استقطاعات وخصومات
-    net_salary NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
-    status VARCHAR(50) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid')),
-    payment_date DATE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
-    CONSTRAINT unique_employee_month_payroll UNIQUE (employee_id, month_year)
-);
-
--- 13. جدول التقييمات والملاحظات (Feedback)
-CREATE TABLE IF NOT EXISTS public.feedback (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    appointment_id UUID NOT NULL REFERENCES public.appointments(id) ON DELETE CASCADE,
-    patient_id UUID NOT NULL REFERENCES public.users_profiles(id) ON DELETE CASCADE,
-    clinic_id UUID NOT NULL REFERENCES public.clinics(id) ON DELETE CASCADE,
-    rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
-    comment TEXT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
-    CONSTRAINT unique_appointment_feedback UNIQUE (appointment_id)
-);
-
--- ==============================================================================
--- الفهارس لتحسين سرعة الاستعلامات (Indexes)
--- ==============================================================================
-CREATE INDEX IF NOT EXISTS idx_contracts_clinic ON public.corporate_contracts(clinic_id);
-CREATE INDEX IF NOT EXISTS idx_invoices_clinic_contract ON public.corporate_invoices(clinic_id, contract_id);
-CREATE INDEX IF NOT EXISTS idx_appointments_payment ON public.appointments(payment_type, contract_id);
-CREATE INDEX IF NOT EXISTS idx_inventory_clinic_branch ON public.inventory_items(clinic_id, branch_id);
-CREATE INDEX IF NOT EXISTS idx_hr_clinic ON public.hr_employees(clinic_id);
-CREATE INDEX IF NOT EXISTS idx_payroll_month ON public.hr_payrolls(clinic_id, month_year);
+-- الفهارس
+CREATE INDEX IF NOT EXISTS idx_crm_clinic ON public.crm_patients(clinic_id);
+CREATE INDEX IF NOT EXISTS idx_hr_attendance_emp ON public.hr_attendance_logs(employee_id, date);
+CREATE INDEX IF NOT EXISTS idx_inventory_batch ON public.inventory_items(batch_number);
+CREATE INDEX IF NOT EXISTS idx_procurement_supplier ON public.procurement_orders(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_clinic ON public.financial_audit_logs(clinic_id, timestamp);
