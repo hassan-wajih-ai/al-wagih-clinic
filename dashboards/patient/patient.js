@@ -66,8 +66,24 @@ const PatientApp = {
             `).join('');
     },
 
+    getStoredAppointments() {
+        const stored = localStorage.getItem('alwagih_appointments');
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch (e) {}
+        }
+        const mock = this.getMockAppointments();
+        localStorage.setItem('alwagih_appointments', JSON.stringify(mock));
+        return mock;
+    },
+
+    saveStoredAppointments() {
+        localStorage.setItem('alwagih_appointments', JSON.stringify(this.myAppointments));
+    },
+
     async loadMyAppointments() {
-        this.myAppointments = this.getMockAppointments();
+        this.myAppointments = this.getStoredAppointments();
         this.renderAppointmentsTable();
     },
 
@@ -131,7 +147,10 @@ const PatientApp = {
     async cancelAppointment(appointmentId) {
         if (!confirm('هل أنت متأكد من رغبتك في إلغاء هذا الموعد؟')) return;
         const apt = this.myAppointments.find(a => a.id === appointmentId);
-        if (apt) apt.status = 'cancelled';
+        if (apt) {
+            apt.status = 'cancelled';
+            this.saveStoredAppointments();
+        }
         Utils.showToast('تم إلغاء الموعد بنجاح', 'info');
         this.renderAppointmentsTable();
     },
@@ -179,8 +198,10 @@ const PatientApp = {
                 };
 
                 this.myAppointments.unshift(newApt);
+                this.saveStoredAppointments();
                 Utils.showToast('تم إرسال طلب الحجز بنجاح! سيتم مراجعته وتأكيده من الاستقبال', 'success');
                 this.renderAppointmentsTable();
+                form.reset();
             };
         }
 
