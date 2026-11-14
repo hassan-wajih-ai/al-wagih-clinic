@@ -25,6 +25,32 @@ const AccountantApp = {
 
     async loadFinancialData() {
         this.financialRecords = this.getMockFinancialRecords();
+
+        // دمج أي كشوفات تم حجزها أو تأكيدها مؤخراً من الاستقبال أو المريض
+        const storedAppts = localStorage.getItem('alwagih_appointments');
+        if (storedAppts) {
+            try {
+                const appts = JSON.parse(storedAppts);
+                appts.forEach(a => {
+                    if (!this.financialRecords.some(r => r.id === a.id)) {
+                        this.financialRecords.unshift({
+                            id: a.id || 'rec_' + Date.now(),
+                            patient_name: a.patient_name || (a.patient ? a.patient.full_name : 'مريض كشف'),
+                            doctor_name: a.doctor_name || 'د. المناوب',
+                            date: a.date || new Date().toISOString().split('T')[0],
+                            payment_type: a.payment_type || 'cash',
+                            contract_name: a.contract_name || '',
+                            gross_amount: Number(a.amount || 200),
+                            discount_amount: Number(a.discount_amount || 0),
+                            patient_paid: Number(a.patient_paid_amount !== undefined ? a.patient_paid_amount : (a.payment_type === 'corporate' ? 0 : a.amount || 200)),
+                            company_claim: Number(a.company_claim_amount || 0),
+                            status: a.status || 'confirmed'
+                        });
+                    }
+                });
+            } catch (e) {}
+        }
+
         this.contracts = this.getMockContracts();
         this.auditLogs = this.getMockAuditLogs();
 
