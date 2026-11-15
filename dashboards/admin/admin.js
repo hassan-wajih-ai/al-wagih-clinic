@@ -29,6 +29,9 @@ const ClinicAdminApp = {
     radiologyStudies: [],
     labCatalog: [],
     radiologyTemplates: {},
+    queueRooms: [],
+    waitingTickets: [],
+    doctorCommissions: [],
     scanViewerState: { invert: false, highContrast: false },
     revenueChartInstance: null,
     analyticsTrendChartInstance: null,
@@ -68,6 +71,8 @@ const ClinicAdminApp = {
             this.renderReportsHub();
             this.renderLabOrders();
             this.renderRadiologyStudies();
+            this.renderQueueBoard();
+            this.renderDoctorCommissions();
             this.updateKPIs();
         });
     },
@@ -92,6 +97,9 @@ const ClinicAdminApp = {
         this.labOrders = this.getMockLabOrders();
         this.radiologyTemplates = this.getMockRadiologyTemplates();
         this.radiologyStudies = this.getMockRadiologyStudies();
+        this.queueRooms = this.getMockQueueRooms();
+        this.waitingTickets = this.getMockWaitingTickets();
+        this.doctorCommissions = this.getMockDoctorCommissions();
 
         this.renderCRM();
         this.renderCallCenter();
@@ -107,6 +115,8 @@ const ClinicAdminApp = {
         this.renderReportsHub();
         this.renderLabOrders();
         this.renderRadiologyStudies();
+        this.renderQueueBoard();
+        this.renderDoctorCommissions();
         this.populateLabCatalogSelect();
         this.populateRadExamSelect();
         this.updateKPIs();
@@ -114,7 +124,7 @@ const ClinicAdminApp = {
 
     switchTab(tabId) {
         this.activeTab = tabId;
-        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports', 'lab', 'radiology'];
+        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports', 'lab', 'radiology', 'queue', 'commissions'];
         tabs.forEach(t => {
             const el = document.getElementById(`tab-content-${t}`);
             const btn = document.getElementById(`tab-btn-${t}`);
@@ -133,6 +143,10 @@ const ClinicAdminApp = {
             this.renderLabOrders();
         } else if (tabId === 'radiology') {
             this.renderRadiologyStudies();
+        } else if (tabId === 'queue') {
+            this.renderQueueBoard();
+        } else if (tabId === 'commissions') {
+            this.renderDoctorCommissions();
         }
     },
 
@@ -652,6 +666,39 @@ const ClinicAdminApp = {
         if (radCompleted) radCompleted.textContent = `${this.radiologyStudies.filter(s => s.status === 'signed').length} معتمدة وموقعة`;
         if (radModalities) radModalities.textContent = `4 أجهزة نشطة`;
         if (radCount) radCount.textContent = `${this.radiologyStudies.length} فحص`;
+
+        // Smart Waiting Queue KPIs
+        const queueTotal = document.getElementById('queue-kpi-total');
+        const queueCompleted = document.getElementById('queue-kpi-completed');
+        const queueWaiting = document.getElementById('queue-kpi-waiting');
+        const queueAvgWait = document.getElementById('queue-kpi-avg-wait');
+        const queueBadge = document.getElementById('admin-waiting-badge');
+
+        const waitingCount = (this.waitingTickets || []).filter(t => t.status === 'waiting').length;
+        if (queueTotal) queueTotal.textContent = `${(this.waitingTickets || []).length + 18}`;
+        if (queueCompleted) queueCompleted.textContent = `18`;
+        if (queueWaiting) queueWaiting.textContent = `${waitingCount}`;
+        if (queueAvgWait) queueAvgWait.textContent = `12 دقيقة`;
+        if (queueBadge) queueBadge.textContent = `${waitingCount} تذاكر`;
+
+        // Doctor Commissions KPIs
+        const commGross = document.getElementById('comm-kpi-gross');
+        const commClinic = document.getElementById('comm-kpi-clinic-share');
+        const commNet = document.getElementById('comm-kpi-net-payout');
+        const commPaid = document.getElementById('comm-kpi-paid');
+        const commCount = document.getElementById('comm-table-count');
+
+        const docs = this.doctorCommissions || [];
+        const grossSum = docs.reduce((acc, d) => acc + (Number(d.gross_revenue) || 0), 0);
+        const clinicSum = docs.reduce((acc, d) => acc + (Number(d.clinic_share) || 0), 0);
+        const netPendingSum = docs.filter(d => d.status !== 'paid').reduce((acc, d) => acc + (Number(d.net_payable) || 0), 0);
+        const paidSum = docs.filter(d => d.status === 'paid').reduce((acc, d) => acc + (Number(d.net_payable) || 0), 0);
+
+        if (commGross) commGross.textContent = Utils.formatCurrency(grossSum);
+        if (commClinic) commClinic.textContent = Utils.formatCurrency(clinicSum);
+        if (commNet) commNet.textContent = Utils.formatCurrency(netPendingSum);
+        if (commPaid) commPaid.textContent = Utils.formatCurrency(paidSum);
+        if (commCount) commCount.textContent = `${docs.length} أطباء`;
     },
 
     // ==========================================
@@ -1066,6 +1113,122 @@ const ClinicAdminApp = {
                 radReportModal.classList.add('hidden');
                 this.renderRadiologyStudies();
                 this.updateKPIs();
+            };
+        }
+
+        // ==========================================
+        // نماذج وأحداث صالة الانتظار الذكية (Queue)
+        // ==========================================
+        const queueTicketForm = document.getElementById('queue-ticket-form');
+        const queueTicketModal = document.getElementById('queue-ticket-modal');
+        if (queueTicketForm && queueTicketModal) {
+            queueTicketForm.onsubmit = (e) => {
+                e.preventDefault();
+                const patientName = document.getElementById('ticket-patient-name').value.trim();
+                const patientPhone = document.getElementById('ticket-patient-phone').value.trim();
+                const clinic = document.getElementById('ticket-clinic-select').value;
+                const doctor = document.getElementById('ticket-doctor-select').value;
+                const priority = document.getElementById('ticket-priority-select').value;
+                const service = document.getElementById('ticket-service-type').value;
+                const notes = document.getElementById('ticket-notes').value.trim();
+
+                const letterMap = {
+                    'العيادة الباطنية التخصصية': 'A',
+                    'عيادة جراحة العظام': 'B',
+                    'عيادة طب وجراحة العيون': 'C',
+                    'عيادة الجلدية والليزر': 'D',
+                    'عيادة طب وجراحة الأسنان': 'E',
+                    'معمل التحاليل الطبية (LIS)': 'L',
+                    'مركز الأشعة التشخيصية (RIS)': 'R'
+                };
+                const prefix = letterMap[clinic] || 'Q';
+                const nextNum = 100 + (this.waitingTickets.length + 1) * 2;
+                const ticketNo = `${prefix}-${nextNum}`;
+
+                const newTicket = {
+                    id: 'tkt_' + Date.now(),
+                    ticket_no: ticketNo,
+                    patient_name: patientName,
+                    patient_phone: patientPhone || '—',
+                    clinic: clinic,
+                    doctor: doctor,
+                    service: service,
+                    priority: priority,
+                    priority_label: priority === 'emergency' ? 'طوارئ 🚨' : priority === 'vip' ? 'VIP ⭐' : priority === 'urgent' ? 'مستعجل' : 'عادي',
+                    status: 'waiting',
+                    time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+                    notes: notes || '—'
+                };
+
+                this.waitingTickets.unshift(newTicket);
+
+                // Sync with TV queue display in localStorage
+                try {
+                    const tvQueue = JSON.parse(localStorage.getItem('alwagih_queue_tickets') || '[]');
+                    tvQueue.unshift(newTicket);
+                    localStorage.setItem('alwagih_queue_tickets', JSON.stringify(tvQueue));
+                } catch (err) {}
+
+                Utils.showToast(`تم إصدار تذكرة الانتظار (${ticketNo}) للمريض: ${patientName}`, 'success');
+                queueTicketModal.classList.add('hidden');
+                queueTicketForm.reset();
+                this.renderQueueBoard();
+                this.updateKPIs();
+            };
+        }
+
+        // ==========================================
+        // نماذج وأحداث عمولات الأطباء (Commissions)
+        // ==========================================
+        const commRulesForm = document.getElementById('doctor-commission-rules-form');
+        const commRulesModal = document.getElementById('doctor-commission-rules-modal');
+        if (commRulesForm && commRulesModal) {
+            commRulesForm.onsubmit = (e) => {
+                e.preventDefault();
+                const docId = document.getElementById('rules-doctor-id').value;
+                const doc = this.doctorCommissions.find(d => d.id === docId);
+                if (doc) {
+                    doc.consult_split_pct = parseFloat(document.getElementById('rules-consult-split').value) || 0;
+                    doc.procedure_split_pct = parseFloat(document.getElementById('rules-procedure-split').value) || 0;
+                    doc.lab_comm_pct = parseFloat(document.getElementById('rules-lab-comm').value) || 0;
+                    doc.rad_comm_pct = parseFloat(document.getElementById('rules-rad-comm').value) || 0;
+                    doc.deduction_pct = parseFloat(document.getElementById('rules-deduction-rate').value) || 0;
+
+                    this.recalcDoctorCommission(doc);
+                    Utils.showToast(`تم تحديث نسب وقواعد العمولات للطبيب (${doc.doctor_name}) بنجاح`, 'success');
+                    commRulesModal.classList.add('hidden');
+                    this.renderDoctorCommissions();
+                    this.updateKPIs();
+                }
+            };
+        }
+
+        const payoutForm = document.getElementById('doctor-payout-form');
+        const payoutModal = document.getElementById('doctor-payout-modal');
+        if (payoutForm && payoutModal) {
+            payoutForm.onsubmit = (e) => {
+                e.preventDefault();
+                const docId = document.getElementById('payout-doctor-id').value;
+                const doc = this.doctorCommissions.find(d => d.id === docId);
+                if (doc) {
+                    const method = document.getElementById('payout-payment-method').value;
+                    const ref = document.getElementById('payout-reference-no').value.trim() || `VCH-${Date.now().toString().slice(-4)}`;
+                    const notes = document.getElementById('payout-notes').value.trim();
+
+                    doc.status = 'paid';
+                    doc.payment_date = new Date().toISOString().split('T')[0];
+                    doc.paid_date = doc.payment_date;
+                    doc.payment_method = method;
+                    doc.voucher_no = ref;
+                    doc.receipt_no = ref;
+                    doc.payout_notes = notes;
+
+                    Utils.showToast(`تم اعتماد وصرف مستحقات (${Utils.formatCurrency(doc.net_payable)}) للطبيب: ${doc.doctor_name}`, 'success');
+                    payoutModal.classList.add('hidden');
+                    payoutForm.reset();
+                    this.renderDoctorCommissions();
+                    this.updateKPIs();
+                }
             };
         }
     },
@@ -2117,6 +2280,449 @@ const ClinicAdminApp = {
     },
 
     // =========================================================================
+    // دوال ونظام صالة الانتظار والنداء الذكي (Smart Waiting Queue System)
+    // =========================================================================
+    renderQueueBoard() {
+        const roomsGrid = document.getElementById('admin-rooms-grid');
+        const queueTbody = document.getElementById('admin-queue-table-body');
+        const badge = document.getElementById('admin-waiting-badge');
+
+        if (roomsGrid) {
+            roomsGrid.innerHTML = (this.queueRooms || []).map(r => `
+                <div class="card-hover p-4 rounded-2xl border transition-all ${r.status === 'busy' ? 'bg-sky-50/60 dark:bg-sky-950/30 border-sky-300 dark:border-sky-800' : 'bg-slate-50/60 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800'} space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-xl bg-sky-600 text-white font-bold text-xs flex items-center justify-center font-mono shadow-sm">${r.room_no}</span>
+                            <div>
+                                <h4 class="font-bold text-slate-900 dark:text-white text-xs">${r.clinic_name}</h4>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400">${r.doctor_name}</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${r.status === 'busy' ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'}">
+                            ${r.status === 'busy' ? 'غرفة كشف نشطة' : 'غرفة متاحة'}
+                        </span>
+                    </div>
+
+                    <div class="p-3 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] text-slate-400 block font-semibold">التذكرة الحالية (Now Calling)</span>
+                            <strong class="text-lg font-black text-sky-600 font-mono">${r.current_ticket || '—'}</strong>
+                        </div>
+                        <div class="text-left">
+                            <span class="text-[10px] text-slate-400 block font-semibold">المريض الحالي</span>
+                            <span class="text-xs font-bold text-slate-800 dark:text-slate-200">${r.current_patient || 'لا يوجد مريض'}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 pt-1">
+                        <button onclick="ClinicAdminApp.callNextQueueVoice('${r.id}')" class="btn-press flex-1 py-1.5 px-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <span>🔊</span> <span>نداء المريض التالي</span>
+                        </button>
+                        <button onclick="ClinicAdminApp.finishRoomTicket('${r.id}')" class="btn-press py-1.5 px-3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition">
+                            إنهاء
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        if (queueTbody) {
+            const waiting = (this.waitingTickets || []).filter(t => t.status === 'waiting');
+            if (badge) badge.textContent = `${waiting.length} تذاكر`;
+
+            if (waiting.length === 0) {
+                queueTbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-8 text-center text-slate-400">
+                            <div class="text-2xl mb-1">🎉</div>
+                            <div class="text-xs font-bold">صالة الانتظار خالية تماماً</div>
+                            <div class="text-[10px] text-slate-400">تم الكشف على جميع المرضى المسجلين</div>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                queueTbody.innerHTML = waiting.map(t => `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                        <td class="py-2.5 px-3">
+                            <span class="font-mono font-black text-sky-600 dark:text-sky-400 text-xs">${t.ticket_no}</span>
+                            <span class="mr-1 text-[9px] px-1.5 py-0.5 rounded font-bold ${t.priority === 'emergency' ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300' : t.priority === 'vip' ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}">${t.priority_label || 'عادي'}</span>
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <div class="font-bold text-slate-900 dark:text-white text-xs">${t.patient_name}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">${t.patient_phone || '—'}</div>
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <div class="text-slate-800 dark:text-slate-200 text-xs">${t.clinic}</div>
+                            <div class="text-[10px] text-slate-400">${t.doctor || 'طبيب مناوب'}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-center">
+                            <button onclick="ClinicAdminApp.callSpecificTicket('${t.id}')" class="btn-press px-2.5 py-1 bg-sky-50 dark:bg-sky-950 text-sky-700 dark:text-sky-300 hover:bg-sky-600 hover:text-white rounded-lg text-xs font-bold border border-sky-200 dark:border-sky-800 transition flex items-center gap-1 mx-auto">
+                                <span>🔊</span> <span>نداء</span>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+    },
+
+    callNextQueueVoice(roomId) {
+        let room = (this.queueRooms || []).find(r => r.id === roomId);
+        if (!room && this.queueRooms && this.queueRooms.length > 0) {
+            room = this.queueRooms[0];
+        }
+        if (!room) return;
+
+        let nextTicket = (this.waitingTickets || []).find(t => t.status === 'waiting' && (t.clinic.includes(room.clinic_short) || t.clinic === room.clinic_name));
+        if (!nextTicket) {
+            nextTicket = (this.waitingTickets || []).find(t => t.status === 'waiting');
+        }
+
+        if (nextTicket) {
+            nextTicket.status = 'called';
+            room.status = 'busy';
+            room.current_ticket = nextTicket.ticket_no;
+            room.current_patient = nextTicket.patient_name;
+
+            this.playQueueChime();
+            this.speakQueueTicket(nextTicket.ticket_no, room.clinic_short || room.clinic_name, room.room_no);
+
+            try {
+                localStorage.setItem('alwagih_queue_last_call', JSON.stringify({
+                    ticket_no: nextTicket.ticket_no,
+                    patient_name: nextTicket.patient_name,
+                    clinic: room.clinic_name,
+                    room_no: room.room_no,
+                    timestamp: Date.now()
+                }));
+            } catch(e) {}
+
+            Utils.showToast(`🔊 تم استدعاء التذكرة (${nextTicket.ticket_no}) للمريض: ${nextTicket.patient_name} -> ${room.clinic_name}`, 'info');
+        } else {
+            this.playQueueChime();
+            this.speakQueueTicket(room.current_ticket || 'A-101', room.clinic_short || room.clinic_name, room.room_no);
+            Utils.showToast(`تم إعادة النداء للغرفة (${room.room_no})`, 'info');
+        }
+
+        this.renderQueueBoard();
+        this.updateKPIs();
+    },
+
+    callSpecificTicket(ticketId) {
+        const ticket = (this.waitingTickets || []).find(t => t.id === ticketId);
+        if (!ticket) return;
+
+        let room = (this.queueRooms || []).find(r => r.clinic_name === ticket.clinic || ticket.clinic.includes(r.clinic_short));
+        if (!room && this.queueRooms && this.queueRooms.length > 0) room = this.queueRooms[0];
+
+        ticket.status = 'called';
+        if (room) {
+            room.status = 'busy';
+            room.current_ticket = ticket.ticket_no;
+            room.current_patient = ticket.patient_name;
+        }
+
+        const roomNo = room ? room.room_no : '101';
+        this.playQueueChime();
+        this.speakQueueTicket(ticket.ticket_no, ticket.clinic, roomNo);
+
+        try {
+            localStorage.setItem('alwagih_queue_last_call', JSON.stringify({
+                ticket_no: ticket.ticket_no,
+                patient_name: ticket.patient_name,
+                clinic: ticket.clinic,
+                room_no: roomNo,
+                timestamp: Date.now()
+            }));
+        } catch(e) {}
+
+        Utils.showToast(`🔊 تم استدعاء التذكرة (${ticket.ticket_no}) للمريض: ${ticket.patient_name}`, 'info');
+        this.renderQueueBoard();
+        this.updateKPIs();
+    },
+
+    finishRoomTicket(roomId) {
+        const room = (this.queueRooms || []).find(r => r.id === roomId);
+        if (!room) return;
+
+        Utils.showToast(`تم إنهاء فحص التذكرة (${room.current_ticket}) في غرفة ${room.room_no}`, 'success');
+        room.status = 'idle';
+        room.current_ticket = '—';
+        room.current_patient = '—';
+        this.renderQueueBoard();
+        this.updateKPIs();
+    },
+
+    playQueueChime() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            const now = ctx.currentTime;
+            
+            const osc1 = ctx.createOscillator();
+            const gain1 = ctx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(523.25, now);
+            gain1.gain.setValueAtTime(0.25, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+            osc1.connect(gain1);
+            gain1.connect(ctx.destination);
+            osc1.start(now);
+            osc1.stop(now + 0.5);
+
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(783.99, now + 0.25);
+            gain2.gain.setValueAtTime(0.25, now + 0.25);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.start(now + 0.25);
+            osc2.stop(now + 0.9);
+        } catch(e) {}
+    },
+
+    speakQueueTicket(ticketNo, clinicName, roomNo) {
+        if (!('speechSynthesis' in window)) return;
+        try {
+            window.speechSynthesis.cancel();
+            const text = `تذكرة رقم ${ticketNo}، عيادة ${clinicName}، غرفة ${roomNo}`;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'ar-SA';
+            utter.rate = 0.92;
+            const voices = window.speechSynthesis.getVoices();
+            const arVoice = voices.find(v => v.lang && v.lang.startsWith('ar'));
+            if (arVoice) utter.voice = arVoice;
+            window.speechSynthesis.speak(utter);
+        } catch(e) {}
+    },
+
+    openNewQueueTicketModal() {
+        const modal = document.getElementById('queue-ticket-modal');
+        if (modal) modal.classList.remove('hidden');
+    },
+
+    // =========================================================================
+    // دوال ونظام عمولات وتسويات الأطباء (Doctor Commissions & Splits)
+    // =========================================================================
+    recalcDoctorCommission(doc) {
+        const consultDoc = (doc.consultation_revenue * doc.consult_split_pct) / 100;
+        const procDoc = (doc.procedure_revenue * doc.procedure_split_pct) / 100;
+        const labDoc = (doc.lab_referrals_revenue * doc.lab_comm_pct) / 100;
+        const radDoc = (doc.rad_referrals_revenue * doc.rad_comm_pct) / 100;
+        const grossDoctor = consultDoc + procDoc + labDoc + radDoc;
+
+        const deductions = (doc.procedure_revenue * doc.deduction_pct) / 100;
+        const net = Math.max(0, grossDoctor - deductions);
+
+        doc.doctor_gross = grossDoctor;
+        doc.consultation_amount = consultDoc;
+        doc.procedure_amount = procDoc;
+        doc.referrals_amount = labDoc + radDoc;
+        doc.deductions_amount = deductions;
+        doc.deductions = deductions;
+        doc.net_payable = net;
+        doc.net_payout = net;
+        doc.clinic_share = doc.gross_revenue - grossDoctor + deductions;
+    },
+
+    renderDoctorCommissions(customList) {
+        const tbody = document.getElementById('doctor-commissions-table-body');
+        const countEl = document.getElementById('comm-table-count');
+        if (!tbody) return;
+
+        const list = customList || this.doctorCommissions || [];
+        if (countEl) countEl.textContent = `${list.length} طبيب`;
+
+        if (list.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="10" class="py-8 text-center text-slate-400">
+                        <div class="text-2xl mb-1">🔍</div>
+                        <div class="text-xs font-bold">لا توجد تسويات أو عمولات مطابقة للبحث</div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = list.map(doc => `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                <td class="py-3 px-3">
+                    <div class="font-bold text-slate-900 dark:text-white text-xs">${doc.doctor_name}</div>
+                    <div class="text-[10px] text-slate-400">${doc.specialty} — غرفة ${doc.room}</div>
+                </td>
+                <td class="py-3 px-3 font-mono font-bold text-slate-700 dark:text-slate-300 text-xs">${doc.cases_count} حالة</td>
+                <td class="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white text-xs">${Utils.formatCurrency(doc.gross_revenue)}</td>
+                <td class="py-3 px-3">
+                    <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 font-mono">${doc.consult_split_pct}%</span>
+                    <span class="text-[10px] text-slate-400 block">${Utils.formatCurrency(doc.consultation_amount || ((doc.consultation_revenue * doc.consult_split_pct) / 100))}</span>
+                </td>
+                <td class="py-3 px-3">
+                    <span class="text-xs font-bold text-sky-600 dark:text-sky-400 font-mono">${doc.procedure_split_pct}%</span>
+                    <span class="text-[10px] text-slate-400 block">${Utils.formatCurrency(doc.procedure_amount || ((doc.procedure_revenue * doc.procedure_split_pct) / 100))}</span>
+                </td>
+                <td class="py-3 px-3">
+                    <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono">${doc.lab_comm_pct}% LIS / ${doc.rad_comm_pct}% RIS</span>
+                    <span class="text-[10px] text-slate-400 block">${Utils.formatCurrency(doc.referrals_amount || (((doc.lab_referrals_revenue * doc.lab_comm_pct) + (doc.rad_referrals_revenue * doc.rad_comm_pct)) / 100))}</span>
+                </td>
+                <td class="py-3 px-3 font-mono font-bold text-rose-600 dark:text-rose-400 text-xs">
+                    -${Utils.formatCurrency(doc.deductions_amount || doc.deductions || 0)}
+                    <span class="text-[10px] text-slate-400 block">${doc.deduction_pct}% مستهلكات</span>
+                </td>
+                <td class="py-3 px-3 font-mono font-black text-emerald-700 dark:text-emerald-300 text-xs">
+                    ${Utils.formatCurrency(doc.net_payable)}
+                </td>
+                <td class="py-3 px-3">
+                    ${doc.status === 'paid'
+                        ? `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300">✓ تم الصرف (${doc.payment_date || doc.paid_date || 'نوفمبر'})</span>`
+                        : `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">⏳ مستحق للصرف</span>`
+                    }
+                </td>
+                <td class="py-3 px-3">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <button onclick="ClinicAdminApp.openDoctorStatementModal('${doc.id}')" title="كشف حساب رسمي معتمد للطباعة" class="p-1.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition">
+                            📑
+                        </button>
+                        <button onclick="ClinicAdminApp.openCommissionRulesModal('${doc.id}')" title="تعديل نسب وقواعد الطبيب" class="p-1.5 rounded-xl text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950 border border-indigo-200 dark:border-indigo-800 transition">
+                            ⚙️
+                        </button>
+                        ${doc.status !== 'paid' ? `
+                        <button onclick="ClinicAdminApp.openDoctorPayoutModal('${doc.id}')" title="صرف وتسوية المستحقات" class="px-2.5 py-1 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm flex items-center gap-1 transition">
+                            <span>💵</span> <span>صرف</span>
+                        </button>
+                        ` : `
+                        <button onclick="ClinicAdminApp.openDoctorPayoutReceipt('${doc.id}')" title="عرض إيصال وسند الصرف" class="px-2 py-1 rounded-xl text-[10px] font-bold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800">
+                            سند #${doc.voucher_no || 'VCH'}
+                        </button>
+                        `}
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    filterDoctorCommissions() {
+        const query = (document.getElementById('comm-search-input')?.value || '').toLowerCase().trim();
+        const status = document.getElementById('comm-status-filter')?.value || 'all';
+
+        const filtered = (this.doctorCommissions || []).filter(doc => {
+            const matchQuery = !query || doc.doctor_name.toLowerCase().includes(query) || doc.specialty.toLowerCase().includes(query);
+            const matchStatus = status === 'all' || doc.status === status;
+            return matchQuery && matchStatus;
+        });
+
+        this.renderDoctorCommissions(filtered);
+    },
+
+    openCommissionRulesModal(docId) {
+        let doc = (this.doctorCommissions || []).find(d => d.id === docId);
+        if (!doc && this.doctorCommissions && this.doctorCommissions.length > 0) doc = this.doctorCommissions[0];
+        if (!doc) return;
+
+        document.getElementById('rules-doctor-id').value = doc.id;
+        document.getElementById('rules-doctor-name').value = `${doc.doctor_name} (${doc.specialty})`;
+        document.getElementById('rules-consult-split').value = doc.consult_split_pct;
+        document.getElementById('rules-procedure-split').value = doc.procedure_split_pct;
+        document.getElementById('rules-lab-comm').value = doc.lab_comm_pct;
+        document.getElementById('rules-rad-comm').value = doc.rad_comm_pct;
+        document.getElementById('rules-deduction-rate').value = doc.deduction_pct;
+
+        document.getElementById('doctor-commission-rules-modal').classList.remove('hidden');
+    },
+
+    openDoctorStatementModal(docId) {
+        const doc = (this.doctorCommissions || []).find(d => d.id === docId);
+        if (!doc) return;
+
+        document.getElementById('stmt-number').textContent = `STMT-2026-0${doc.id.replace('doc_', '')}`;
+        document.getElementById('stmt-date').textContent = new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('stmt-doctor-name').textContent = doc.doctor_name;
+        document.getElementById('stmt-doctor-spec').textContent = doc.specialty;
+        document.getElementById('stmt-doctor-room').textContent = `غرفة ${doc.room}`;
+        document.getElementById('stmt-doctor-status').textContent = doc.status === 'paid' ? 'تم الصرف والتسوية (Paid)' : 'جاهز للصرف المالي (Pending)';
+        document.getElementById('stmt-sign-doctor-name').textContent = doc.doctor_name;
+
+        document.getElementById('stmt-gross-rev').textContent = Utils.formatCurrency(doc.gross_revenue);
+        document.getElementById('stmt-deductions').textContent = `-${Utils.formatCurrency(doc.deductions_amount)}`;
+        document.getElementById('stmt-net-pay').textContent = Utils.formatCurrency(doc.net_payable);
+
+        const linesTable = document.getElementById('stmt-table-lines');
+        if (linesTable) {
+            linesTable.innerHTML = `
+                <tr>
+                    <td class="py-2.5 px-3 font-semibold">كشوفات واستشارات العيادة</td>
+                    <td class="py-2.5 px-3 font-mono">${Math.round(doc.cases_count * 0.7)} كشف</td>
+                    <td class="py-2.5 px-3 font-mono">${Utils.formatCurrency(doc.consultation_revenue)}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-indigo-700">${doc.consult_split_pct}%</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-left text-slate-900">${Utils.formatCurrency((doc.consultation_revenue * doc.consult_split_pct) / 100)}</td>
+                </tr>
+                <tr>
+                    <td class="py-2.5 px-3 font-semibold">إجراءات وجراحات العيادة</td>
+                    <td class="py-2.5 px-3 font-mono">${Math.round(doc.cases_count * 0.3)} إجراء</td>
+                    <td class="py-2.5 px-3 font-mono">${Utils.formatCurrency(doc.procedure_revenue)}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-sky-700">${doc.procedure_split_pct}%</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-left text-slate-900">${Utils.formatCurrency((doc.procedure_revenue * doc.procedure_split_pct) / 100)}</td>
+                </tr>
+                <tr>
+                    <td class="py-2.5 px-3 font-semibold">عمولات إحالات التحاليل الطبية (LIS)</td>
+                    <td class="py-2.5 px-3 font-mono">14 إحالة</td>
+                    <td class="py-2.5 px-3 font-mono">${Utils.formatCurrency(doc.lab_referrals_revenue)}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-emerald-700">${doc.lab_comm_pct}%</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-left text-slate-900">${Utils.formatCurrency((doc.lab_referrals_revenue * doc.lab_comm_pct) / 100)}</td>
+                </tr>
+                <tr>
+                    <td class="py-2.5 px-3 font-semibold">عمولات إحالات مركز الأشعة (RIS)</td>
+                    <td class="py-2.5 px-3 font-mono">9 إحالات</td>
+                    <td class="py-2.5 px-3 font-mono">${Utils.formatCurrency(doc.rad_referrals_revenue)}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-teal-700">${doc.rad_comm_pct}%</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-left text-slate-900">${Utils.formatCurrency((doc.rad_referrals_revenue * doc.rad_comm_pct) / 100)}</td>
+                </tr>
+                <tr class="bg-rose-50/50">
+                    <td class="py-2.5 px-3 font-semibold text-rose-700">استقطاع مستهلكات ومواد العمليات</td>
+                    <td class="py-2.5 px-3 font-mono text-rose-700">—</td>
+                    <td class="py-2.5 px-3 font-mono text-rose-700">—</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-rose-700">-${doc.deduction_pct}%</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-left text-rose-700">-${Utils.formatCurrency(doc.deductions_amount)}</td>
+                </tr>
+            `;
+        }
+
+        document.getElementById('doctor-statement-modal').classList.remove('hidden');
+    },
+
+    openDoctorPayoutModal(docId) {
+        const doc = (this.doctorCommissions || []).find(d => d.id === docId);
+        if (!doc) return;
+
+        document.getElementById('payout-doctor-id').value = doc.id;
+        document.getElementById('payout-doc-name-display').textContent = `${doc.doctor_name} (${doc.specialty})`;
+        document.getElementById('payout-amount-display').textContent = Utils.formatCurrency(doc.net_payable);
+        document.getElementById('payout-reference-no').value = `VCH-${Date.now().toString().slice(-4)}`;
+
+        document.getElementById('doctor-payout-modal').classList.remove('hidden');
+    },
+
+    openDoctorPayoutReceipt(docId) {
+        const doc = (this.doctorCommissions || []).find(d => d.id === docId);
+        if (!doc) return;
+        Utils.showToast(`سند الصرف #${doc.voucher_no || doc.receipt_no || 'VCH'} بقيمة ${Utils.formatCurrency(doc.net_payable)} مصروف عبر (${doc.payment_method || 'الخزينة'})`, 'info');
+    },
+
+    exportDoctorCommissionsExcel() {
+        if (window.Reports && Reports.exportDoctorCommissionsReport) {
+            Reports.exportDoctorCommissionsReport({
+                date: new Date().toLocaleDateString('ar-EG'),
+                filterStatus: document.getElementById('comm-status-filter')?.value || 'all'
+            }, this.doctorCommissions);
+        } else {
+            Utils.showToast('جاري تصدير شيت عمولات الأطباء...', 'info');
+        }
+    },
+
+    // =========================================================================
     // مولدات البيانات التجريبية للمعمل والأشعة (Mock Catalogs & Studies)
     // =========================================================================
     getMockLabCatalog() {
@@ -2424,6 +3030,149 @@ const ClinicAdminApp = {
                 image_url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80'
             }
         ];
+    },
+
+    getMockQueueRooms() {
+        return [
+            { id: 'room_101', room_no: '101', clinic_name: 'العيادة الباطنية التخصصية', clinic_short: 'باطنة', doctor_name: 'د. محمد عبد العزيز', current_ticket: 'A-104', current_patient: 'كمال الدين حافظ', status: 'busy' },
+            { id: 'room_102', room_no: '102', clinic_name: 'عيادة جراحة العظام والمفاصل', clinic_short: 'عظام', doctor_name: 'د. هدى منصور', current_ticket: 'B-206', current_patient: 'سمير فوزي عطية', status: 'busy' },
+            { id: 'room_103', room_no: '103', clinic_name: 'عيادة طب وجراحة العيون', clinic_short: 'عيون', doctor_name: 'د. طارق العريان', current_ticket: 'C-302', current_patient: 'ندى أسامة رشدي', status: 'busy' },
+            { id: 'room_104', room_no: '104', clinic_name: 'عيادة الجلدية والليزر', clinic_short: 'جلدية', doctor_name: 'د. ريم المهدي', current_ticket: 'D-401', current_patient: 'هالة عصام الدين', status: 'busy' }
+        ];
+    },
+
+    getMockWaitingTickets() {
+        return [
+            { id: 'tkt_1', ticket_no: 'A-106', patient_name: 'حسين علاء مرسي', patient_phone: '01019283746', clinic: 'العيادة الباطنية التخصصية', doctor: 'د. محمد عبد العزيز', priority: 'normal', priority_label: 'عادي', status: 'waiting', time: '11:15 ص' },
+            { id: 'tkt_2', ticket_no: 'B-208', patient_name: 'محمود جابر صبحي', patient_phone: '01123456789', clinic: 'عيادة جراحة العظام والمفاصل', doctor: 'د. هدى منصور', priority: 'urgent', priority_label: 'مستعجل ⚡', status: 'waiting', time: '11:20 ص' },
+            { id: 'tkt_3', ticket_no: 'C-304', patient_name: 'شيرين كمال الشريف', patient_phone: '01239847561', clinic: 'عيادة طب وجراحة العيون', doctor: 'د. طارق العريان', priority: 'normal', priority_label: 'عادي', status: 'waiting', time: '11:25 ص' },
+            { id: 'tkt_4', ticket_no: 'D-403', patient_name: 'داليا وفيق الشريف', patient_phone: '01551234987', clinic: 'عيادة الجلدية والليزر', doctor: 'د. ريم المهدي', priority: 'vip', priority_label: 'VIP ⭐', status: 'waiting', time: '11:30 ص' },
+            { id: 'tkt_5', ticket_no: 'A-108', patient_name: 'إبراهيم توفيق السيد', patient_phone: '01099887766', clinic: 'العيادة الباطنية التخصصية', doctor: 'د. محمد عبد العزيز', priority: 'emergency', priority_label: 'طوارئ 🚨', status: 'waiting', time: '11:32 ص' },
+            { id: 'tkt_6', ticket_no: 'E-502', patient_name: 'ياسر محمد رضوان', patient_phone: '01112233445', clinic: 'عيادة طب وجراحة الأسنان', doctor: 'د. أحمد الشناوي', priority: 'normal', priority_label: 'عادي', status: 'waiting', time: '11:40 ص' }
+        ];
+    },
+
+    getMockDoctorCommissions() {
+        const docs = [
+            {
+                id: 'doc_1',
+                doctor_name: 'د. محمد عبد العزيز',
+                specialty: 'استشاري الأمراض الباطنية والجهاز الهضمي',
+                room: '101',
+                cases_count: 48,
+                consultation_revenue: 14400,
+                procedure_revenue: 6000,
+                lab_referrals_revenue: 4200,
+                rad_referrals_revenue: 3500,
+                gross_revenue: 28100,
+                consult_split_pct: 65,
+                procedure_split_pct: 75,
+                lab_comm_pct: 15,
+                rad_comm_pct: 15,
+                deduction_pct: 5,
+                status: 'pending',
+                voucher_no: '',
+                payment_date: '',
+                paid_date: '',
+                receipt_no: '',
+                payment_method: ''
+            },
+            {
+                id: 'doc_2',
+                doctor_name: 'د. هدى منصور',
+                specialty: 'استشاري جراحة العظام والمناظير',
+                room: '102',
+                cases_count: 36,
+                consultation_revenue: 12600,
+                procedure_revenue: 18500,
+                lab_referrals_revenue: 2800,
+                rad_referrals_revenue: 8400,
+                gross_revenue: 42300,
+                consult_split_pct: 70,
+                procedure_split_pct: 80,
+                lab_comm_pct: 15,
+                rad_comm_pct: 20,
+                deduction_pct: 7,
+                status: 'pending',
+                voucher_no: '',
+                payment_date: '',
+                paid_date: '',
+                receipt_no: '',
+                payment_method: ''
+            },
+            {
+                id: 'doc_3',
+                doctor_name: 'د. طارق العريان',
+                specialty: 'استشاري طب وجراحة العيون والليزر',
+                room: '103',
+                cases_count: 42,
+                consultation_revenue: 14700,
+                procedure_revenue: 12000,
+                lab_referrals_revenue: 1500,
+                rad_referrals_revenue: 2100,
+                gross_revenue: 30300,
+                consult_split_pct: 70,
+                procedure_split_pct: 75,
+                lab_comm_pct: 10,
+                rad_comm_pct: 10,
+                deduction_pct: 5,
+                status: 'paid',
+                voucher_no: 'VCH-9811',
+                payment_date: '2026-11-14',
+                paid_date: '2026-11-14',
+                receipt_no: 'VCH-9811',
+                payment_method: 'تحويل بنكي'
+            },
+            {
+                id: 'doc_4',
+                doctor_name: 'د. ريم المهدي',
+                specialty: 'أخصائي الجلدية والتجميل والليزر',
+                room: '104',
+                cases_count: 55,
+                consultation_revenue: 16500,
+                procedure_revenue: 24000,
+                lab_referrals_revenue: 3200,
+                rad_referrals_revenue: 800,
+                gross_revenue: 44500,
+                consult_split_pct: 60,
+                procedure_split_pct: 70,
+                lab_comm_pct: 12,
+                rad_comm_pct: 10,
+                deduction_pct: 8,
+                status: 'pending',
+                voucher_no: '',
+                payment_date: '',
+                paid_date: '',
+                receipt_no: '',
+                payment_method: ''
+            },
+            {
+                id: 'doc_5',
+                doctor_name: 'د. أحمد الشناوي',
+                specialty: 'استشاري جراحة وزراعة الأسنان',
+                room: '105',
+                cases_count: 31,
+                consultation_revenue: 7750,
+                procedure_revenue: 32000,
+                lab_referrals_revenue: 1200,
+                rad_referrals_revenue: 4500,
+                gross_revenue: 45450,
+                consult_split_pct: 60,
+                procedure_split_pct: 70,
+                lab_comm_pct: 10,
+                rad_comm_pct: 15,
+                deduction_pct: 10,
+                status: 'paid',
+                voucher_no: 'VCH-9812',
+                payment_date: '2026-11-13',
+                paid_date: '2026-11-13',
+                receipt_no: 'VCH-9812',
+                payment_method: 'شيك بنكي معتمد'
+            }
+        ];
+
+        docs.forEach(doc => this.recalcDoctorCommission(doc));
+        return docs;
     }
 };
 
