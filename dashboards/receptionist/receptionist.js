@@ -21,6 +21,8 @@ const ReceptionistApp = {
         await this.loadTodayAppointments();
         await this.loadDoctorsList();
         this.bindEvents();
+
+        window.addEventListener('alwagih_language_changed', () => this.renderAppointmentsTable());
     },
 
     initShiftTracker() {
@@ -150,9 +152,12 @@ const ReceptionistApp = {
                     </td>
                     <td class="py-3 px-4">${Utils.renderStatusBadge(apt.status)}</td>
                     <td class="py-3 px-4 text-center">
-                        <div class="flex items-center justify-center gap-1.5">
+                        <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                            <button onclick="ReceptionistApp.sendWhatsAppConfirmation('${apt.id}')" title="إرسال تأكيد الحجز بالواتساب" class="btn-press px-2 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-800 transition inline-flex items-center gap-1">
+                                💬 واتساب
+                            </button>
                             ${apt.status === 'pending' ? `
-                                <button onclick="ReceptionistApp.updateStatus('${apt.id}', 'confirmed')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 transition">
+                                <button onclick="ReceptionistApp.updateStatus('${apt.id}', 'confirmed')" class="btn-press px-2.5 py-1 text-[11px] font-bold rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 transition">
                                     تأكيد
                                 </button>
                             ` : ''}
@@ -362,7 +367,21 @@ const ReceptionistApp = {
                 calcDisplay.classList.add('hidden');
                 this.renderAppointmentsTable();
                 this.updateShiftSummaryKPIs();
+
+                // فتح نافذة تأكيد الواتساب فورياً
+                if (typeof WhatsAppService !== 'undefined') {
+                    setTimeout(() => {
+                        WhatsAppService.showBookingConfirmationModal(newApt);
+                    }, 200);
+                }
             };
+        }
+    },
+
+    sendWhatsAppConfirmation(apptId) {
+        const apt = this.appointments.find(a => a.id === apptId);
+        if (apt && typeof WhatsAppService !== 'undefined') {
+            WhatsAppService.showBookingConfirmationModal(apt);
         }
     },
 
