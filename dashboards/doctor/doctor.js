@@ -19,6 +19,8 @@ const DoctorApp = {
 
         await this.loadDoctorWaitingList();
         this.bindEvents();
+
+        window.addEventListener('alwagih_language_changed', () => this.renderWaitingList());
     },
 
     getStoredAppointments() {
@@ -75,9 +77,9 @@ const DoctorApp = {
 
         if (!activeList || activeList.length === 0) {
             container.innerHTML = `
-                <div class="p-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                <div class="p-8 text-center bg-slate-50 dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
                     <div class="text-2xl mb-1">🎉</div>
-                    <div class="text-xs font-bold text-slate-700">لا توجد حالات انتظار حالياً</div>
+                    <div class="text-xs font-bold text-slate-700 dark:text-slate-300">لا توجد حالات انتظار حالياً</div>
                     <div class="text-[11px] text-slate-400 mt-1">تمت معاينة جميع المرضى المسجلين اليوم.</div>
                 </div>
             `;
@@ -90,17 +92,17 @@ const DoctorApp = {
             const patientPhone = apt.patient ? apt.patient.phone : apt.patient_phone;
 
             return `
-                <div class="p-3.5 rounded-xl border transition-all ${isCurrent ? 'bg-purple-50 border-purple-300 shadow-sm' : 'bg-white border-slate-200 hover:border-purple-200'}">
+                <div class="card-hover p-4 rounded-2xl border transition-all ${isCurrent ? 'bg-purple-50 dark:bg-purple-950/50 border-purple-300 dark:border-purple-700 shadow-sm' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-purple-200'}">
                     <div class="flex items-center justify-between mb-1.5">
-                        <span class="font-bold text-xs text-slate-900">${patientName}</span>
-                        <span class="font-mono text-xs font-semibold text-purple-700">${Utils.formatTime(apt.time_slot)}</span>
+                        <span class="font-bold text-xs text-slate-900 dark:text-white">${patientName}</span>
+                        <span class="font-mono text-xs font-semibold text-purple-700 dark:text-purple-300">${Utils.formatTime(apt.time_slot)}</span>
                     </div>
-                    <div class="flex items-center justify-between text-[11px] text-slate-500">
+                    <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
                         <span>هاتف: ${patientPhone}</span>
                         ${Utils.renderStatusBadge(apt.status)}
                     </div>
-                    <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
-                        <button onclick="DoctorApp.selectPatient('${apt.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 transition flex items-center gap-1 shadow-sm">
+                    <div class="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
+                        <button onclick="DoctorApp.selectPatient('${apt.id}')" class="btn-press px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 transition flex items-center gap-1 shadow-sm">
                             <span>🩺 استدعاء وفحص</span>
                         </button>
                     </div>
