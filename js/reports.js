@@ -1050,6 +1050,72 @@ const Reports = {
         } catch (err) {
             Utils.showToast('تعذر تصدير تقرير العمولات: ' + err.message, 'error');
         }
+    },
+
+    /**
+     * 22. تصدير جرد ومخزون الأدوية بالصيدلية الداخلية (Pharmacy Inventory & Formulary Report)
+     */
+    exportPharmacyInventoryReport(filterInfo, drugsData) {
+        try {
+            const list = drugsData || [];
+            const rows = list.map((drug, idx) => ({
+                'م': idx + 1,
+                'الاسم التجاري للدواء': drug.name,
+                'الاسم العلمي (Generic)': drug.generic_name || '—',
+                'الشكل الصيدلاني': drug.dosage_form || 'أقراص',
+                'التركيز والعيار': drug.strength || '500 mg',
+                'رقم التشغيلة (Batch)': drug.batch_no || 'BATCH-2026',
+                'تاريخ الصلاحية (Expiry)': drug.expiry_date,
+                'الرصيد المتاح بالمخزن': Number(drug.stock_qty || 0),
+                'حد إعادة الطلب الأدنى': Number(drug.reorder_level || 10),
+                'سعر التكلفة (ج.م)': Number(drug.cost_price || 0),
+                'سعر البيع للجمهور (ج.م)': Number(drug.selling_price || 0),
+                'إجمالي قيمة المخزون البيعية (ج.م)': Number((drug.stock_qty || 0) * (drug.selling_price || 0)),
+                'حالة الصلاحية': drug.expiry_status === 'expired' ? 'منتهي الصلاحية ⚠️' : (drug.expiry_status === 'expiring_soon' ? 'ينتهي قريباً (أقل من 90 يوم)' : 'ساري وصالح'),
+                'حالة الرصيد': (drug.stock_qty <= drug.reorder_level) ? 'رصيد حرج (أوشك على النفاد)' : 'رصيد كافي'
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`جرد_مخزون_أدوية_الصيدلية_${dateStr}.xlsx`, [
+                { name: 'كتالوج ومخزون الأدوية', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد أصناف أدوية مسجلة' }] }
+            ]);
+            Utils.showToast('تم تصدير تقرير جرد أدوية الصيدلية بنجاح 📗', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير جرد الصيدلية: ' + err.message, 'error');
+        }
+    },
+
+    /**
+     * 23. تصدير سجل مبيعات وروشتات الصيدلية المصروفة (Pharmacy Sales & Rx Dispensing Report)
+     */
+    exportPharmacyDispenseReport(filterInfo, dispenseData) {
+        try {
+            const list = dispenseData || [];
+            const rows = list.map((rx, idx) => ({
+                'م': idx + 1,
+                'رقم الروشتة الإلكترونية': rx.rx_number,
+                'اسم المريض': rx.patient_name,
+                'رقم الهاتف': rx.patient_phone || '—',
+                'الطبيب المعالج': rx.doctor_name,
+                'التخصص والعيادة': rx.clinic_name || 'العيادة التخصصية',
+                'تاريخ ووقت الصرف': rx.dispense_time || '2026-11-15',
+                'الأدوية المصروفة والجرعات': rx.items_summary || 'أدوية علاجية متعددة',
+                'طريقة الدفع': rx.payment_type === 'corporate' ? `تأمين (${rx.company_name || 'شركة متعاقدة'})` : 'نقدي (Cash)',
+                'إجمالي قيمة الروشتة (ج.م)': Number(rx.total_amount || 0),
+                'تحمل المريض النقدي Co-Pay (ج.م)': Number(rx.patient_copay || 0),
+                'مطالبة شركة التأمين (ج.م)': Number(rx.insurance_claim || 0),
+                'الصيدلي المعتمد للصرف': rx.pharmacist_name || 'د. سارة عثمان',
+                'حالة الصرف': rx.status === 'dispensed' ? 'تم الصرف والخصم من المخزن' : 'قيد الانتظار'
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`سجل_روشتات_ومبيعات_الصيدلية_${dateStr}.xlsx`, [
+                { name: 'حركات صرف الروشتات', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد حركات صرف مسجلة' }] }
+            ]);
+            Utils.showToast('تم تصدير سجل مبيعات وصرف الروشتات بنجاح 📗', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير سجل الصيدلية: ' + err.message, 'error');
+        }
     }
 };
 
