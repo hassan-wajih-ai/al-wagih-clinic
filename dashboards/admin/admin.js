@@ -25,6 +25,11 @@ const ClinicAdminApp = {
     financialReportData: {},
     procurementOrders: [],
     analyticsStatsData: {},
+    labOrders: [],
+    radiologyStudies: [],
+    labCatalog: [],
+    radiologyTemplates: {},
+    scanViewerState: { invert: false, highContrast: false },
     revenueChartInstance: null,
     analyticsTrendChartInstance: null,
     analyticsProceduresChartInstance: null,
@@ -44,6 +49,12 @@ const ClinicAdminApp = {
         await this.loadAllEnterpriseData();
         this.bindEvents();
 
+        const targetTab = localStorage.getItem('alwagih_admin_target_tab');
+        if (targetTab) {
+            localStorage.removeItem('alwagih_admin_target_tab');
+            this.switchTab(targetTab);
+        }
+
         window.addEventListener('alwagih_language_changed', () => {
             this.renderCRM();
             this.renderCallCenter();
@@ -55,6 +66,8 @@ const ClinicAdminApp = {
             this.renderInventory();
             this.renderContracts();
             this.renderReportsHub();
+            this.renderLabOrders();
+            this.renderRadiologyStudies();
             this.updateKPIs();
         });
     },
@@ -75,6 +88,10 @@ const ClinicAdminApp = {
         this.financialReportData = this.getMockFinancialReportData();
         this.procurementOrders = this.getMockProcurementOrders();
         this.analyticsStatsData = this.getMockAnalyticsStatsData();
+        this.labCatalog = this.getMockLabCatalog();
+        this.labOrders = this.getMockLabOrders();
+        this.radiologyTemplates = this.getMockRadiologyTemplates();
+        this.radiologyStudies = this.getMockRadiologyStudies();
 
         this.renderCRM();
         this.renderCallCenter();
@@ -88,12 +105,16 @@ const ClinicAdminApp = {
         this.renderInventory();
         this.renderContracts();
         this.renderReportsHub();
+        this.renderLabOrders();
+        this.renderRadiologyStudies();
+        this.populateLabCatalogSelect();
+        this.populateRadExamSelect();
         this.updateKPIs();
     },
 
     switchTab(tabId) {
         this.activeTab = tabId;
-        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports'];
+        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports', 'lab', 'radiology'];
         tabs.forEach(t => {
             const el = document.getElementById(`tab-content-${t}`);
             const btn = document.getElementById(`tab-btn-${t}`);
@@ -108,6 +129,10 @@ const ClinicAdminApp = {
         });
         if (tabId === 'reports') {
             this.switchReportsSubTab(this.activeReportsSubTab || 'analytics');
+        } else if (tabId === 'lab') {
+            this.renderLabOrders();
+        } else if (tabId === 'radiology') {
+            this.renderRadiologyStudies();
         }
     },
 
@@ -601,6 +626,32 @@ const ClinicAdminApp = {
         if (crmWa) crmWa.textContent = `${this.sentWhatsAppMessages.length} رسالة`;
         if (crmCalls) crmCalls.textContent = `${this.callLogs.length} مكالمة`;
         if (crmTickets) crmTickets.textContent = `⭐⭐⭐⭐⭐ 4.9`;
+
+        // LIS Lab KPIs
+        const labTotal = document.getElementById('lab-kpi-total');
+        const labPending = document.getElementById('lab-kpi-pending');
+        const labCompleted = document.getElementById('lab-kpi-completed');
+        const labCritical = document.getElementById('lab-kpi-critical');
+        const labCount = document.getElementById('lab-table-count');
+
+        if (labTotal) labTotal.textContent = `${this.labOrders.length} عينة`;
+        if (labPending) labPending.textContent = `${this.labOrders.filter(o => o.status === 'pending' || o.status === 'in_progress').length} قيد التحليل`;
+        if (labCompleted) labCompleted.textContent = `${this.labOrders.filter(o => o.status === 'verified').length} معتمدة`;
+        if (labCritical) labCritical.textContent = `${this.labOrders.filter(o => o.flag === 'panic').length} حرجة`;
+        if (labCount) labCount.textContent = `${this.labOrders.length} عينة`;
+
+        // RIS Radiology KPIs
+        const radTotal = document.getElementById('rad-kpi-total');
+        const radPending = document.getElementById('rad-kpi-pending');
+        const radCompleted = document.getElementById('rad-kpi-completed');
+        const radModalities = document.getElementById('rad-kpi-modalities');
+        const radCount = document.getElementById('rad-table-count');
+
+        if (radTotal) radTotal.textContent = `${this.radiologyStudies.length} دراسة`;
+        if (radPending) radPending.textContent = `${this.radiologyStudies.filter(s => s.status !== 'signed').length} بانتظار التقرير`;
+        if (radCompleted) radCompleted.textContent = `${this.radiologyStudies.filter(s => s.status === 'signed').length} معتمدة وموقعة`;
+        if (radModalities) radModalities.textContent = `4 أجهزة نشطة`;
+        if (radCount) radCount.textContent = `${this.radiologyStudies.length} فحص`;
     },
 
     // ==========================================
@@ -821,6 +872,200 @@ const ClinicAdminApp = {
                 penaltyModal.classList.add('hidden');
                 penaltyForm.reset();
                 this.renderPenalties();
+            };
+        }
+
+        // ==========================================
+        // نماذج وأحداث المعمل (LIS Forms)
+        // ==========================================
+        const labOrderForm = document.getElementById('lab-order-form');
+        const labOrderModal = document.getElementById('lab-order-modal');
+        if (labOrderForm && labOrderModal) {
+            labOrderForm.onsubmit = (e) => {
+                e.preventDefault();
+                const patientName = document.getElementById('lab-order-patient-name').value.trim();
+                const patientPhone = document.getElementById('lab-order-patient-phone').value.trim();
+                const patientAge = document.getElementById('lab-order-patient-age').value || 30;
+                const patientGender = document.getElementById('lab-order-patient-gender').value;
+                const testKey = document.getElementById('lab-order-test-select').value;
+                const tubeType = document.getElementById('lab-order-tube-type').value;
+                const doctorName = document.getElementById('lab-order-doctor-input').value.trim();
+                const paymentType = document.getElementById('lab-order-payment-type').value;
+                const cost = parseFloat(document.getElementById('lab-order-cost-input').value) || 250;
+                const contractSelect = document.getElementById('lab-order-contract-select');
+                const contractName = contractSelect && contractSelect.value ? contractSelect.options[contractSelect.selectedIndex].text : 'تأمين طبي';
+
+                const catalogItem = this.labCatalog.find(c => c.key === testKey) || this.labCatalog[0];
+                const sampleNum = Math.floor(1000 + Math.random() * 9000);
+                const sampleId = `LAB-2026-${sampleNum}`;
+
+                const newOrder = {
+                    id: 'lab_' + Date.now(),
+                    sample_id: sampleId,
+                    patient_name: patientName,
+                    patient_phone: patientPhone,
+                    patient_age: patientAge,
+                    patient_gender: patientGender,
+                    test_key: testKey,
+                    test_name: catalogItem ? catalogItem.name : 'فحص معملي',
+                    tube_type: tubeType,
+                    doctor_name: doctorName,
+                    sample_date: new Date().toISOString().split('T')[0],
+                    cost: cost,
+                    payment_type: paymentType,
+                    contract_name: paymentType === 'corporate' ? contractName : null,
+                    status: 'pending',
+                    status_label: 'بانتظار السحب (Pending)',
+                    flag: 'normal',
+                    parameters: catalogItem && catalogItem.parameters ? JSON.parse(JSON.stringify(catalogItem.parameters)) : [],
+                    comment: 'العينة بانتظار السحب والتحليل على أجهزة المعمل الآلية.',
+                    verified_by: null
+                };
+
+                this.labOrders.unshift(newOrder);
+                Utils.showToast(`تم إصدار طلب التحليل بنجاح برقم عينة (${sampleId})`, 'success');
+                labOrderModal.classList.add('hidden');
+                labOrderForm.reset();
+                this.renderLabOrders();
+                this.updateKPIs();
+            };
+        }
+
+        const labResultsForm = document.getElementById('lab-results-form');
+        const labResultsModal = document.getElementById('lab-results-modal');
+        if (labResultsForm && labResultsModal) {
+            labResultsForm.onsubmit = (e) => {
+                e.preventDefault();
+                const orderId = document.getElementById('lab-results-active-order-id').value;
+                const order = this.labOrders.find(o => o.id === orderId);
+                if (!order) return;
+
+                let highestFlag = 'normal';
+                if (order.parameters) {
+                    order.parameters.forEach((param, idx) => {
+                        const inputEl = document.getElementById(`lab-param-input-${idx}`);
+                        if (inputEl) {
+                            param.value = inputEl.value;
+                            const val = parseFloat(inputEl.value);
+                            if (!isNaN(val)) {
+                                if (param.panic_high && val >= param.panic_high) {
+                                    param.flag = 'panic';
+                                    highestFlag = 'panic';
+                                } else if (param.panic_low && val <= param.panic_low) {
+                                    param.flag = 'panic';
+                                    highestFlag = 'panic';
+                                } else if (param.max && val > param.max) {
+                                    param.flag = 'high';
+                                    if (highestFlag !== 'panic') highestFlag = 'high';
+                                } else if (param.min && val < param.min) {
+                                    param.flag = 'low';
+                                    if (highestFlag !== 'panic') highestFlag = 'low';
+                                } else {
+                                    param.flag = 'normal';
+                                }
+                            }
+                        }
+                    });
+                }
+
+                order.flag = highestFlag;
+                order.comment = document.getElementById('lab-results-comment').value.trim() || 'الفحص معتمد سريرياً.';
+                const isApproved = document.getElementById('lab-results-approve-check').checked;
+                if (isApproved) {
+                    order.status = 'verified';
+                    order.status_label = 'معتمدة ومكتملة';
+                    order.verified_by = 'د. هاني عثمان (استشاري باثولوجيا إكلينيكية)';
+                } else {
+                    order.status = 'in_progress';
+                    order.status_label = 'قيد المراجعة';
+                }
+
+                Utils.showToast(`تم حفظ وتحديث نتائج الفحص للعينة (${order.sample_id}) بنجاح`, 'success');
+                labResultsModal.classList.add('hidden');
+                this.renderLabOrders();
+                this.updateKPIs();
+            };
+        }
+
+        // ==========================================
+        // نماذج وأحداث الأشعة (RIS Forms)
+        // ==========================================
+        const radOrderForm = document.getElementById('rad-order-form');
+        const radOrderModal = document.getElementById('rad-order-modal');
+        if (radOrderForm && radOrderModal) {
+            radOrderForm.onsubmit = (e) => {
+                e.preventDefault();
+                const patientName = document.getElementById('rad-order-patient-name').value.trim();
+                const patientPhone = document.getElementById('rad-order-patient-phone').value.trim();
+                const modality = document.getElementById('rad-order-modality-select').value;
+                const exam = document.getElementById('rad-order-exam-select').value;
+                const contrast = document.getElementById('rad-order-contrast-check').checked;
+                const doctorName = document.getElementById('rad-order-doctor-input').value.trim();
+                const paymentType = document.getElementById('rad-order-payment-type').value;
+                const cost = parseFloat(document.getElementById('rad-order-cost-input').value) || 450;
+
+                const studyNum = Math.floor(1000 + Math.random() * 9000);
+                const studyId = `RAD-2026-${studyNum}`;
+
+                const newStudy = {
+                    id: 'rad_' + Date.now(),
+                    study_id: studyId,
+                    patient_name: patientName,
+                    patient_phone: patientPhone,
+                    patient_age: 40,
+                    patient_gender: 'male',
+                    modality: modality,
+                    exam_name: exam,
+                    contrast: contrast,
+                    doctor_name: doctorName,
+                    study_date: new Date().toISOString().split('T')[0],
+                    cost: cost,
+                    payment_type: paymentType,
+                    status: 'drafting',
+                    status_label: 'قيد كتابة التقرير (Drafting)',
+                    technique: `Digital ${modality} examination performed using standard acquisition protocols.`,
+                    findings: 'Study completed, awaiting radiologist dictation.',
+                    impression: 'Pending evaluation.',
+                    radiologist_name: 'د. مروان البدري (استشاري أشعة تشخيصية)',
+                    image_url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80'
+                };
+
+                this.radiologyStudies.unshift(newStudy);
+                Utils.showToast(`تم حجز فحص الأشعة بنجاح برقم دراسة (${studyId})`, 'success');
+                radOrderModal.classList.add('hidden');
+                radOrderForm.reset();
+                this.renderRadiologyStudies();
+                this.updateKPIs();
+            };
+        }
+
+        const radReportForm = document.getElementById('rad-report-form');
+        const radReportModal = document.getElementById('rad-report-modal');
+        if (radReportForm && radReportModal) {
+            radReportForm.onsubmit = (e) => {
+                e.preventDefault();
+                const studyId = document.getElementById('rad-report-active-study-id').value;
+                const study = this.radiologyStudies.find(s => s.id === studyId);
+                if (!study) return;
+
+                study.technique = document.getElementById('rad-report-technique').value.trim();
+                study.findings = document.getElementById('rad-report-findings').value.trim();
+                study.impression = document.getElementById('rad-report-impression').value.trim();
+                study.radiologist_name = document.getElementById('rad-report-sign-doctor').value.trim() || 'د. مروان البدري';
+                
+                const isSigned = document.getElementById('rad-report-signed-check').checked;
+                if (isSigned) {
+                    study.status = 'signed';
+                    study.status_label = 'معتمد وموقع';
+                } else {
+                    study.status = 'drafting';
+                    study.status_label = 'مسودة قيد المراجعة';
+                }
+
+                Utils.showToast(`تم حفظ وتوقيع تقرير الأشعة للدراسة (${study.study_id}) بنجاح`, 'success');
+                radReportModal.classList.add('hidden');
+                this.renderRadiologyStudies();
+                this.updateKPIs();
             };
         }
     },
@@ -1288,6 +1533,897 @@ const ClinicAdminApp = {
                 { name: 'جلسات استنشاق وتوسيع شعب', clinic: 'عيادة الأطفال', count: 38, total_revenue: 7600, share_percentage: 6 }
             ]
         };
+    },
+
+    // =========================================================================
+    // موديول المعمل والتحاليل الطبية (LIS - Laboratory Information System)
+    // =========================================================================
+    renderLabOrders(customList) {
+        const tbody = document.getElementById('lab-orders-table-body');
+        if (!tbody) return;
+
+        const list = customList || this.labOrders;
+        if (!list || list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-xs text-slate-400">لا توجد عينات أو تحاليل مسجلة حالياً.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = list.map(order => {
+            let statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">بانتظار السحب</span>';
+            if (order.status === 'in_progress') {
+                statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">قيد التحليل</span>';
+            } else if (order.status === 'verified') {
+                statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">معتمدة ومكتملة</span>';
+            }
+
+            let flagBadge = '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">طبيعي Normal</span>';
+            if (order.flag === 'panic') {
+                flagBadge = '<span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-600 text-white animate-pulse">🚨 حرج Panic</span>';
+            } else if (order.flag === 'high') {
+                flagBadge = '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">مرتفع High</span>';
+            } else if (order.flag === 'low') {
+                flagBadge = '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">منخفض Low</span>';
+            }
+
+            let tubeBadgeClass = 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300';
+            if (order.tube_type.includes('أصفر') || order.tube_type.includes('Yellow') || order.tube_type.includes('Serum')) {
+                tubeBadgeClass = 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300';
+            } else if (order.tube_type.includes('أزرق') || order.tube_type.includes('Blue')) {
+                tubeBadgeClass = 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300';
+            }
+
+            return `
+                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
+                    <td class="py-3 px-3">
+                        <div class="font-mono font-bold text-cyan-700 dark:text-cyan-400 text-xs">${order.sample_id}</div>
+                        <div class="text-[10px] text-slate-400 font-mono">${order.sample_date}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="font-bold text-slate-900 dark:text-white">${order.patient_name}</div>
+                        <div class="text-[11px] text-slate-400 font-mono">${order.patient_phone} • ${order.patient_age} سنة</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="font-bold text-slate-800 dark:text-slate-200">${order.test_name}</div>
+                        <div class="text-[10px] text-slate-400">${order.parameters ? order.parameters.length + ' بارامترات' : 'فحص مجمع'}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${tubeBadgeClass}">${order.tube_type}</span>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="text-xs text-slate-700 dark:text-slate-300">${order.doctor_name}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="font-mono font-bold text-emerald-600 dark:text-emerald-400">${Utils.formatCurrency(order.cost)}</div>
+                        <div class="text-[10px] text-slate-400">${order.payment_type === 'corporate' ? 'تعاقد (' + (order.contract_name || 'تأمين') + ')' : 'سداد نقدي'}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="flex flex-col gap-1 items-start">
+                            ${statusBadge}
+                            ${flagBadge}
+                        </div>
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="ClinicAdminApp.openLabBarcodeModal('${order.id}')" title="طباعة ملصق الباركود الحراري للأنبوبة" class="btn-press p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                🏷️
+                            </button>
+                            <button onclick="ClinicAdminApp.openLabResultsModal('${order.id}')" title="إدخال ومراجعة النتائج والبارامترات" class="btn-press p-1.5 rounded-lg text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-950">
+                                📝
+                            </button>
+                            <button onclick="ClinicAdminApp.openLabPrintModal('${order.id}')" title="طباعة التقرير الطبي المخبري الرسمي" class="btn-press p-1.5 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                🖨️
+                            </button>
+                            <button onclick="ClinicAdminApp.sendLabWhatsApp('${order.id}')" title="إرسال النتيجة للمريض عبر واتساب" class="btn-press p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950">
+                                💬
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    filterLabOrders() {
+        const query = (document.getElementById('lab-search-input')?.value || '').toLowerCase().trim();
+        const statusFilter = document.getElementById('lab-status-filter')?.value || 'all';
+
+        const filtered = this.labOrders.filter(o => {
+            const matchQuery = !query || 
+                o.patient_name.toLowerCase().includes(query) || 
+                o.sample_id.toLowerCase().includes(query) || 
+                o.test_name.toLowerCase().includes(query) || 
+                (o.patient_phone && o.patient_phone.includes(query));
+            
+            let matchStatus = true;
+            if (statusFilter === 'panic') {
+                matchStatus = o.flag === 'panic';
+            } else if (statusFilter !== 'all') {
+                matchStatus = o.status === statusFilter;
+            }
+
+            return matchQuery && matchStatus;
+        });
+
+        this.renderLabOrders(filtered);
+    },
+
+    populateLabCatalogSelect() {
+        const select = document.getElementById('lab-order-test-select');
+        if (!select) return;
+
+        select.innerHTML = this.labCatalog.map(item => `
+            <option value="${item.key}" data-tube="${item.tube}" data-cost="${item.cost}">${item.name} (${Utils.formatCurrency(item.cost)})</option>
+        `).join('');
+
+        if (this.labCatalog.length > 0) {
+            this.onLabTestSelected(this.labCatalog[0].key);
+        }
+
+        const contractSelect = document.getElementById('lab-order-contract-select');
+        if (contractSelect && this.contracts) {
+            contractSelect.innerHTML = this.contracts.map(c => `
+                <option value="${c.id}">${c.company_name} (تحمل ${c.copay_percentage || 20}%)</option>
+            `).join('');
+        }
+    },
+
+    onLabTestSelected(testKey) {
+        const item = this.labCatalog.find(c => c.key === testKey);
+        if (!item) return;
+
+        const tubeInput = document.getElementById('lab-order-tube-type');
+        const costInput = document.getElementById('lab-order-cost-input');
+        if (tubeInput) tubeInput.value = item.tube;
+        if (costInput) costInput.value = item.cost;
+    },
+
+    toggleLabPaymentContract(val) {
+        const row = document.getElementById('lab-order-contract-row');
+        if (row) {
+            row.classList.toggle('hidden', val !== 'corporate');
+        }
+    },
+
+    openNewLabOrderModal() {
+        const modal = document.getElementById('lab-order-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    },
+
+    openLabBarcodeModal(orderId) {
+        const order = this.labOrders.find(o => o.id === orderId);
+        if (!order) return;
+
+        const modal = document.getElementById('lab-barcode-modal');
+        if (!modal) return;
+
+        document.getElementById('barcode-patient-name').textContent = order.patient_name;
+        document.getElementById('barcode-patient-info').textContent = `${order.patient_age} سنة • ${order.patient_gender === 'female' ? 'أنثى' : 'ذكر'}`;
+        document.getElementById('barcode-test-name').textContent = order.test_name;
+        document.getElementById('barcode-tube-cap').textContent = order.tube_type;
+        document.getElementById('barcode-sample-id').textContent = order.sample_id;
+        document.getElementById('barcode-timestamp').textContent = `${order.sample_date} 10:30 AM`;
+
+        modal.classList.remove('hidden');
+    },
+
+    openLabResultsModal(orderId) {
+        const order = this.labOrders.find(o => o.id === orderId);
+        if (!order) return;
+
+        const modal = document.getElementById('lab-results-modal');
+        if (!modal) return;
+
+        document.getElementById('lab-results-active-order-id').value = order.id;
+        document.getElementById('lab-results-modal-subtitle').textContent = `عينة رقم: ${order.sample_id} | المريض: ${order.patient_name} (${order.test_name})`;
+        document.getElementById('lab-results-comment').value = order.comment || '';
+        document.getElementById('lab-results-approve-check').checked = order.status === 'verified';
+
+        const tbody = document.getElementById('lab-results-parameters-tbody');
+        if (tbody) {
+            if (!order.parameters || order.parameters.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">لا توجد معايير فردية مسجلة لهذا الفحص.</td></tr>`;
+            } else {
+                tbody.innerHTML = order.parameters.map((param, idx) => {
+                    let flagBadge = '<span class="text-[10px] text-slate-400">طبيعي</span>';
+                    if (param.flag === 'panic') flagBadge = '<span class="text-[10px] font-black text-rose-600 animate-pulse">🚨 حرج Panic</span>';
+                    else if (param.flag === 'high') flagBadge = '<span class="text-[10px] font-bold text-rose-500">مرتفع High</span>';
+                    else if (param.flag === 'low') flagBadge = '<span class="text-[10px] font-bold text-blue-500">منخفض Low</span>';
+
+                    return `
+                        <tr class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                            <td class="py-2.5 px-3 font-semibold text-slate-800 dark:text-slate-200">
+                                ${param.name}
+                            </td>
+                            <td class="py-2.5 px-3">
+                                <input type="text" id="lab-param-input-${idx}" value="${param.value !== undefined ? param.value : param.default || ''}" class="w-24 px-2 py-1 text-xs font-mono font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-cyan-500">
+                            </td>
+                            <td class="py-2.5 px-3 font-mono text-slate-500 text-[11px]">
+                                ${param.unit}
+                            </td>
+                            <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-400 text-[11px]">
+                                ${param.ref}
+                            </td>
+                            <td class="py-2.5 px-3 text-center">
+                                ${flagBadge}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        modal.classList.remove('hidden');
+    },
+
+    openLabPrintModal(orderId) {
+        const order = this.labOrders.find(o => o.id === orderId);
+        if (!order) return;
+
+        const modal = document.getElementById('lab-print-modal');
+        if (!modal) return;
+
+        document.getElementById('print-lab-sample-id').textContent = order.sample_id;
+        document.getElementById('print-lab-date').textContent = order.sample_date;
+        document.getElementById('print-lab-patient-name').textContent = order.patient_name;
+        document.getElementById('print-lab-patient-info').textContent = `${order.patient_age} سنة / ${order.patient_gender === 'female' ? 'أنثى' : 'ذكر'}`;
+        document.getElementById('print-lab-doctor').textContent = order.doctor_name;
+        document.getElementById('print-lab-test-name').textContent = order.test_name;
+        document.getElementById('print-lab-comment').textContent = order.comment || 'القيم المخبرية مطابقة للمعايير السريرية.';
+        document.getElementById('print-lab-verified-by').textContent = order.verified_by || 'د. هاني عثمان (استشاري باثولوجيا إكلينيكية)';
+
+        const tbody = document.getElementById('print-lab-results-tbody');
+        if (tbody) {
+            if (!order.parameters || order.parameters.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-3 text-center text-slate-400">فحص مخبري مكتمل وسليم.</td></tr>`;
+            } else {
+                tbody.innerHTML = order.parameters.map(param => {
+                    let flagBadge = '<span class="text-emerald-700 font-bold">طبيعي (Normal)</span>';
+                    let valClass = 'font-bold text-slate-900';
+                    if (param.flag === 'panic') {
+                        flagBadge = '<span class="text-rose-700 font-black">🚨 حرج (Panic)</span>';
+                        valClass = 'font-black text-rose-700 underline';
+                    } else if (param.flag === 'high') {
+                        flagBadge = '<span class="text-rose-600 font-bold">مرتفع (High)</span>';
+                        valClass = 'font-bold text-rose-600';
+                    } else if (param.flag === 'low') {
+                        flagBadge = '<span class="text-blue-600 font-bold">منخفض (Low)</span>';
+                        valClass = 'font-bold text-blue-600';
+                    }
+
+                    return `
+                        <tr>
+                            <td class="py-2 px-3 font-semibold text-slate-800">${param.name}</td>
+                            <td class="py-2 px-3 font-mono ${valClass}">${param.value || param.default || '—'}</td>
+                            <td class="py-2 px-3 font-mono text-slate-500">${param.unit}</td>
+                            <td class="py-2 px-3 font-mono text-slate-600">${param.ref}</td>
+                            <td class="py-2 px-3 text-center text-[11px]">${flagBadge}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        modal.classList.remove('hidden');
+    },
+
+    sendLabWhatsApp(orderId) {
+        const order = this.labOrders.find(o => o.id === orderId);
+        if (!order) return;
+
+        const phone = (order.patient_phone || '').replace(/[^0-9]/g, '');
+        const patientName = order.patient_name;
+        const msg = `مرحباً أستاذ/ة ${patientName}،\nنفيدكم بصدور واعتماد نتيجة فحصكم المخبري (${order.test_name}) برقم عينة (${order.sample_id}) من مختبرات الوجيه الطبية.\nيمكنكم استعراض وطباعة تقريركم الطبي المعتمد بالكامل عبر الرابط:\nhttps://hassan-wajih-ai.github.io/al-wagih-clinic/dashboards/patient/index.html\nمع تمنياتنا لكم بدوام الصحة والعافية!`;
+
+        const waUrl = `https://wa.me/2${phone}?text=${encodeURIComponent(msg)}`;
+        window.open(waUrl, '_blank');
+        Utils.showToast(`جاري فتح محادثة WhatsApp للمريض ${patientName}`, 'info');
+    },
+
+    exportLabReportExcel() {
+        if (window.Reports && Reports.exportLabTestsReport) {
+            Reports.exportLabTestsReport({}, this.labOrders);
+        } else {
+            Utils.showToast('جاري تصدير تقرير المعمل...', 'info');
+        }
+    },
+
+    // =========================================================================
+    // موديول الأشعة التشخيصية (RIS - Radiology Information System)
+    // =========================================================================
+    renderRadiologyStudies(customList) {
+        const tbody = document.getElementById('rad-studies-table-body');
+        if (!tbody) return;
+
+        const list = customList || this.radiologyStudies;
+        if (!list || list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-xs text-slate-400">لا توجد دراسات أشعة مسجلة حالياً.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = list.map(study => {
+            let statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">مجدول</span>';
+            if (study.status === 'drafting') {
+                statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">قيد كتابة التقرير</span>';
+            } else if (study.status === 'signed') {
+                statusBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">معتمد وموقع</span>';
+            }
+
+            let modBadge = 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300';
+            if (study.modality === 'MRI') modBadge = 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300';
+            else if (study.modality === 'CT') modBadge = 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300';
+            else if (study.modality === 'Ultrasound') modBadge = 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300';
+
+            return `
+                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
+                    <td class="py-3 px-3">
+                        <div class="font-mono font-bold text-indigo-700 dark:text-indigo-400 text-xs">${study.study_id}</div>
+                        <div class="text-[10px] text-slate-400 font-mono">${study.study_date}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="font-bold text-slate-900 dark:text-white">${study.patient_name}</div>
+                        <div class="text-[11px] text-slate-400 font-mono">${study.patient_phone}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="flex items-center gap-1.5">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${modBadge}">${study.modality}</span>
+                            <span class="font-bold text-slate-800 dark:text-slate-200">${study.exam_name}</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-medium ${study.contrast ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 font-bold' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}">
+                            ${study.contrast ? 'مع صبغة (Contrast)' : 'بدون صبغة (Plain)'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="text-xs text-slate-700 dark:text-slate-300">${study.doctor_name}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="font-mono font-bold text-emerald-600 dark:text-emerald-400">${Utils.formatCurrency(study.cost)}</div>
+                        <div class="text-[10px] text-slate-400">${study.payment_type === 'corporate' ? 'تعاقد شركة' : 'سداد نقدي'}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        ${statusBadge}
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="ClinicAdminApp.openRadReportModal('${study.id}')" title="كتابة ومراجعة التقرير بالقوالب الجاهزة" class="btn-press p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950">
+                                📝
+                            </button>
+                            <button onclick="ClinicAdminApp.openRadViewerModal('${study.id}')" title="استعراض الصور الرقمية وعارض DICOM" class="btn-press p-1.5 rounded-lg text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950">
+                                🖼️
+                            </button>
+                            <button onclick="ClinicAdminApp.openRadPrintModal('${study.id}')" title="طباعة تقرير الأشعة الرسمي" class="btn-press p-1.5 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                🖨️
+                            </button>
+                            <button onclick="ClinicAdminApp.sendRadWhatsApp('${study.id}')" title="إرسال التقرير للمريض عبر واتساب" class="btn-press p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950">
+                                💬
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    filterRadStudies() {
+        const query = (document.getElementById('rad-search-input')?.value || '').toLowerCase().trim();
+        const modalityFilter = document.getElementById('rad-modality-filter')?.value || 'all';
+
+        const filtered = this.radiologyStudies.filter(s => {
+            const matchQuery = !query || 
+                s.patient_name.toLowerCase().includes(query) || 
+                s.study_id.toLowerCase().includes(query) || 
+                s.exam_name.toLowerCase().includes(query) || 
+                (s.patient_phone && s.patient_phone.includes(query));
+            
+            const matchModality = modalityFilter === 'all' || s.modality === modalityFilter;
+
+            return matchQuery && matchModality;
+        });
+
+        this.renderRadiologyStudies(filtered);
+    },
+
+    populateRadExamSelect() {
+        const modSelect = document.getElementById('rad-order-modality-select');
+        if (modSelect) {
+            this.onRadModalitySelected(modSelect.value);
+        }
+    },
+
+    onRadModalitySelected(modality) {
+        const examSelect = document.getElementById('rad-order-exam-select');
+        const costInput = document.getElementById('rad-order-cost-input');
+        if (!examSelect) return;
+
+        const modalityExams = {
+            'X-Ray': [
+                { name: 'أشعة سينية على الصدر (Chest X-Ray PA)', cost: 250 },
+                { name: 'أشعة عادية على مفصل الركبة (Knee AP & Lateral)', cost: 280 },
+                { name: 'أشعة على الفقرات القطنية والعجزية (Lumbosacral AP & Lat)', cost: 320 },
+                { name: 'أشعة على الجيوب الأنفية (PNS Water’s view)', cost: 220 }
+            ],
+            'MRI': [
+                { name: 'رنين مغناطيسي على الفقرات القطنية (Lumbar MRI)', cost: 1200 },
+                { name: 'رنين مغناطيسي على المخ (Brain MRI)', cost: 1400 },
+                { name: 'رنين مغناطيسي على مفصل الركبة (Knee MRI)', cost: 1200 },
+                { name: 'رنين مغناطيسي على الكتف (Shoulder MRI)', cost: 1250 }
+            ],
+            'CT': [
+                { name: 'أشعة مقطعية على المخ (Brain CT)', cost: 850 },
+                { name: 'أشعة مقطعية على الصدر (Chest CT High Resolution)', cost: 1100 },
+                { name: 'أشعة مقطعية ثلاثية المراحل على البطن والحوض (Triphasic CT Abdomen)', cost: 1600 }
+            ],
+            'Ultrasound': [
+                { name: 'سونار على البطن والحوض (Pelvi-Abdominal Ultrasound)', cost: 450 },
+                { name: 'سونار ودوبلر ملون على شرايين الساقين (Lower Limb Arterial Doppler)', cost: 650 },
+                { name: 'سونار على الغدة الدرقية (Thyroid Ultrasound)', cost: 400 }
+            ],
+            'Mammography': [
+                { name: 'أشعة ماموجرام رقمية على الثديين (Bilateral Digital Mammography)', cost: 900 }
+            ]
+        };
+
+        const list = modalityExams[modality] || modalityExams['X-Ray'];
+        examSelect.innerHTML = list.map(item => `
+            <option value="${item.name}" data-cost="${item.cost}">${item.name} (${Utils.formatCurrency(item.cost)})</option>
+        `).join('');
+
+        if (costInput && list.length > 0) {
+            costInput.value = list[0].cost;
+        }
+    },
+
+    onRadExamSelected(examName) {
+        const examSelect = document.getElementById('rad-order-exam-select');
+        const costInput = document.getElementById('rad-order-cost-input');
+        if (!examSelect || !costInput) return;
+
+        const opt = examSelect.options[examSelect.selectedIndex];
+        if (opt) {
+            const cost = opt.getAttribute('data-cost');
+            if (cost) costInput.value = cost;
+        }
+    },
+
+    openNewRadOrderModal() {
+        const modal = document.getElementById('rad-order-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    },
+
+    openRadReportModal(studyId) {
+        const study = this.radiologyStudies.find(s => s.id === studyId);
+        if (!study) return;
+
+        const modal = document.getElementById('rad-report-modal');
+        if (!modal) return;
+
+        document.getElementById('rad-report-active-study-id').value = study.id;
+        document.getElementById('rad-report-modal-subtitle').textContent = `دراسة رقم: ${study.study_id} | المريض: ${study.patient_name} (${study.exam_name})`;
+        document.getElementById('rad-report-technique').value = study.technique || '';
+        document.getElementById('rad-report-findings').value = study.findings || '';
+        document.getElementById('rad-report-impression').value = study.impression || '';
+        document.getElementById('rad-report-sign-doctor').value = study.radiologist_name || 'د. مروان البدري (استشاري أشعة تشخيصية)';
+        document.getElementById('rad-report-signed-check').checked = study.status === 'signed';
+
+        modal.classList.remove('hidden');
+    },
+
+    loadRadTemplate(templateKey) {
+        if (!templateKey || !this.radiologyTemplates[templateKey]) return;
+
+        const tpl = this.radiologyTemplates[templateKey];
+        const techInput = document.getElementById('rad-report-technique');
+        const findInput = document.getElementById('rad-report-findings');
+        const impInput = document.getElementById('rad-report-impression');
+
+        if (techInput) techInput.value = tpl.technique;
+        if (findInput) findInput.value = tpl.findings;
+        if (impInput) impInput.value = tpl.impression;
+
+        Utils.showToast('تم تحميل القالب الطبي الجاهز بنجاح ⚡', 'success');
+    },
+
+    openRadViewerModal(studyId) {
+        const study = this.radiologyStudies.find(s => s.id === studyId);
+        if (!study) return;
+
+        const modal = document.getElementById('rad-viewer-modal');
+        if (!modal) return;
+
+        document.getElementById('rad-viewer-title').textContent = `عارض الصور الطبية: ${study.exam_name}`;
+        document.getElementById('rad-viewer-subtitle').textContent = `دراسة رقم: ${study.study_id} | ${study.modality} Study`;
+        document.getElementById('rad-viewer-hud-name').textContent = study.patient_name;
+        document.getElementById('rad-viewer-hud-id').textContent = study.study_id;
+        document.getElementById('rad-viewer-hud-modality').textContent = study.modality;
+
+        const img = document.getElementById('rad-viewer-img');
+        if (img) {
+            img.src = study.image_url || 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80';
+        }
+
+        this.resetScanViewer();
+        modal.classList.remove('hidden');
+    },
+
+    toggleScanInvert() {
+        const img = document.getElementById('rad-viewer-img');
+        if (!img) return;
+
+        this.scanViewerState.invert = !this.scanViewerState.invert;
+        img.classList.toggle('dicom-inverted', this.scanViewerState.invert);
+    },
+
+    toggleScanContrast() {
+        const img = document.getElementById('rad-viewer-img');
+        if (!img) return;
+
+        this.scanViewerState.highContrast = !this.scanViewerState.highContrast;
+        img.classList.toggle('dicom-high-contrast', this.scanViewerState.highContrast);
+    },
+
+    resetScanViewer() {
+        const img = document.getElementById('rad-viewer-img');
+        if (!img) return;
+
+        this.scanViewerState = { invert: false, highContrast: false };
+        img.classList.remove('dicom-inverted', 'dicom-high-contrast');
+    },
+
+    openRadPrintModal(studyId) {
+        const study = this.radiologyStudies.find(s => s.id === studyId);
+        if (!study) return;
+
+        const modal = document.getElementById('rad-print-modal');
+        if (!modal) return;
+
+        document.getElementById('print-rad-study-id').textContent = study.study_id;
+        document.getElementById('print-rad-date').textContent = study.study_date;
+        document.getElementById('print-rad-patient-name').textContent = study.patient_name;
+        document.getElementById('print-rad-patient-info').textContent = `${study.patient_age || 38} سنة / ${study.patient_gender === 'female' ? 'أنثى' : 'ذكر'}`;
+        document.getElementById('print-rad-exam-name').textContent = `${study.modality} - ${study.exam_name}`;
+        document.getElementById('print-rad-doctor').textContent = study.doctor_name;
+        document.getElementById('print-rad-technique').textContent = study.technique || 'Standard acquisition.';
+        document.getElementById('print-rad-findings').textContent = study.findings || 'No acute findings.';
+        document.getElementById('print-rad-impression').textContent = study.impression || 'Unremarkable study.';
+        document.getElementById('print-rad-verified-by').textContent = study.radiologist_name || 'د. مروان البدري (استشاري أشعة تشخيصية)';
+
+        modal.classList.remove('hidden');
+    },
+
+    sendRadWhatsApp(studyId) {
+        const study = this.radiologyStudies.find(s => s.id === studyId);
+        if (!study) return;
+
+        const phone = (study.patient_phone || '').replace(/[^0-9]/g, '');
+        const patientName = study.patient_name;
+        const msg = `مرحباً أستاذ/ة ${patientName}،\nنفيدكم باعتماد تقرير فحص الأشعة (${study.exam_name}) برقم دراسة (${study.study_id}) من مركز الوجيه للأشعة التشخيصية.\nالتشخيص والانطباع الطبي:\n« ${study.impression || 'سليم وطبيعي'} »\nيمكنكم استعراض التقرير والصور الطبية عبر الرابط:\nhttps://hassan-wajih-ai.github.io/al-wagih-clinic/dashboards/patient/index.html\nمع تمنياتنا لكم بتمام الشفاء والعافية!`;
+
+        const waUrl = `https://wa.me/2${phone}?text=${encodeURIComponent(msg)}`;
+        window.open(waUrl, '_blank');
+        Utils.showToast(`جاري فتح محادثة WhatsApp للمريض ${patientName}`, 'info');
+    },
+
+    exportRadReportExcel() {
+        if (window.Reports && Reports.exportRadiologyReport) {
+            Reports.exportRadiologyReport({}, this.radiologyStudies);
+        } else {
+            Utils.showToast('جاري تصدير تقرير الأشعة...', 'info');
+        }
+    },
+
+    // =========================================================================
+    // مولدات البيانات التجريبية للمعمل والأشعة (Mock Catalogs & Studies)
+    // =========================================================================
+    getMockLabCatalog() {
+        return [
+            {
+                key: 'cbc',
+                name: 'صورة دم كاملة (Complete Blood Count - CBC)',
+                tube: 'أنبوبة موف (EDTA Purple) 🟣',
+                cost: 250,
+                parameters: [
+                    { name: 'Hemoglobin (Hb)', default: '14.2', unit: 'g/dL', ref: '12.0 - 16.0', min: 12.0, max: 16.0, panic_low: 7.0, panic_high: 20.0 },
+                    { name: 'RBCs Count', default: '4.8', unit: 'M/uL', ref: '4.2 - 5.4', min: 4.2, max: 5.4 },
+                    { name: 'WBCs Count', default: '7.1', unit: 'K/uL', ref: '4.0 - 11.0', min: 4.0, max: 11.0, panic_high: 30.0 },
+                    { name: 'Platelets (PLT)', default: '260', unit: 'K/uL', ref: '150 - 450', min: 150, max: 450, panic_low: 50 },
+                    { name: 'Hematocrit (PCV)', default: '42.5', unit: '%', ref: '37.0 - 48.0', min: 37.0, max: 48.0 }
+                ]
+            },
+            {
+                key: 'liver',
+                name: 'وظائف كبد شاملة (Comprehensive Liver Panel)',
+                tube: 'أنبوبة صفراء (Serum Gel) 🟡',
+                cost: 380,
+                parameters: [
+                    { name: 'ALT (SGPT)', default: '28', unit: 'U/L', ref: '7 - 56', min: 7, max: 56, panic_high: 250 },
+                    { name: 'AST (SGOT)', default: '24', unit: 'U/L', ref: '10 - 40', min: 10, max: 40, panic_high: 250 },
+                    { name: 'Total Bilirubin', default: '0.8', unit: 'mg/dL', ref: '0.2 - 1.2', min: 0.2, max: 1.2, panic_high: 12.0 },
+                    { name: 'Direct Bilirubin', default: '0.2', unit: 'mg/dL', ref: '0.0 - 0.3', min: 0.0, max: 0.3 },
+                    { name: 'Serum Albumin', default: '4.4', unit: 'g/dL', ref: '3.5 - 5.0', min: 3.5, max: 5.0 }
+                ]
+            },
+            {
+                key: 'kidney',
+                name: 'وظائف كلى (Renal Function Panel)',
+                tube: 'أنبوبة صفراء (Serum Gel) 🟡',
+                cost: 290,
+                parameters: [
+                    { name: 'Serum Creatinine', default: '0.9', unit: 'mg/dL', ref: '0.6 - 1.2', min: 0.6, max: 1.2, panic_high: 3.5 },
+                    { name: 'Blood Urea', default: '28', unit: 'mg/dL', ref: '15 - 45', min: 15, max: 45, panic_high: 100 },
+                    { name: 'Serum Uric Acid', default: '5.2', unit: 'mg/dL', ref: '3.5 - 7.2', min: 3.5, max: 7.2 }
+                ]
+            },
+            {
+                key: 'lipid',
+                name: 'دهون الدم الكاملة (Lipid Profile)',
+                tube: 'أنبوبة صفراء (Serum Gel) 🟡',
+                cost: 350,
+                parameters: [
+                    { name: 'Total Cholesterol', default: '185', unit: 'mg/dL', ref: '< 200', min: 0, max: 200 },
+                    { name: 'Triglycerides', default: '140', unit: 'mg/dL', ref: '< 150', min: 0, max: 150 },
+                    { name: 'HDL Cholesterol', default: '52', unit: 'mg/dL', ref: '> 40', min: 40, max: 999 },
+                    { name: 'LDL Cholesterol', default: '95', unit: 'mg/dL', ref: '< 100', min: 0, max: 100 }
+                ]
+            },
+            {
+                key: 'hba1c',
+                name: 'السكر التراكمي (HbA1c Glycated Hemoglobin)',
+                tube: 'أنبوبة موف (EDTA Purple) 🟣',
+                cost: 220,
+                parameters: [
+                    { name: 'HbA1c', default: '5.4', unit: '%', ref: '4.0 - 5.6', min: 4.0, max: 5.6, panic_high: 12.0 }
+                ]
+            },
+            {
+                key: 'thyroid',
+                name: 'هرمونات الغدة الدرقية (TSH, FT3, FT4)',
+                tube: 'أنبوبة صفراء (Serum Gel) 🟡',
+                cost: 480,
+                parameters: [
+                    { name: 'TSH', default: '2.1', unit: 'uIU/mL', ref: '0.4 - 4.0', min: 0.4, max: 4.0 },
+                    { name: 'Free T3', default: '3.2', unit: 'pg/mL', ref: '2.3 - 4.2', min: 2.3, max: 4.2 },
+                    { name: 'Free T4', default: '1.3', unit: 'ng/dL', ref: '0.8 - 1.8', min: 0.8, max: 1.8 }
+                ]
+            }
+        ];
+    },
+
+    getMockLabOrders() {
+        return [
+            {
+                id: 'lab_1',
+                sample_id: 'LAB-2026-8801',
+                patient_name: 'أحمد سعيد عبد الله',
+                patient_phone: '01099887766',
+                patient_age: 38,
+                patient_gender: 'male',
+                test_key: 'cbc',
+                test_name: 'صورة دم كاملة (CBC)',
+                tube_type: 'أنبوبة موف (EDTA Purple) 🟣',
+                doctor_name: 'د. أحمد الشناوي (استشاري باطنة)',
+                sample_date: '2026-11-15',
+                cost: 250,
+                payment_type: 'cash',
+                contract_name: null,
+                status: 'verified',
+                status_label: 'معتمدة ومكتملة',
+                flag: 'normal',
+                parameters: [
+                    { name: 'Hemoglobin (Hb)', value: '14.2', unit: 'g/dL', ref: '12.0 - 16.0', flag: 'normal' },
+                    { name: 'RBCs Count', value: '4.8', unit: 'M/uL', ref: '4.2 - 5.4', flag: 'normal' },
+                    { name: 'WBCs Count', value: '7.1', unit: 'K/uL', ref: '4.0 - 11.0', flag: 'normal' },
+                    { name: 'Platelets (PLT)', value: '260', unit: 'K/uL', ref: '150 - 450', flag: 'normal' },
+                    { name: 'Hematocrit (PCV)', value: '42.5', unit: '%', ref: '37.0 - 48.0', flag: 'normal' }
+                ],
+                comment: 'صورة دم طبيعية ومتوازنة، لا توجد دلالات لفقر دم أو عدوى حادة.',
+                verified_by: 'د. هاني عثمان (استشاري باثولوجيا إكلينيكية)'
+            },
+            {
+                id: 'lab_2',
+                sample_id: 'LAB-2026-8802',
+                patient_name: 'مريم عادل خليل',
+                patient_phone: '01155443322',
+                patient_age: 29,
+                patient_gender: 'female',
+                test_key: 'liver',
+                test_name: 'وظائف كبد شاملة (Liver Panel)',
+                tube_type: 'أنبوبة صفراء (Serum Gel) 🟡',
+                doctor_name: 'د. أحمد الشناوي (استشاري باطنة)',
+                sample_date: '2026-11-15',
+                cost: 380,
+                payment_type: 'corporate',
+                contract_name: 'مصر للتأمين',
+                status: 'in_progress',
+                status_label: 'قيد التحليل',
+                flag: 'high',
+                parameters: [
+                    { name: 'ALT (SGPT)', value: '68', unit: 'U/L', ref: '7 - 56', flag: 'high' },
+                    { name: 'AST (SGOT)', value: '42', unit: 'U/L', ref: '10 - 40', flag: 'high' },
+                    { name: 'Total Bilirubin', value: '0.9', unit: 'mg/dL', ref: '0.2 - 1.2', flag: 'normal' },
+                    { name: 'Serum Albumin', value: '4.2', unit: 'g/dL', ref: '3.5 - 5.0', flag: 'normal' }
+                ],
+                comment: 'ارتفاع طفيف في إنزيمات الكبد ALT/AST، يُنصح بعمل سونار على البطن لمتابعة دهون الكبد.',
+                verified_by: null
+            },
+            {
+                id: 'lab_3',
+                sample_id: 'LAB-2026-8803',
+                patient_name: 'يوسف حسام الشريف',
+                patient_phone: '01244332211',
+                patient_age: 54,
+                patient_gender: 'male',
+                test_key: 'kidney',
+                test_name: 'وظائف كلى (Renal Panel)',
+                tube_type: 'أنبوبة صفراء (Serum Gel) 🟡',
+                doctor_name: 'د. كريم عبد العزيز (استشاري عظام)',
+                sample_date: '2026-11-15',
+                cost: 290,
+                payment_type: 'cash',
+                contract_name: null,
+                status: 'verified',
+                status_label: 'معتمدة ومكتملة',
+                flag: 'panic',
+                parameters: [
+                    { name: 'Serum Creatinine', value: '3.8', unit: 'mg/dL', ref: '0.6 - 1.2', flag: 'panic' },
+                    { name: 'Blood Urea', value: '92', unit: 'mg/dL', ref: '15 - 45', flag: 'panic' },
+                    { name: 'Serum Uric Acid', value: '8.4', unit: 'mg/dL', ref: '3.5 - 7.2', flag: 'high' }
+                ],
+                comment: '🚨 تنبيه قيمة حرجة: قصور كلوي حاد مع ارتفاع شديد في الكرياتينين واليوريا. تم إخطار الطبيب المعالج تليفونياً فوراً.',
+                verified_by: 'د. هاني عثمان (استشاري باثولوجيا إكلينيكية)'
+            },
+            {
+                id: 'lab_4',
+                sample_id: 'LAB-2026-8804',
+                patient_name: 'فاطمة محمود إبراهيم',
+                patient_phone: '01011223344',
+                patient_age: 42,
+                patient_gender: 'female',
+                test_key: 'hba1c',
+                test_name: 'السكر التراكمي (HbA1c Glycated)',
+                tube_type: 'أنبوبة موف (EDTA Purple) 🟣',
+                doctor_name: 'د. سارة محمود (أخصائي أطفال وباطنة)',
+                sample_date: '2026-11-14',
+                cost: 220,
+                payment_type: 'cash',
+                contract_name: null,
+                status: 'verified',
+                status_label: 'معتمدة ومكتملة',
+                flag: 'normal',
+                parameters: [
+                    { name: 'HbA1c', value: '5.3', unit: '%', ref: '4.0 - 5.6', flag: 'normal' }
+                ],
+                comment: 'معدل سكر تراكمي سليم ومثالي، بدون أي بوادر سكري.',
+                verified_by: 'د. هاني عثمان (استشاري باثولوجيا إكلينيكية)'
+            }
+        ];
+    },
+
+    getMockRadiologyTemplates() {
+        return {
+            chest_normal: {
+                technique: 'PA projection of the chest obtained in full inspiration using standard radiographic parameters.',
+                findings: 'The cardiac silhouette and mediastinal contours are within normal limits for age and body habitus.\nNo focal airspace consolidation, pneumothorax, or pleural effusion is identified.\nThe pulmonary vasculature is normal. Bilateral diaphragmatic contours and costophrenic angles are sharp and clear.\nVisualized osseous structures of the thoracic cage demonstrate no acute fracture.',
+                impression: 'Normal chest radiography. No evidence of acute cardiopulmonary disease.'
+            },
+            lumbar_mri: {
+                technique: 'Sagittal and axial T1 and T2 weighted MR images of the lumbosacral spine performed on a 1.5 Tesla scanner.',
+                findings: 'Normal lumbar lordosis is maintained with no vertebral subluxation.\nVertebral body heights and marrow signal intensities are preserved.\nL4-L5 level demonstrates moderate posterior central and paracentral disc protrusion indenting the thecal sac and causing mild bilateral neural foraminal narrowing.\nL5-S1 disc shows mild annular bulge with preserved disc space height.\nConus medullaris ends at normal L1 level with normal signal.',
+                impression: 'L4-L5 posterior disc protrusion producing anterior thecal sac indentation and mild bilateral foraminal narrowing. Clinical correlation with lower limb radiculopathy is recommended.'
+            },
+            brain_ct: {
+                technique: 'Axial contiguous 5mm unenhanced CT slices of the brain from base to vertex.',
+                findings: 'No evidence of acute intracranial hemorrhage, mass effect, or midline shift.\nVentricles and basal cisterns are within normal age-appropriate limits.\nGray-white matter differentiation is preserved.\nCranial vault and skull base are intact with clear paranasal sinuses.',
+                impression: 'Normal unenhanced brain CT study. No acute intracranial pathology.'
+            },
+            pelvi_us: {
+                technique: 'Real-time grayscale and color Doppler ultrasound examination of the abdomen and pelvis.',
+                findings: 'Liver demonstrates normal size, smooth contour, and homogeneous echotexture with no focal hepatic lesions.\nGallbladder is well-distended with thin wall and calculus-free lumen.\nBoth kidneys show normal size, cortical thickness, and cortico-medullary differentiation with no stones or backpressure.\nSpleen, pancreas, and urinary bladder are unremarkable.',
+                impression: 'Normal pelvi-abdominal ultrasound study. No sonographic abnormality detected.'
+            },
+            knee_xray: {
+                technique: 'Weight-bearing anteroposterior and lateral projections of the right knee.',
+                findings: 'Mild narrowing of the medial joint compartment. Mild marginal osteophytic lipping noted along the medial tibial plateau and patellar margins.\nNo joint effusion, bony fracture, or dislocation is identified.',
+                impression: 'Findings consistent with mild right knee osteoarthritis (Kellgren-Lawrence Grade II).'
+            }
+        };
+    },
+
+    getMockRadiologyStudies() {
+        return [
+            {
+                id: 'rad_1',
+                study_id: 'RAD-2026-4401',
+                patient_name: 'أحمد سعيد عبد الله',
+                patient_phone: '01099887766',
+                patient_age: 38,
+                patient_gender: 'male',
+                modality: 'MRI',
+                exam_name: 'رنين مغناطيسي على الفقرات القطنية (Lumbar Spine)',
+                contrast: false,
+                doctor_name: 'د. كريم عبد العزيز (استشاري عظام)',
+                study_date: '2026-11-15',
+                cost: 1200,
+                payment_type: 'cash',
+                status: 'signed',
+                status_label: 'معتمد وموقع',
+                technique: 'Sagittal and axial T1 and T2 weighted MR images of the lumbosacral spine on a 1.5 Tesla scanner.',
+                findings: 'L4-L5 level demonstrates posterior central and paracentral disc protrusion indenting the anterior thecal sac and causing mild bilateral neural foraminal compromise. Other lumbar disc levels show preserved disc height and contour.',
+                impression: 'L4-L5 posterior disc herniation with thecal sac impingement. Clinical correlation with radiculopathy advised.',
+                radiologist_name: 'د. مروان البدري (استشاري أشعة تشخيصية)',
+                image_url: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                id: 'rad_2',
+                study_id: 'RAD-2026-4402',
+                patient_name: 'مريم عادل خليل',
+                patient_phone: '01155443322',
+                patient_age: 29,
+                patient_gender: 'female',
+                modality: 'Ultrasound',
+                exam_name: 'سونار على البطن والحوض (Pelvi-Abdominal US)',
+                contrast: false,
+                doctor_name: 'د. أحمد الشناوي (استشاري باطنة)',
+                study_date: '2026-11-15',
+                cost: 450,
+                payment_type: 'corporate',
+                status: 'drafting',
+                status_label: 'قيد كتابة التقرير',
+                technique: 'Real-time grayscale and color Doppler ultrasound examination of the abdomen and pelvis.',
+                findings: 'Liver demonstrates mild diffuse increase in parenchymal echogenicity consistent with grade I fatty infiltration. Gallbladder and kidneys are normal.',
+                impression: 'Mild diffuse hepatic steatosis (Fatty Liver Grade I). Otherwise unremarkable.',
+                radiologist_name: 'د. مروان البدري (استشاري أشعة تشخيصية)',
+                image_url: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                id: 'rad_3',
+                study_id: 'RAD-2026-4403',
+                patient_name: 'كمال نبيل صقر',
+                patient_phone: '01012345678',
+                patient_age: 61,
+                patient_gender: 'male',
+                modality: 'CT',
+                exam_name: 'أشعة مقطعية على المخ (Brain CT)',
+                contrast: true,
+                doctor_name: 'د. أحمد الشناوي (استشاري باطنة)',
+                study_date: '2026-11-14',
+                cost: 950,
+                payment_type: 'cash',
+                status: 'signed',
+                status_label: 'معتمد وموقع',
+                technique: 'Axial contiguous unenhanced and contrast-enhanced CT slices of the brain.',
+                findings: 'No evidence of acute intracranial hemorrhage or territorial infarction. Ventricles and cisterns are within normal age limits. Gray-white matter differentiation is preserved.',
+                impression: 'Normal unenhanced and enhanced brain CT study. No acute infarction or intracranial bleed.',
+                radiologist_name: 'د. مروان البدري (استشاري أشعة تشخيصية)',
+                image_url: 'https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                id: 'rad_4',
+                study_id: 'RAD-2026-4404',
+                patient_name: 'ياسمين رضا توفيق',
+                patient_phone: '01223344556',
+                patient_age: 45,
+                patient_gender: 'female',
+                modality: 'X-Ray',
+                exam_name: 'أشعة سينية على الصدر (Chest X-Ray PA)',
+                contrast: false,
+                doctor_name: 'د. سارة محمود (أخصائي أطفال وباطنة)',
+                study_date: '2026-11-15',
+                cost: 250,
+                payment_type: 'cash',
+                status: 'signed',
+                status_label: 'معتمد وموقع',
+                technique: 'PA projection of the chest in full inspiration.',
+                findings: 'Cardiac silhouette and mediastinum are within normal limits. Lungs are clear with no focal consolidation or effusion. Costophrenic angles are free.',
+                impression: 'Normal chest radiography.',
+                radiologist_name: 'د. مروان البدري (استشاري أشعة تشخيصية)',
+                image_url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80'
+            }
+        ];
     }
 };
 
