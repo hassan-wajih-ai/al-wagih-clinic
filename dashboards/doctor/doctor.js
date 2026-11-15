@@ -284,6 +284,87 @@ const DoctorApp = {
         `;
 
         document.getElementById('doctor-history-modal').classList.remove('hidden');
+    },
+
+    /**
+     * نداء المريض صوتياً وبث الإشعار على شاشة التلفزيون (Queue TV)
+     */
+    callActivePatientVoice() {
+        if (!this.activeAppointment) {
+            Utils.showToast('يرجى اختيار مريض من قائمة الانتظار للنداء', 'warning');
+            return;
+        }
+
+        const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
+        const clinicName = 'العيادة التخصصية';
+        const roomNo = '101';
+        const ticketNo = 'A-' + (100 + (parseInt(this.activeAppointment.id.replace(/\D/g, '') || 1) % 90));
+
+        this.playQueueChime();
+        this.speakQueueAnnouncement(ticketNo, clinicName, roomNo);
+
+        try {
+            localStorage.setItem('alwagih_queue_last_call', JSON.stringify({
+                ticket_no: ticketNo,
+                patient_name: patientName,
+                clinic: clinicName,
+                room_no: roomNo,
+                timestamp: Date.now()
+            }));
+        } catch(e) {}
+
+        Utils.showToast(`🔊 جاري الآن نداء المريض: ${patientName} على شاشة التلفزيون`, 'info');
+    },
+
+    playQueueChime() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            const now = ctx.currentTime;
+            
+            const osc1 = ctx.createOscillator();
+            const gain1 = ctx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(523.25, now);
+            gain1.gain.setValueAtTime(0.25, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+            osc1.connect(gain1);
+            gain1.connect(ctx.destination);
+            osc1.start(now);
+            osc1.stop(now + 0.5);
+
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(783.99, now + 0.25);
+            gain2.gain.setValueAtTime(0.25, now + 0.25);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.start(now + 0.25);
+            osc2.stop(now + 0.9);
+        } catch(e) {}
+    },
+
+    speakQueueAnnouncement(ticketNo, clinicName, roomNo) {
+        if (!('speechSynthesis' in window)) return;
+        try {
+            window.speechSynthesis.cancel();
+            const text = `تذكرة رقم ${ticketNo}، عيادة ${clinicName}، غرفة ${roomNo}`;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'ar-SA';
+            utter.rate = 0.92;
+            const voices = window.speechSynthesis.getVoices();
+            const arVoice = voices.find(v => v.lang && v.lang.startsWith('ar'));
+            if (arVoice) utter.voice = arVoice;
+            window.speechSynthesis.speak(utter);
+        } catch(e) {}
+    },
+
+    openMyCommissionsModal() {
+        const modal = document.getElementById('doctor-my-commissions-modal');
+        if (modal) modal.classList.remove('hidden');
     }
 };
 
