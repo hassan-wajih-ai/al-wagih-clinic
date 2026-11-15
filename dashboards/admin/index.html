@@ -116,8 +116,12 @@
                     <button id="tab-btn-inventory" onclick="ClinicAdminApp.switchTab('inventory')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition">
                         📦 المخازن وكارت الصنف
                     </button>
-                    <button id="tab-btn-contracts" onclick="ClinicAdminApp.switchTab('contracts')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition">
+                    <button id="tab-btn-contracts" onclick="ClinicAdminApp.switchTab('contracts')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
                         🏢 التعاقدات والتأمين (Co-Pay)
+                    </button>
+                    <button id="tab-btn-reports" onclick="ClinicAdminApp.switchTab('reports')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <span class="text-sm">📊</span>
+                        <span data-i18n="tab_reports">مركز التقارير والإحصائيات</span>
                     </button>
                 </div>
                 <a href="../accountant/index.html" class="px-3 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
@@ -602,10 +606,297 @@
                                 <th class="py-3 px-4 text-center">الحالة</th>
                             </tr>
                         </thead>
-                        <tbody id="contracts-table-body" class="divide-y divide-slate-100">
+                        <tbody id="contracts-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
                             <!-- تُملأ بواسطة admin.js -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 6: Comprehensive Reports Hub & Analytics Studio -->
+        <div id="tab-content-reports" class="hidden space-y-6 animate-fade-in">
+            <!-- Reports Sub-Tabs Header -->
+            <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-3">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex flex-wrap gap-2">
+                        <button id="reports-sub-btn-analytics" onclick="ClinicAdminApp.switchReportsSubTab('analytics')" class="btn-press px-3.5 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm transition">
+                            📈 تقرير الإحصائيات ومؤشرات الأداء
+                        </button>
+                        <button id="reports-sub-btn-financial" onclick="ClinicAdminApp.switchReportsSubTab('financial')" class="btn-press px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                            💰 تقرير المالية والإيرادات
+                        </button>
+                        <button id="reports-sub-btn-procurement" onclick="ClinicAdminApp.switchReportsSubTab('procurement')" class="btn-press px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                            🛒 تقرير المشتريات وأوامر التوريد
+                        </button>
+                        <button id="reports-sub-btn-patient_visits" onclick="ClinicAdminApp.switchReportsSubTab('patient_visits')" class="btn-press px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                            🩺 تقرير المرضى بالزيارات والإجراءات
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subview 1: Analytics & Statistics -->
+            <div id="reports-subview-analytics" class="space-y-6">
+                <!-- Analytics KPIs -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">إجمالي زيارات وكشوفات الشهر</span>
+                        <div class="text-2xl font-black text-sky-600 dark:text-sky-400 mt-2" id="stat-total-visits">348 زيارة</div>
+                        <div class="text-xs text-slate-400 mt-1">كاش وتعاقدات شركات</div>
+                    </div>
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">معدل الحضور والالتزام الفعلي</span>
+                        <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2" id="stat-attendance-rate">94%</div>
+                        <div class="text-xs text-slate-400 mt-1">حالات ملتزمة بالموعد المحدد</div>
+                    </div>
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">متوسط وقت انتظار المريض</span>
+                        <div class="text-2xl font-black text-purple-600 dark:text-purple-400 mt-2" id="stat-avg-wait">12 دقيقة</div>
+                        <div class="text-xs text-slate-400 mt-1">من الاستقبال إلى غرفة الطبيب</div>
+                    </div>
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">معدل رضا العملاء والمرضى (CSAT)</span>
+                        <div class="text-2xl font-black text-amber-500 mt-2" id="stat-csat-rating">4.9 ⭐</div>
+                        <div class="text-xs text-slate-400 mt-1">بناءً على تقييمات المرضى بالبوابة</div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-8 card-hover bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 class="font-bold text-slate-900 dark:text-white text-sm">اتجاه الزيارات الأسبوعي (كاش vs شركات)</h4>
+                                <p class="text-xs text-slate-400">تحليل مقارن لأعداد الكشوفات اليومية</p>
+                            </div>
+                            <button onclick="ClinicAdminApp.exportAnalyticsReportExcel()" class="btn-press px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                                <span>📗 تصدير إحصائيات (Excel)</span>
+                            </button>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="chart-visits-trend"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-4 card-hover bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <h4 class="font-bold text-slate-900 dark:text-white text-sm mb-1">الإجراءات الطبية الأكثر طلباً</h4>
+                        <p class="text-xs text-slate-400 mb-4">توزيع الإجراءات والفحوصات في المركز</p>
+                        <div class="h-64">
+                            <canvas id="chart-procedures-share"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor Performance Table -->
+                <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+                    <h4 class="font-bold text-slate-900 dark:text-white text-sm mb-4">مؤشرات أداء الأطباء والعيادات</h4>
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-3 px-3">اسم الطبيب</th>
+                                    <th class="py-3 px-3">التخصص والعيادة</th>
+                                    <th class="py-3 px-3">عدد الكشوفات</th>
+                                    <th class="py-3 px-3">إجمالي الإيرادات المحققة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analytics-doctor-table" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subview 2: Comprehensive Financial Report -->
+            <div id="reports-subview-financial" class="hidden space-y-6">
+                <!-- Financial KPIs -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">إجمالي النقدية المحصلة (Cash In)</span>
+                        <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2" id="fin-kpi-cash">0 ج.م</div>
+                        <div class="text-xs text-slate-400 mt-1">مسدد بخزائن المركز</div>
+                    </div>
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">مطالبات الشركات الآجلة (Receivables)</span>
+                        <div class="text-2xl font-black text-purple-600 dark:text-purple-400 mt-2" id="fin-kpi-corp">0 ج.م</div>
+                        <div class="text-xs text-slate-400 mt-1">تأمين ونقابات تحت التحصيل</div>
+                    </div>
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">المصروفات والمشتريات (Expenses)</span>
+                        <div class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-2" id="fin-kpi-exp">0 ج.م</div>
+                        <div class="text-xs text-slate-400 mt-1">تشغيل وعمولات وتوريدات</div>
+                    </div>
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">صافي الأرباح التشغيلية (Net Profit)</span>
+                        <div class="text-2xl font-black text-sky-600 dark:text-sky-400 mt-2" id="fin-kpi-profit">0 ج.م</div>
+                        <div class="text-xs text-slate-400 mt-1">بعد استقطاع التكاليف</div>
+                    </div>
+                </div>
+
+                <!-- Financial Table Card -->
+                <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+                        <div>
+                            <h3 class="text-base font-black text-slate-900 dark:text-white">سجل القيود والحركات المالية الشاملة</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">إيرادات الكشوفات، مطالبات التأمين، والمصروفات المعتمدة</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="window.print()" class="btn-press px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                                <span>🖨️ طباعة تقرير</span>
+                            </button>
+                            <button onclick="ClinicAdminApp.exportFinancialReportExcel()" class="btn-press px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20">
+                                <span>📗 تصدير المالية (Excel)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-3 px-3">رقم القيد</th>
+                                    <th class="py-3 px-3">التاريخ</th>
+                                    <th class="py-3 px-3">النوع</th>
+                                    <th class="py-3 px-3">البيان / الوصف</th>
+                                    <th class="py-3 px-3">الحساب</th>
+                                    <th class="py-3 px-3">دائن (ج.م)</th>
+                                    <th class="py-3 px-3">مدين (ج.م)</th>
+                                    <th class="py-3 px-3">الرصيد</th>
+                                </tr>
+                            </thead>
+                            <tbody id="financial-report-table-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subview 3: Procurement & Purchasing Report -->
+            <div id="reports-subview-procurement" class="hidden space-y-6">
+                <!-- Procurement KPIs -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">إجمالي أوامر الشراء المعتمدة</span>
+                        <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" id="proc-kpi-total">0 ج.م</div>
+                        <div class="text-xs text-slate-400 mt-1">مستلزمات وأدوية ومطهرات</div>
+                    </div>
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">المبالغ المسددة للموردين</span>
+                        <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2" id="proc-kpi-paid">0 ج.م</div>
+                        <div class="text-xs text-slate-400 mt-1">فواتير مسددة بالكامل أو جزئياً</div>
+                    </div>
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">المستحقات الآجلة للموردين (Payables)</span>
+                        <div class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-2" id="proc-kpi-due">0 ج.م</div>
+                        <div class="text-xs text-slate-400 mt-1">فواتير مستحقة الدفع لاحقاً</div>
+                    </div>
+                </div>
+
+                <!-- Procurement Table Card -->
+                <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+                        <div>
+                            <h3 class="text-base font-black text-slate-900 dark:text-white">سجل فواتير وأوامر المشتريات والتوريد</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">أوامر التوريد، أرقام الفواتير الضريبية، وحالات السداد</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="window.print()" class="btn-press px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                                <span>🖨️ طباعة تقرير</span>
+                            </button>
+                            <button onclick="ClinicAdminApp.exportProcurementReportExcel()" class="btn-press px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20">
+                                <span>📗 تصدير المشتريات (Excel)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-3 px-3">رقم الأمر</th>
+                                    <th class="py-3 px-3">اسم المورد</th>
+                                    <th class="py-3 px-3">تاريخ الطلب</th>
+                                    <th class="py-3 px-3">عدد الأصناف</th>
+                                    <th class="py-3 px-3">القيمة الإجمالية</th>
+                                    <th class="py-3 px-3">المدفوع</th>
+                                    <th class="py-3 px-3">المتبقي</th>
+                                    <th class="py-3 px-3">حالة السداد</th>
+                                    <th class="py-3 px-3">الفاتورة الضريبية</th>
+                                </tr>
+                            </thead>
+                            <tbody id="procurement-report-table-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subview 4: Patient Visits & Clinical Procedures Report -->
+            <div id="reports-subview-patient_visits" class="hidden space-y-6">
+                <!-- Visits KPIs -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">إجمالي زيارات المرضى</span>
+                        <div class="text-2xl font-black text-sky-600 dark:text-sky-400 mt-2" id="pv-kpi-total">0 زيارات</div>
+                        <div class="text-xs text-slate-400 mt-1">كشوفات مسجلة بالعيادات</div>
+                    </div>
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">الإجراءات الطبية المنفذة</span>
+                        <div class="text-2xl font-black text-purple-600 dark:text-purple-400 mt-2" id="pv-kpi-procedures">0 إجراءات</div>
+                        <div class="text-xs text-slate-400 mt-1">كشف، رسم قلب، سونار، حقن</div>
+                    </div>
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">كشوفات الدفع النقدي (Cash)</span>
+                        <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2" id="pv-kpi-cash">0 كاش</div>
+                        <div class="text-xs text-slate-400 mt-1">مسددة مباشرة بالعيادة</div>
+                    </div>
+                    <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">كشوفات تعاقدات الشركات (Co-Pay)</span>
+                        <div class="text-2xl font-black text-amber-500 mt-2" id="pv-kpi-corp">0 تعاقد</div>
+                        <div class="text-xs text-slate-400 mt-1">تأمين ونقابات بنسب خصم</div>
+                    </div>
+                </div>
+
+                <!-- Visits & Procedures Table Card -->
+                <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+                        <div>
+                            <h3 class="text-base font-black text-slate-900 dark:text-white">سجل زيارات المرضى والإجراءات والتشخيص الطبي</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">تفاصيل زيارات المرضى، الإجراءات الطبية، الأطباء المعالجين، ورسائل الواتساب</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="window.print()" class="btn-press px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                                <span>🖨️ طباعة تقرير</span>
+                            </button>
+                            <button onclick="ClinicAdminApp.exportPatientVisitsReportExcel()" class="btn-press px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20">
+                                <span>📗 تصدير الزيارات والإجراءات (Excel)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search & Filter Bar -->
+                    <div class="flex flex-col sm:flex-row items-center gap-3">
+                        <div class="w-full sm:w-96">
+                            <input type="text" oninput="ClinicAdminApp.renderPatientVisitsReport(this.value)" placeholder="🔍 بحث باسم المريض، الطبيب، أو الإجراء الطبي..." class="w-full px-4 py-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <span class="text-xs text-slate-400">تصفية تلقائية فور الكتابة</span>
+                    </div>
+
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-3 px-3">رقم الملف</th>
+                                    <th class="py-3 px-3">المريض</th>
+                                    <th class="py-3 px-3">الإجراء الطبي والتشخيص</th>
+                                    <th class="py-3 px-3">الطبيب المعالج</th>
+                                    <th class="py-3 px-3">التاريخ والوقت</th>
+                                    <th class="py-3 px-3">التكلفة</th>
+                                    <th class="py-3 px-3">نظام المحاسبة</th>
+                                    <th class="py-3 px-3 text-center">الواتساب</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patient-visits-report-table-body" class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
