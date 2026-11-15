@@ -55,6 +55,44 @@
     </header>
 
     <main class="max-w-5xl mx-auto px-4 py-6 sm:py-8 space-y-6 flex-1 w-full animate-fade-in">
+        <!-- Live Queue Tracking Ticket Card (تذكرة الانتظار الحية ومتابعة الدور) -->
+        <div id="patient-live-ticket-card" class="hidden card-hover bg-gradient-to-r from-sky-600 to-indigo-700 text-white rounded-3xl p-6 shadow-xl shadow-sky-600/20 relative overflow-hidden">
+            <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+                <div class="space-y-1">
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-bold backdrop-blur-sm">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span id="ticket-badge-status">تذكرة انتظار نشطة لليوم</span>
+                    </div>
+                    <h3 class="text-xl sm:text-2xl font-black flex items-center gap-2">
+                        <span>تذكرتك:</span>
+                        <span id="patient-live-ticket-no" class="font-mono text-amber-300">A-102</span>
+                    </h3>
+                    <p id="patient-live-clinic-info" class="text-xs text-sky-100">
+                        العيادة الباطنية والجهاز الهضمي — د. محمد عبد العزيز (غرفة 101)
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-4 bg-white/10 p-3.5 rounded-2xl backdrop-blur-sm border border-white/15 w-full sm:w-auto justify-between sm:justify-start">
+                    <div class="text-center sm:text-right">
+                        <span class="text-[10px] text-sky-200 block">حالة الدور الحالية</span>
+                        <strong id="patient-queue-state-text" class="text-xs font-bold text-white block">أمامك 1 مريض فقط</strong>
+                        <span id="patient-est-time" class="text-[10px] text-amber-300 font-mono">الوقت التقديري: ~ 8 دقائق</span>
+                    </div>
+                    <div class="w-12 h-12 bg-white text-slate-900 rounded-xl flex items-center justify-center font-black text-xl shadow-md">
+                        🎫
+                    </div>
+                </div>
+            </div>
+            <div id="patient-now-calling-alert" class="hidden mt-4 p-3 bg-emerald-500/90 text-white rounded-2xl border border-white/20 flex items-center justify-between text-xs font-bold animate-pulse">
+                <span class="flex items-center gap-2">
+                    <span class="text-lg">📢</span>
+                    <span>دورك الآن! يرجى التوجه لغرفة الكشف مباشرة.</span>
+                </span>
+                <span class="font-mono">غرفة 101</span>
+            </div>
+        </div>
+
         <!-- New Appointment Booking Card -->
         <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 sm:p-7 transition-colors">
             <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4 mb-5">
@@ -188,6 +226,64 @@
                 </table>
             </div>
         </div>
+
+        <!-- My E-Prescriptions Wallet Card (محفظة الروشتات وصرف الأدوية بالباركود) -->
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 sm:p-7 transition-colors">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>💊 محفظة روشتاتي الإلكترونية (E-Prescriptions)</span>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold">صرف فوري من صيدلية المجمع</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">استعرض روشتاتك الطبية وأظهر الباركود للصيدلي لصرف الأدوية بدون انتظار</p>
+                </div>
+            </div>
+            <div class="table-responsive-wrapper">
+                <table class="w-full text-right text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                            <th class="py-3.5 px-4">رقم الروشتة</th>
+                            <th class="py-3.5 px-4">الطبيب والعيادة</th>
+                            <th class="py-3.5 px-4">الأدوية الموصوفة</th>
+                            <th class="py-3.5 px-4">حالة الصرف بالصيدلية</th>
+                            <th class="py-3.5 px-4 text-center">عرض الروشتة والباركود</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patient-prescriptions-table" class="divide-y divide-slate-100 dark:divide-slate-800">
+                        <!-- يُملأ آلياً بواسطة patient.js -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Dental & Day Surgery Record Card (سجل الأسنان والعمليات الجراحية) -->
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 sm:p-7 transition-colors">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>🦷🏥 سجل علاجات الأسنان وجراحة اليوم الواحد</span>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 font-bold">سجل موثق</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">متابعة علاجات الأسنان، خطة العلاج، والتدخلات الجراحية مع تعليمات ما بعد الإجراء</p>
+                </div>
+            </div>
+            <div class="table-responsive-wrapper">
+                <table class="w-full text-right text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                            <th class="py-3.5 px-4">القسم / الإجراء</th>
+                            <th class="py-3.5 px-4">الطبيب الجراح</th>
+                            <th class="py-3.5 px-4">التاريخ</th>
+                            <th class="py-3.5 px-4">التفاصيل والتعليمات</th>
+                            <th class="py-3.5 px-4 text-center">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patient-procedures-table" class="divide-y divide-slate-100 dark:divide-slate-800">
+                        <!-- يُملأ آلياً بواسطة patient.js -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </main>
 
     <!-- Modal: Feedback & Rating -->
@@ -218,6 +314,46 @@
                     <button type="submit" class="btn-press px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md">إرسال التقييم</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal: View Prescription & Dispense Barcode (محفظة الروشتة للمريض) -->
+    <div id="patient-rx-details-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">💊</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm" id="pt-modal-rx-number">روشتة إلكترونية #RX-2026-801</h4>
+                        <p class="text-[10px] text-slate-400" id="pt-modal-doctor-clinic">د. محمد عبد العزيز — العيادة الباطنية</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('patient-rx-details-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+
+            <!-- الباركود الرقمي المباشر للصيدلي -->
+            <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-1">
+                <div class="font-mono text-2xl font-black tracking-widest text-slate-900 dark:text-white" id="pt-modal-barcode-display">||| | |||| || ||| |||| |</div>
+                <div class="text-[10px] font-mono text-slate-400" id="pt-modal-code-text">RX-CODE: 6221008741021</div>
+                <div class="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">أظهر هذا الرمز لكاونتر صيدلية المجمع للصرف الفوري المباشر</div>
+            </div>
+
+            <!-- قائمة الأدوية والتعليمات -->
+            <div>
+                <h5 class="text-xs font-bold text-slate-900 dark:text-white mb-2">الأدوية الموصوفة والجرعات:</h5>
+                <div id="pt-modal-items-list" class="space-y-2 max-h-56 overflow-y-auto">
+                    <!-- يُملأ آلياً بواسطة patient.js -->
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="window.print()" class="btn-press px-4 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200">
+                    🖨️ طباعة
+                </button>
+                <button type="button" onclick="document.getElementById('patient-rx-details-modal').classList.add('hidden')" class="btn-press px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md">
+                    إغلاق
+                </button>
+            </div>
         </div>
     </div>
 
