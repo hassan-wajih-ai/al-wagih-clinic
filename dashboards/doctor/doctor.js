@@ -8,6 +8,10 @@ const DoctorApp = {
     appointments: [],
     activeAppointment: null,
     currentPrescriptionItems: [],
+    activeClinicMode: 'general',
+    dentalTeethState: {},
+    dentalTreatmentPlan: [],
+    selectedTooth: null,
 
     async init() {
         // حماية الصفحة والتحقق من الصلاحيات
@@ -19,6 +23,7 @@ const DoctorApp = {
         document.getElementById('doctor-title').textContent = `عيادة: ${this.currentDoctor.full_name || 'الكشف الطبي'}`;
 
         this.populateDrugSelect();
+        this.initDentalOdontogram();
         await this.loadDoctorWaitingList();
         this.bindEvents();
 
@@ -628,6 +633,393 @@ const DoctorApp = {
             Utils.showToast(`✓ تم إرسال الروشتة (#${newRx.rx_number}) بنجاح إلى صيدلية المجمع لصرفها فوراً`, 'success');
         } catch (e) {
             console.error('Failed to dispatch prescription to pharmacy:', e);
+        }
+    },
+
+    // =========================================================================
+    // التبديل بين أنماط العيادات (General, Dental, Day Surgery)
+    // =========================================================================
+    switchClinicMode(mode) {
+        this.activeClinicMode = mode;
+        const modes = ['general', 'dental', 'surgery'];
+        modes.forEach(m => {
+            const btn = document.getElementById(`doc-mode-btn-${m}`);
+            const container = document.getElementById(`doc-mode-${m}-container`);
+            const isActive = m === mode;
+
+            if (btn) {
+                if (isActive) {
+                    btn.className = 'btn-press px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 text-white shadow-sm transition flex items-center gap-1.5';
+                } else {
+                    btn.className = 'btn-press px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5';
+                }
+            }
+            if (container) {
+                container.classList.toggle('hidden', !isActive);
+            }
+        });
+
+        if (mode === 'dental') {
+            this.renderDentalOdontogram();
+            this.renderDentalTreatmentPlan();
+        }
+    },
+
+    // =========================================================================
+    // عيادة ومخطط الأسنان التفاعلي (Interactive Dental Odontogram FDI 11-48)
+    // =========================================================================
+    initDentalOdontogram() {
+        const upperArch = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
+        const lowerArch = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
+
+        upperArch.concat(lowerArch).forEach(num => {
+            if (!this.dentalTeethState[num]) {
+                this.dentalTeethState[num] = {
+                    condition: 'sound',
+                    surfaces: [],
+                    procedure: '',
+                    cost: 0
+                };
+            }
+        });
+
+        const upperContainer = document.getElementById('dental-arch-upper');
+        const lowerContainer = document.getElementById('dental-arch-lower');
+
+        if (upperContainer) {
+            upperContainer.innerHTML = upperArch.map(num => this.createToothButtonHTML(num)).join('');
+        }
+        if (lowerContainer) {
+            lowerContainer.innerHTML = lowerArch.map(num => this.createToothButtonHTML(num)).join('');
+        }
+
+        this.renderDentalOdontogram();
+    },
+
+    getToothAnatomicalName(num) {
+        const names = {
+            11: 'قاطع مركزي علوي أيمن (UR1)', 12: 'قاطع جانبي علوي أيمن (UR2)', 13: 'ناب علوي أيمن (UR3)', 14: 'ضاحك أول علوي أيمن (UR4)', 15: 'ضاحك ثانٍ علوي أيمن (UR5)', 16: 'ضرس أول علوي أيمن (UR6)', 17: 'ضرس ثانٍ علوي أيمن (UR7)', 18: 'ضرس عقل علوي أيمن (UR8)',
+            21: 'قاطع مركزي علوي أيسر (UL1)', 22: 'قاطع جانبي علوي أيسر (UL2)', 23: 'ناب علوي أيسر (UL3)', 24: 'ضاحك أول علوي أيسر (UL4)', 25: 'ضاحك ثانٍ علوي أيسر (UL5)', 26: 'ضرس أول علوي أيسر (UL6)', 27: 'ضرس ثانٍ علوي أيسر (UL7)', 28: 'ضرس عقل علوي أيسر (UL8)',
+            41: 'قاطع مركزي سفلي أيمن (LR1)', 42: 'قاطع جانبي سفلي أيمن (LR2)', 43: 'ناب سفلي أيمن (LR3)', 44: 'ضاحك أول سفلي أيمن (LR4)', 45: 'ضاحك ثانٍ سفلي أيمن (LR5)', 46: 'ضرس أول سفلي أيمن (LR6)', 47: 'ضرس ثانٍ سفلي أيمن (LR7)', 48: 'ضرس عقل سفلي أيمن (LR8)',
+            31: 'قاطع مركزي سفلي أيسر (LL1)', 32: 'قاطع جانبي سفلي أيسر (LL2)', 33: 'ناب سفلي أيسر (LL3)', 34: 'ضاحك أول سفلي أيسر (LL4)', 35: 'ضاحك ثانٍ سفلي أيسر (LL5)', 36: 'ضرس أول سفلي أيسر (LL6)', 37: 'ضرس ثانٍ سفلي أيسر (LL7)', 38: 'ضرس عقل سفلي أيسر (LL8)'
+        };
+        return names[num] || `سن رقم ${num}`;
+    },
+
+    createToothButtonHTML(num) {
+        return `
+            <button type="button" id="tooth-btn-${num}" onclick="DoctorApp.openToothModal(${num})" class="btn-press p-1.5 rounded-xl border flex flex-col items-center justify-between text-center transition min-w-[50px] h-[72px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-teal-500 shadow-sm">
+                <span class="text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400">#${num}</span>
+                <span id="tooth-icon-${num}" class="text-base my-0.5">🦷</span>
+                <span id="tooth-badge-${num}" class="text-[8px] font-bold px-1 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 truncate max-w-full">
+                    سليم
+                </span>
+            </button>
+        `;
+    },
+
+    renderDentalOdontogram() {
+        Object.keys(this.dentalTeethState).forEach(numStr => {
+            const num = parseInt(numStr);
+            const state = this.dentalTeethState[num];
+            const btn = document.getElementById(`tooth-btn-${num}`);
+            const iconEl = document.getElementById(`tooth-icon-${num}`);
+            const badgeEl = document.getElementById(`tooth-badge-${num}`);
+            if (!btn || !badgeEl || !state) return;
+
+            const cond = state.condition || 'sound';
+            let bgClass = 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800';
+            let badgeText = 'سليم';
+            let badgeClass = 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400';
+
+            if (cond === 'caries') {
+                bgClass = 'bg-rose-50 dark:bg-rose-950/40 border-rose-400 dark:border-rose-700';
+                badgeText = 'تسوس';
+                badgeClass = 'bg-rose-100 dark:bg-rose-900 text-rose-800 dark:text-rose-200';
+            } else if (cond === 'composite') {
+                bgClass = 'bg-sky-50 dark:bg-sky-950/40 border-sky-400 dark:border-sky-700';
+                badgeText = 'حشو';
+                badgeClass = 'bg-sky-100 dark:bg-sky-900 text-sky-800 dark:text-sky-200';
+            } else if (cond === 'endo') {
+                bgClass = 'bg-amber-50 dark:bg-amber-950/40 border-amber-400 dark:border-amber-700';
+                badgeText = 'عصب';
+                badgeClass = 'bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200';
+            } else if (cond === 'crown') {
+                bgClass = 'bg-purple-50 dark:bg-purple-950/40 border-purple-400 dark:border-purple-700';
+                badgeText = 'طربوش';
+                badgeClass = 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200';
+            } else if (cond === 'implant') {
+                bgClass = 'bg-teal-50 dark:bg-teal-950/40 border-teal-400 dark:border-teal-700';
+                badgeText = 'زراعة';
+                badgeClass = 'bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-200';
+            } else if (cond === 'extracted') {
+                bgClass = 'bg-slate-200 dark:bg-slate-800 border-slate-400 opacity-60';
+                badgeText = 'مخلوع';
+                badgeClass = 'bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200';
+            }
+
+            btn.className = `btn-press p-1.5 rounded-xl border flex flex-col items-center justify-between text-center transition min-w-[50px] h-[72px] shadow-sm ${bgClass}`;
+            badgeEl.textContent = badgeText;
+            badgeEl.className = `text-[8px] font-bold px-1 py-0.2 rounded-md truncate max-w-full ${badgeClass}`;
+        });
+    },
+
+    openToothModal(toothNumber) {
+        this.selectedTooth = toothNumber;
+        const modal = document.getElementById('doc-dental-tooth-modal');
+        if (!modal) return;
+
+        const toothState = this.dentalTeethState[toothNumber] || { condition: 'sound', surfaces: [], procedure: '', cost: 0 };
+        document.getElementById('modal-tooth-number').textContent = toothNumber;
+        document.getElementById('modal-tooth-name').textContent = this.getToothAnatomicalName(toothNumber);
+
+        const condSelect = document.getElementById('modal-tooth-condition');
+        if (condSelect) condSelect.value = toothState.condition || 'sound';
+
+        ['o', 'm', 'd', 'b', 'l'].forEach(s => {
+            const el = document.getElementById(`surf-${s}`);
+            if (el) el.checked = (toothState.surfaces || []).includes(s.toUpperCase());
+        });
+
+        document.getElementById('modal-tooth-procedure').value = toothState.procedure || 'فحص وتشخيص';
+        document.getElementById('modal-tooth-cost').value = toothState.cost || 0;
+
+        modal.classList.remove('hidden');
+    },
+
+    closeToothModal() {
+        const modal = document.getElementById('doc-dental-tooth-modal');
+        if (modal) modal.classList.add('hidden');
+        this.selectedTooth = null;
+    },
+
+    onToothConditionChange() {
+        const cond = document.getElementById('modal-tooth-condition')?.value;
+        const procInput = document.getElementById('modal-tooth-procedure');
+        const costInput = document.getElementById('modal-tooth-cost');
+        if (!procInput || !costInput) return;
+
+        const defaults = {
+            sound: { proc: 'سليم - فحص دوري', cost: 0 },
+            caries: { proc: 'حشو كمبوزيت ضوئي تجميلي', cost: 650 },
+            composite: { proc: 'حشو تجميلي ليزر معزز', cost: 700 },
+            endo: { proc: 'علاج جذور وعصب بالموتور الآلي', cost: 1500 },
+            crown: { proc: 'تركيبة طربوش زيركون معتمد', cost: 2200 },
+            implant: { proc: 'زراعة أسنان تيتانيوم جراحية', cost: 9500 },
+            extracted: { proc: 'خلع جراحي للسن المتضرر', cost: 500 }
+        };
+
+        const def = defaults[cond] || defaults.sound;
+        procInput.value = def.proc;
+        costInput.value = def.cost;
+    },
+
+    applyToothTreatment() {
+        if (!this.selectedTooth) return;
+        const cond = document.getElementById('modal-tooth-condition').value;
+        const proc = document.getElementById('modal-tooth-procedure').value.trim();
+        const cost = parseFloat(document.getElementById('modal-tooth-cost').value) || 0;
+
+        const surfaces = [];
+        ['o', 'm', 'd', 'b', 'l'].forEach(s => {
+            if (document.getElementById(`surf-${s}`)?.checked) surfaces.push(s.toUpperCase());
+        });
+
+        this.dentalTeethState[this.selectedTooth] = {
+            condition: cond,
+            surfaces: surfaces,
+            procedure: proc,
+            cost: cost
+        };
+
+        const existingIdx = this.dentalTreatmentPlan.findIndex(i => i.tooth_number === this.selectedTooth);
+        const planItem = {
+            tooth_number: this.selectedTooth,
+            tooth_name: this.getToothAnatomicalName(this.selectedTooth),
+            condition: cond,
+            surface: surfaces.length > 0 ? surfaces.join('-') : 'التاج الكامل',
+            procedure_name: proc,
+            cost: cost,
+            status: 'completed'
+        };
+
+        if (cond === 'sound') {
+            if (existingIdx !== -1) this.dentalTreatmentPlan.splice(existingIdx, 1);
+        } else {
+            if (existingIdx !== -1) {
+                this.dentalTreatmentPlan[existingIdx] = planItem;
+            } else {
+                this.dentalTreatmentPlan.push(planItem);
+            }
+        }
+
+        this.renderDentalOdontogram();
+        this.renderDentalTreatmentPlan();
+        this.closeToothModal();
+        Utils.showToast(`تم تحديث حالة السن (#${this.selectedTooth}) بنجاح`, 'success');
+    },
+
+    renderDentalTreatmentPlan() {
+        const tbody = document.getElementById('dental-plan-tbody');
+        const costBadge = document.getElementById('dental-total-cost-badge');
+        if (!tbody) return;
+
+        if (this.dentalTreatmentPlan.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 text-xs">لا توجد إجراءات مسجلة بالمخطط حتى الآن</td></tr>`;
+            if (costBadge) costBadge.textContent = 'إجمالي الخطة: 0 ج.م';
+            return;
+        }
+
+        let total = 0;
+        tbody.innerHTML = this.dentalTreatmentPlan.map((item, idx) => {
+            total += (item.cost || 0);
+            return `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                    <td class="py-2.5 px-3 font-mono font-bold text-teal-600 dark:text-teal-400">#${item.tooth_number}</td>
+                    <td class="py-2.5 px-3 font-bold text-slate-900 dark:text-white text-xs">${item.tooth_name}</td>
+                    <td class="py-2.5 px-3 text-xs text-slate-700 dark:text-slate-300">${item.procedure_name}</td>
+                    <td class="py-2.5 px-3 font-mono text-xs text-purple-600 dark:text-purple-400">${item.surface}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400 text-xs">${Utils.formatCurrency(item.cost)}</td>
+                    <td class="py-2.5 px-3">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                            مُعتمد
+                        </span>
+                    </td>
+                    <td class="py-2.5 px-3 text-center">
+                        <button type="button" onclick="DoctorApp.removeDentalTreatment(${idx})" class="p-1 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950 rounded text-xs">✕</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        if (costBadge) costBadge.textContent = `إجمالي الخطة: ${Utils.formatCurrency(total)}`;
+    },
+
+    removeDentalTreatment(idx) {
+        if (idx >= 0 && idx < this.dentalTreatmentPlan.length) {
+            const item = this.dentalTreatmentPlan[idx];
+            if (this.dentalTeethState[item.tooth_number]) {
+                this.dentalTeethState[item.tooth_number] = { condition: 'sound', surfaces: [], procedure: '', cost: 0 };
+            }
+            this.dentalTreatmentPlan.splice(idx, 1);
+            this.renderDentalOdontogram();
+            this.renderDentalTreatmentPlan();
+            Utils.showToast('تم حذف الإجراء من خطة الأسنان', 'info');
+        }
+    },
+
+    resetDentalChart() {
+        if (!confirm('هل تريد إعادة تعيين كافة أسنان المخطط وإلغاء التحديدات؟')) return;
+        Object.keys(this.dentalTeethState).forEach(k => {
+            this.dentalTeethState[k] = { condition: 'sound', surfaces: [], procedure: '', cost: 0 };
+        });
+        this.dentalTreatmentPlan = [];
+        this.renderDentalOdontogram();
+        this.renderDentalTreatmentPlan();
+        Utils.showToast('تمت إعادة ضبط مخطط الأسنان بالكامل', 'info');
+    },
+
+    saveDentalTreatmentPlan() {
+        const patientName = this.activeAppointment ? (this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name) : 'مريض العيادة';
+        const patientPhone = this.activeAppointment ? (this.activeAppointment.patient ? this.activeAppointment.patient.phone : this.activeAppointment.patient_phone) : '01011223344';
+
+        if (this.dentalTreatmentPlan.length === 0) {
+            Utils.showToast('يرجى تحديد أسنات وإجراءات في المخطط أولاً', 'warning');
+            return;
+        }
+
+        try {
+            const stored = localStorage.getItem('alwagih_dental_procedures');
+            let list = stored ? JSON.parse(stored) : [];
+            this.dentalTreatmentPlan.forEach(p => {
+                list.unshift({
+                    id: 'dental_' + Date.now() + '_' + p.tooth_number,
+                    patient_name: patientName,
+                    patient_phone: patientPhone,
+                    doctor_name: this.currentDoctor ? this.currentDoctor.full_name : 'د. أحمد الشناوي',
+                    tooth_number: p.tooth_number,
+                    tooth_name: p.tooth_name,
+                    surface: p.surface,
+                    procedure_name: p.procedure_name,
+                    cost: p.cost,
+                    procedure_date: new Date().toISOString().split('T')[0],
+                    payment_type: 'cash',
+                    status: 'completed'
+                });
+            });
+            localStorage.setItem('alwagih_dental_procedures', JSON.stringify(list));
+            Utils.showToast(`✓ تم حفظ ${this.dentalTreatmentPlan.length} إجراء أسنان واعتمادها بملف المريض`, 'success');
+        } catch (e) {
+            console.error('Failed to save dental plan:', e);
+        }
+    },
+
+    printDentalTreatmentPlan() {
+        window.print();
+    },
+
+    // =========================================================================
+    // وحدة جراحة اليوم الواحد والعمليات (Day Surgery & Consent)
+    // =========================================================================
+    openSurgicalConsentModal() {
+        const patientName = this.activeAppointment ? (this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name) : 'المريض المسجل';
+        const surgeryName = document.getElementById('doc-surgery-name')?.value.trim() || 'تدخل جراحي صغرى';
+        const anesthesia = document.getElementById('doc-surgery-anesthesia')?.value || 'موضعي (Local)';
+        const surgeonName = this.currentDoctor ? this.currentDoctor.full_name : 'د. الجراح الاستشاري';
+
+        document.getElementById('consent-patient-name').textContent = patientName;
+        document.getElementById('consent-surgery-name').textContent = surgeryName;
+        document.getElementById('consent-surgeon-name').textContent = surgeonName;
+        document.getElementById('consent-anesthesia').textContent = anesthesia;
+
+        const modal = document.getElementById('doc-surgical-consent-modal');
+        if (modal) modal.classList.remove('hidden');
+    },
+
+    saveSurgeryProcedure() {
+        const patientName = this.activeAppointment ? (this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name) : 'المريض الجراحي';
+        const patientPhone = this.activeAppointment ? (this.activeAppointment.patient ? this.activeAppointment.patient.phone : this.activeAppointment.patient_phone) : '01011223344';
+        const surgeryName = document.getElementById('doc-surgery-name')?.value.trim();
+        const anesthesia = document.getElementById('doc-surgery-anesthesia')?.value || 'موضعي (Local)';
+        const orRoom = document.getElementById('doc-surgery-room')?.value || 'غرفة العمليات 1';
+        const recoveryBed = document.getElementById('doc-surgery-bed')?.value || 'سرير 1';
+        const notes = document.getElementById('doc-surgery-notes')?.value.trim();
+        const postop = document.getElementById('doc-surgery-postop')?.value.trim();
+        const cost = parseFloat(document.getElementById('doc-surgery-cost')?.value) || 1500;
+
+        if (!surgeryName) {
+            Utils.showToast('يرجى إدخال اسم العملية الجراحية أولاً', 'warning');
+            return;
+        }
+
+        const newSurgery = {
+            id: 'surg_' + Date.now(),
+            surgery_code: 'OR-' + (100 + Math.floor(Math.random() * 900)),
+            patient_name: patientName,
+            patient_phone: patientPhone,
+            surgeon_name: this.currentDoctor ? this.currentDoctor.full_name : 'د. الجراح الاستشاري',
+            anesthesiologist_name: 'د. خالد عبد السميع',
+            procedure_name: surgeryName,
+            anesthesia_type: anesthesia,
+            or_room: orRoom,
+            recovery_bed: recoveryBed,
+            surgery_date: new Date().toISOString().split('T')[0] + ' ' + new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+            who_checklist_passed: true,
+            consent_signed: true,
+            notes: notes || 'تمت العملية الجراحية بدون مضاعفات تذكر مع استقرار العلامات الحيوية',
+            postop_instructions: postop || 'غيار معقم يومياً مع تجنب الإجهاد ومراجعة العيادة بعد 7 أيام',
+            total_cost: cost,
+            status: 'completed'
+        };
+
+        try {
+            const stored = localStorage.getItem('alwagih_day_surgeries');
+            let list = stored ? JSON.parse(stored) : [];
+            list.unshift(newSurgery);
+            localStorage.setItem('alwagih_day_surgeries', JSON.stringify(list));
+            Utils.showToast(`✓ تم اعتماد وتوثيق العملية الجراحية (#${newSurgery.surgery_code}) بنجاح`, 'success');
+        } catch (e) {
+            console.error('Failed to save surgery:', e);
         }
     }
 };
