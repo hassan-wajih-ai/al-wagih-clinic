@@ -116,95 +116,358 @@
                 </button>
             </div>
 
-            <!-- Form: Diagnosis & Prescription -->
-            <form id="consultation-form" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">التشخيص الطبي (Diagnosis)</label>
-                    <textarea id="diagnosis-input" rows="2" placeholder="سجل التشخيص والأعراض الملاحظة..." class="w-full p-3 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
-                </div>
+            <!-- Clinic Mode Subtabs (General, Dental, Day Surgery) -->
+            <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+                <button type="button" id="doc-mode-btn-general" onclick="DoctorApp.switchClinicMode('general')" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 text-white shadow-sm transition flex items-center gap-1.5">
+                    <span>🩺</span>
+                    <span>الكشف العام والروشتة</span>
+                </button>
+                <button type="button" id="doc-mode-btn-dental" onclick="DoctorApp.switchClinicMode('dental')" class="btn-press px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <span>🦷</span>
+                    <span>مخطط الأسنان التفاعلي (Odontogram)</span>
+                </button>
+                <button type="button" id="doc-mode-btn-surgery" onclick="DoctorApp.switchClinicMode('surgery')" class="btn-press px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <span>🏥</span>
+                    <span>جراحة اليوم الواحد والعمليات (Day Surgery)</span>
+                </button>
+            </div>
 
-                <!-- محرر الروشتة الذكية وفاحص التداخلات الدوائية -->
-                <div class="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <label class="block text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                            <span>💊</span>
-                            <span>الروشتة الإلكترونية وفاحص التداخلات الدوائية</span>
-                        </label>
-                        <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                            متصل بصيدلية المجمع لحظياً
-                        </span>
+            <!-- 1. نمط الكشف العام والروشتة الإلكترونية -->
+            <div id="doc-mode-general-container">
+                <form id="consultation-form" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">التشخيص الطبي (Diagnosis)</label>
+                        <textarea id="diagnosis-input" rows="2" placeholder="سجل التشخيص والأعراض الملاحظة..." class="w-full p-3 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
                     </div>
 
-                    <!-- لاقط الأدوية السريع -->
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-2">
-                        <div class="md:col-span-4">
-                            <label class="block text-[10px] text-slate-500 dark:text-slate-400 mb-0.5">اختر الدواء من الدليل</label>
-                            <select id="doc-drug-select" onchange="DoctorApp.onDrugSelectChange()" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold">
-                                <option value="">-- اختر صنفاً من صيدلية العيادة --</option>
-                            </select>
+                    <!-- محرر الروشتة الذكية وفاحص التداخلات الدوائية -->
+                    <div class="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                <span>💊</span>
+                                <span>الروشتة الإلكترونية وفاحص التداخلات الدوائية</span>
+                            </label>
+                            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                                متصل بصيدلية المجمع لحظياً
+                            </span>
                         </div>
-                        <div class="md:col-span-3">
-                            <label class="block text-[10px] text-slate-500 dark:text-slate-400 mb-0.5">الجرعة / التركيز</label>
-                            <input type="text" id="doc-drug-dosage" placeholder="مثال: 1000 mg" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+
+                        <!-- لاقط الأدوية السريع -->
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-2">
+                            <div class="md:col-span-4">
+                                <label class="block text-[10px] text-slate-500 dark:text-slate-400 mb-0.5">اختر الدواء من الدليل</label>
+                                <select id="doc-drug-select" onchange="DoctorApp.onDrugSelectChange()" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold">
+                                    <option value="">-- اختر صنفاً من صيدلية العيادة --</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-3">
+                                <label class="block text-[10px] text-slate-500 dark:text-slate-400 mb-0.5">الجرعة / التركيز</label>
+                                <input type="text" id="doc-drug-dosage" placeholder="مثال: 1000 mg" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                            </div>
+                            <div class="md:col-span-3">
+                                <label class="block text-[10px] text-slate-500 dark:text-slate-400 mb-0.5">التعليمات ومواعيد الاستخدام</label>
+                                <input type="text" id="doc-drug-instructions" placeholder="مثال: قرص كل 12 ساعة بعد الأكل" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                            </div>
+                            <div class="md:col-span-2 flex items-end">
+                                <button type="button" onclick="DoctorApp.addPrescriptionItem()" class="w-full py-1.5 px-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1">
+                                    <span>+</span>
+                                    <span>إضافة للروشتة</span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="md:col-span-3">
-                            <label class="block text-[10px] text-slate-500 dark:text-slate-400 mb-0.5">التعليمات ومواعيد الاستخدام</label>
-                            <input type="text" id="doc-drug-instructions" placeholder="مثال: قرص كل 12 ساعة بعد الأكل" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+
+                        <!-- تنبيهات التداخلات الدوائية اللحظية (CDS Alerts) -->
+                        <div id="doc-interaction-alerts" class="hidden space-y-2"></div>
+
+                        <!-- جدول أصناف الروشتة الحالية -->
+                        <div id="doc-rx-items-container" class="hidden overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                            <table class="w-full text-right text-xs">
+                                <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px]">
+                                    <tr>
+                                        <th class="py-2 px-3">الدواء</th>
+                                        <th class="py-2 px-3">الجرعة والتعليمات</th>
+                                        <th class="py-2 px-3">الكمية</th>
+                                        <th class="py-2 px-3">السعر التقديري</th>
+                                        <th class="py-2 px-3 text-center">حذف</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="doc-rx-items-tbody" class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900"></tbody>
+                            </table>
                         </div>
-                        <div class="md:col-span-2 flex items-end">
-                            <button type="button" onclick="DoctorApp.addPrescriptionItem()" class="w-full py-1.5 px-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1">
-                                <span>+</span>
-                                <span>إضافة للروشتة</span>
+
+                        <!-- نص الروشتة الحر المحدث تلقائياً -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">صيغة الروشتة المطبوعة (Text Output)</label>
+                            <textarea id="prescription-input" rows="3" placeholder="تظهر هنا الأدوية المختارة أو يمكنك كتابة تعليمات إضافية يدوياً..." class="w-full p-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono"></textarea>
+                        </div>
+
+                        <div class="flex items-center justify-between text-xs pt-1">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="doc-auto-send-pharmacy" checked class="w-4 h-4 rounded text-purple-600 focus:ring-purple-500">
+                                <span class="text-slate-700 dark:text-slate-300 font-bold">إرسال الروشتة إلكترونياً لصيدلية المجمع فوراً للصرف</span>
+                            </label>
+                            <span id="doc-rx-total-badge" class="font-mono text-purple-700 dark:text-purple-300 font-bold"></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">ملاحظات الطبيب السرية (Doctor Notes)</label>
+                        <input type="text" id="notes-input" placeholder="ملاحظات للمتابعة في الزيارة القادمة..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-2">
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md shadow-purple-500/20 transition flex items-center gap-1.5">
+                            <span>✓</span>
+                            <span>إتمام الكشف وإصدار الروشتة الإلكترونية</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 2. نمط عيادة ومخطط الأسنان التفاعلي (Dental Odontogram) -->
+            <div id="doc-mode-dental-container" class="hidden space-y-4">
+                <div class="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+                        <div>
+                            <h4 class="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                                <span>🦷</span>
+                                <span>مخطط الأسنان التفاعلي الشامل (Permanent Adult Odontogram - FDI 11-48)</span>
+                            </h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">انقر على أي سن لتحديد حالته، الأسطح المتأثرة، وتسجيل الإجراء العلاجي</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="DoctorApp.resetDentalChart()" class="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition">
+                                ↺ إعادة تعيين المخطط
+                            </button>
+                            <button type="button" onclick="DoctorApp.printDentalTreatmentPlan()" class="btn-press px-3.5 py-1.5 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition flex items-center gap-1">
+                                <span>🖨️</span>
+                                <span>طباعة الخطة العلاجية</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- تنبيهات التداخلات الدوائية اللحظية (CDS Alerts) -->
-                    <div id="doc-interaction-alerts" class="hidden space-y-2"></div>
-
-                    <!-- جدول أصناف الروشتة الحالية -->
-                    <div id="doc-rx-items-container" class="hidden overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-                        <table class="w-full text-right text-xs">
-                            <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px]">
-                                <tr>
-                                    <th class="py-2 px-3">الدواء</th>
-                                    <th class="py-2 px-3">الجرعة والتعليمات</th>
-                                    <th class="py-2 px-3">الكمية</th>
-                                    <th class="py-2 px-3">السعر التقديري</th>
-                                    <th class="py-2 px-3 text-center">حذف</th>
-                                </tr>
-                            </thead>
-                            <tbody id="doc-rx-items-tbody" class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900"></tbody>
-                        </table>
+                    <!-- دليل ألوان الحالات (Legend) -->
+                    <div class="flex flex-wrap items-center gap-2 text-[11px] p-2.5 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                        <span class="font-bold text-slate-700 dark:text-slate-300 ml-1">دليل الحالات:</span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold">🟢 سليم (Sound)</span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 font-bold">🔴 تسوس (Caries)</span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 font-bold">🔵 حشو تجميلي (Composite)</span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-bold">🟠 علاج عصب (Endo)</span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 font-bold">🟣 تركيبة/طربوش (Crown)</span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 font-bold">💎 زراعة أسنان (Implant)</span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">✖️ خلع (Extracted)</span>
                     </div>
 
-                    <!-- نص الروشتة الحر المحدث تلقائياً -->
-                    <div>
-                        <label class="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">صيغة الروشتة المطبوعة (Text Output)</label>
-                        <textarea id="prescription-input" rows="3" placeholder="تظهر هنا الأدوية المختارة أو يمكنك كتابة تعليمات إضافية يدوياً..." class="w-full p-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono"></textarea>
+                    <!-- الفك العلوي (Maxillary Arch) -->
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-400 px-2">
+                            <span>الفك العلوي الأيمن (UR 18-11)</span>
+                            <span class="text-purple-600 dark:text-purple-400 text-[11px]">الفك العلوي (Maxilla)</span>
+                            <span>الفك العلوي الأيسر (UL 21-28)</span>
+                        </div>
+                        <div id="dental-arch-upper" class="grid grid-cols-16 gap-1 p-2 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 overflow-x-auto">
+                            <!-- توليد 16 سن علوي بواسطة doctor.js -->
+                        </div>
                     </div>
 
-                    <div class="flex items-center justify-between text-xs pt-1">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="doc-auto-send-pharmacy" checked class="w-4 h-4 rounded text-purple-600 focus:ring-purple-500">
-                            <span class="text-slate-700 dark:text-slate-300 font-bold">إرسال الروشتة إلكترونياً لصيدلية المجمع فوراً للصرف</span>
-                        </label>
-                        <span id="doc-rx-total-badge" class="font-mono text-purple-700 dark:text-purple-300 font-bold"></span>
+                    <!-- الفك السفلي (Mandibular Arch) -->
+                    <div class="space-y-1.5 pt-2">
+                        <div class="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-400 px-2">
+                            <span>الفك السفلي الأيمن (LR 48-41)</span>
+                            <span class="text-purple-600 dark:text-purple-400 text-[11px]">الفك السفلي (Mandible)</span>
+                            <span>الفك السفلي الأيسر (LL 31-38)</span>
+                        </div>
+                        <div id="dental-arch-lower" class="grid grid-cols-16 gap-1 p-2 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 overflow-x-auto">
+                            <!-- توليد 16 سن سفلي بواسطة doctor.js -->
+                        </div>
+                    </div>
+
+                    <!-- جدول الخطة العلاجية للأسنان المحددة للمريض -->
+                    <div class="pt-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <h5 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                <span>📋</span>
+                                <span>الخطة العلاجية والإجراءات المسجلة للأسنان</span>
+                            </h5>
+                            <span id="dental-total-cost-badge" class="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">إجمالي الخطة: 0 ج.م</span>
+                        </div>
+                        <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+                            <table class="w-full text-right text-xs">
+                                <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                    <tr>
+                                        <th class="py-2.5 px-3">رقم السن</th>
+                                        <th class="py-2.5 px-3">اسم السن والجهة</th>
+                                        <th class="py-2.5 px-3">التشخيص والإجراء</th>
+                                        <th class="py-2.5 px-3">الأسطح</th>
+                                        <th class="py-2.5 px-3">التكلفة التقديرية</th>
+                                        <th class="py-2.5 px-3">الحالة</th>
+                                        <th class="py-2.5 px-3 text-center">إجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dental-plan-tbody" class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                                    <tr>
+                                        <td colspan="7" class="py-6 text-center text-slate-400 text-xs">انقر على أي سن في المخطط أعلاه لإضافة إجراء علاجي</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" onclick="DoctorApp.saveDentalTreatmentPlan()" class="btn-press px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5">
+                            <span>💾</span>
+                            <span>اعتماد وحفظ الخطة العلاجية لملف المريض</span>
+                        </button>
                     </div>
                 </div>
+            </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">ملاحظات الطبيب السرية (Doctor Notes)</label>
-                    <input type="text" id="notes-input" placeholder="ملاحظات للمتابعة في الزيارة القادمة..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                </div>
+            <!-- 3. نمط جراحة اليوم الواحد والعمليات الصغرى (Day Surgery) -->
+            <div id="doc-mode-surgery-container" class="hidden space-y-4">
+                <div class="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+                        <div>
+                            <h4 class="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                                <span>🏥</span>
+                                <span>كونسول جراحة اليوم الواحد والعمليات الصغرى (Day Surgery Suite)</span>
+                            </h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">إدارة الإجراءات الجراحية، مراجعة قائمة الأمان لمنظمة الصحة العالمية WHO، وإصدار الموافقات</p>
+                        </div>
+                        <button type="button" onclick="DoctorApp.openSurgicalConsentModal()" class="btn-press px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition flex items-center gap-1">
+                            <span>📝</span>
+                            <span>إذن وموافقة العملية (Consent)</span>
+                        </button>
+                    </div>
 
-                <div class="flex items-center justify-end gap-3 pt-2">
-                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md shadow-purple-500/20 transition flex items-center gap-1.5">
-                        <span>✓</span>
-                        <span>إتمام الكشف وإصدار الروشتة الإلكترونية</span>
-                    </button>
+                    <!-- بيانات العملية والتحضير -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم العملية / التدخل الجراحي</label>
+                            <input type="text" id="doc-surgery-name" placeholder="مثال: استئصال كيس دهني مع خياطة تجميلية" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">نوع التخدير (Anesthesia)</label>
+                            <select id="doc-surgery-anesthesia" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold">
+                                <option value="موضعي (Local)">موضعي (Local Anesthesia)</option>
+                                <option value="مهدئ واعي (Sedation)">مهدئ واعي وريدي (IV Sedation)</option>
+                                <option value="نصفي (Spinal)">نصفي شوكي (Spinal)</option>
+                                <option value="كلي (General)">تخدير عام كلي (General)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">غرفة العمليات</label>
+                            <select id="doc-surgery-room" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                                <option value="غرفة العمليات الصغرى 1 (Minor OR 1)">غرفة العمليات الصغرى 1 (Minor OR 1)</option>
+                                <option value="غرفة العمليات 2 (Major OR 2)">غرفة العمليات 2 (Major OR 2)</option>
+                                <option value="غرفة المناظير والتنظير (Endoscopy Suite)">غرفة المناظير والتنظير</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">سرير الإفاقة (Recovery Bed)</label>
+                            <select id="doc-surgery-bed" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                                <option value="سرير الإفاقة 1">سرير الإفاقة 1 (شاغر)</option>
+                                <option value="سرير الإفاقة 2">سرير الإفاقة 2 (شاغر)</option>
+                                <option value="سرير الإفاقة 3">سرير الإفاقة 3 (شاغر)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- قائمة التحقق الجراحية الآمنة لمنظمة الصحة العالمية (WHO Surgical Safety Checklist) -->
+                    <div class="p-3.5 bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                            <h5 class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <span class="text-cyan-600">🛡️</span>
+                                <span>قائمة التحقق الجراحية الآمنة لـ WHO (Surgical Safety Checklist)</span>
+                            </h5>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300">معايير الجودة العالمية JCI</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                            <!-- المرحلة 1: Sign In -->
+                            <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
+                                <div class="font-bold text-purple-700 dark:text-purple-300 text-[11px] flex items-center gap-1">
+                                    <span>1️⃣ قبل التخدير</span>
+                                    <span>(Sign In)</span>
+                                </div>
+                                <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-700 dark:text-slate-300">
+                                    <input type="checkbox" id="who-signin-id" checked class="w-3.5 h-3.5 rounded text-purple-600">
+                                    <span>تأكيد هوية المريض وموضع الجراحة</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-700 dark:text-slate-300">
+                                    <input type="checkbox" id="who-signin-consent" checked class="w-3.5 h-3.5 rounded text-purple-600">
+                                    <span>اكتمال إذن الجراحة والتخدير</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-700 dark:text-slate-300">
+                                    <input type="checkbox" id="who-signin-allergies" checked class="w-3.5 h-3.5 rounded text-purple-600">
+                                    <span>فحص الحساسيات ومجرى الهواء</span>
+                                </label>
+                            </div>
+
+                            <!-- المرحلة 2: Time Out -->
+                            <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
+                                <div class="font-bold text-sky-700 dark:text-sky-300 text-[11px] flex items-center gap-1">
+                                    <span>2️⃣ قبل الشق الجراحي</span>
+                                    <span>(Time Out)</span>
+                                </div>
+                                <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-700 dark:text-slate-300">
+                                    <input type="checkbox" id="who-timeout-team" checked class="w-3.5 h-3.5 rounded text-sky-600">
+                                    <span>تعريف جميع أعضاء الفريق الجراحي</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-700 dark:text-slate-300">
+                                    <input type="checkbox" id="who-timeout-antibiotic" checked class="w-3.5 h-3.5 rounded text-sky-600">
+                                    <span>المضاد الحيوي الوقائي < 60 دقيقة</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-700 dark:text-slate-300">
+                                    <input type="checkbox" id="who-timeout-sterilization" checked class="w-3.5 h-3.5 rounded text-sky-600">
+                                    <span>مؤشرات تعقيم الآلات سليمة 100%</span>
+                                </label>
+                            </div>
+
+                            <!-- المرحلة 3: Sign Out -->
+                            <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
+                                <div class="font-bold text-emerald-700 dark:text-emerald-300 text-[11px] flex items-center gap-1">
+                                    <span>3️⃣ قبل مغادرة العمليات</span>
+                                    <span>(Sign Out)</span>
+                                </div>
+                                <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-700 dark:text-slate-300">
+                                    <input type="checkbox" id="who-signout-count" checked class="w-3.5 h-3.5 rounded text-emerald-600">
+                                    <span>مطابقة عد الشاش والإبر والآلات</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-700 dark:text-slate-300">
+                                    <input type="checkbox" id="who-signout-specimen" checked class="w-3.5 h-3.5 rounded text-emerald-600">
+                                    <span>وسم وتوثيق العينة النسيجية</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-[11px] text-slate-700 dark:text-slate-300">
+                                    <input type="checkbox" id="who-signout-recovery" checked class="w-3.5 h-3.5 rounded text-emerald-600">
+                                    <span>خطة المسكنات والملاحظة بالإفاقة</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- تقرير الجراحة وتفاصيل الخياطة والمستهلكات -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">تقرير العملية الجراحية (Operative Notes)</label>
+                            <textarea id="doc-surgery-notes" rows="3" placeholder="وصف التدخل الجراحي، نوع الغرز (مثال: Vicryl 3-0)، حالة النزيف، والنتيجة..." class="w-full p-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">إرشادات ما بعد الجراحة وموعد فك الغرز</label>
+                            <textarea id="doc-surgery-postop" rows="3" placeholder="مواعيد الغيار على الجرح، علامات الخطر، موعد فك الغرز بعد 7-10 أيام..." class="w-full p-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2">
+                        <div class="text-xs">
+                            <label class="font-bold text-slate-700 dark:text-slate-300">تكلفة العملية التقديرية (ج.م):</label>
+                            <input type="number" id="doc-surgery-cost" value="1500" class="w-24 px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-emerald-600 font-bold font-mono mr-2">
+                        </div>
+                        <button type="button" onclick="DoctorApp.saveSurgeryProcedure()" class="btn-press px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5">
+                            <span>💾</span>
+                            <span>اعتماد العملية وتسجيلها بسجل الجراحة</span>
+                        </button>
+                    </div>
                 </div>
-            </form>
+            </div>
         </div>
     </main>
 
@@ -363,6 +626,145 @@
 
             <div class="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-800">
                 <button type="button" onclick="document.getElementById('doctor-my-commissions-modal').classList.add('hidden')" class="px-5 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Tooth Diagnosis & Treatment (Dental Odontogram) -->
+    <div id="doc-dental-tooth-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h4 class="font-bold text-teal-900 dark:text-teal-300 text-sm flex items-center gap-1.5">
+                    <span>🦷</span>
+                    <span>تشخيص وإجراء السن (#<span id="modal-tooth-number">16</span>)</span>
+                </h4>
+                <button type="button" onclick="DoctorApp.closeToothModal()" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+
+            <div class="space-y-3">
+                <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs text-slate-700 dark:text-slate-300 font-bold" id="modal-tooth-name">
+                    ضرس أول علوي أيمن (Maxillary Right First Molar)
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الحالة الإكلينيكية / التشخيص</label>
+                    <select id="modal-tooth-condition" onchange="DoctorApp.onToothConditionChange()" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-bold">
+                        <option value="sound">🟢 سليم تماماً (Healthy / Sound)</option>
+                        <option value="caries" selected>🔴 تسوس نخر أسنان (Dental Caries)</option>
+                        <option value="composite">🔵 حشو تجميلي كمبوزيت (Composite Restoration)</option>
+                        <option value="endo">🟠 علاج جذور وعصب (Root Canal Treatment)</option>
+                        <option value="crown">🟣 تركيبة / طربوش خزفي (Crown / Zircon)</option>
+                        <option value="implant">💎 زراعة سن مع غرسة تيتانيوم (Dental Implant)</option>
+                        <option value="extracted">✖️ مخلوع / يحتاج خلع (Extraction)</option>
+                    </select>
+                </div>
+
+                <!-- الأسطح المتأثرة -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الأسطح المتأثرة (Tooth Surfaces)</label>
+                    <div class="grid grid-cols-5 gap-1.5 text-center text-xs">
+                        <label class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800">
+                            <input type="checkbox" id="surf-o" checked class="w-3.5 h-3.5 rounded text-teal-600 block mx-auto mb-1">
+                            <span class="text-[10px] font-bold">O (إطباق)</span>
+                        </label>
+                        <label class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800">
+                            <input type="checkbox" id="surf-m" class="w-3.5 h-3.5 rounded text-teal-600 block mx-auto mb-1">
+                            <span class="text-[10px] font-bold">M (إنسي)</span>
+                        </label>
+                        <label class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800">
+                            <input type="checkbox" id="surf-d" class="w-3.5 h-3.5 rounded text-teal-600 block mx-auto mb-1">
+                            <span class="text-[10px] font-bold">D (وحشي)</span>
+                        </label>
+                        <label class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800">
+                            <input type="checkbox" id="surf-b" class="w-3.5 h-3.5 rounded text-teal-600 block mx-auto mb-1">
+                            <span class="text-[10px] font-bold">B (خدي)</span>
+                        </label>
+                        <label class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800">
+                            <input type="checkbox" id="surf-l" class="w-3.5 h-3.5 rounded text-teal-600 block mx-auto mb-1">
+                            <span class="text-[10px] font-bold">L (لساني)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الإجراء العلاجي المقترح</label>
+                        <input type="text" id="modal-tooth-procedure" value="حشو ضوئي تجميلي طبقات" class="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">التكلفة التقديرية (ج.م)</label>
+                        <input type="number" id="modal-tooth-cost" value="650" class="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-emerald-600 font-bold font-mono">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="DoctorApp.closeToothModal()" class="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition">إلغاء</button>
+                <button type="button" onclick="DoctorApp.applyToothTreatment()" class="btn-press px-5 py-2 text-xs font-bold text-white bg-teal-600 hover:bg-teal-700 rounded-xl shadow-md transition flex items-center gap-1.5">
+                    <span>✓ حفظ وتحديث المخطط</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Surgical Consent Form (Day Surgery) -->
+    <div id="doc-surgical-consent-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">و</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm">إقرار وموافقة مستنيرة على إجراء تدخل جراحي (Surgical Consent)</h4>
+                        <p class="text-[10px] text-slate-400">مجمع الوجيه الطبي التخصصي — وحدة جراحة اليوم الواحد والعمليات الصغرى</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('doc-surgical-consent-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+
+            <!-- محتوى الإقرار الطبي -->
+            <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs space-y-3 leading-relaxed text-slate-700 dark:text-slate-300">
+                <div class="grid grid-cols-2 gap-2 font-bold pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <div>المريض: <span id="consent-patient-name" class="text-purple-700 dark:text-purple-300 font-mono"></span></div>
+                    <div>اسم العملية: <span id="consent-surgery-name" class="text-slate-900 dark:text-white"></span></div>
+                    <div>الجراح المسؤول: <span id="consent-surgeon-name" class="text-slate-900 dark:text-white"></span></div>
+                    <div>نوع التخدير: <span id="consent-anesthesia" class="text-slate-900 dark:text-white"></span></div>
+                </div>
+
+                <p>
+                    أقر أنا الموقع أدناه (المريض / ولي الأمر / الوكيل الشرعي) بأن الطبيب المعالج قد شرح لي بالتفصيل طبيعة الحالة المرضية والتدخل الجراحي المذكور أعلاه، والبدائل العلاجية المتاحة، والفوائد المرجوة، والمخاطر المحتملة والمضاعفات النادرة المترتبة على هذا التدخل ونوع التخدير المختار.
+                </p>
+                <p>
+                    وقد أتيحت لي الفرصة الكاملة لطرح جميع الأسئلة والاستفسارات، وتمت الإجابة عليها وتوضيحها بالكامل وبما يرضيني. وبناءً عليه، أوافق بمحض إرادتي الحرة على إجراء التدخل الجراحي وما قد تستدعيه الضرورة الطبية الجراحية أثناء العملية.
+                </p>
+
+                <!-- خطوط التوقيع الرسمي -->
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                    <div class="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-center space-y-2">
+                        <span class="text-[10px] text-slate-400 block">توقيع المريض أو الوكيل</span>
+                        <div class="h-12 border-b border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center font-mono font-bold text-slate-800 dark:text-slate-200">
+                            موقع إلكترونياً برقم التأكيد ✓
+                        </div>
+                        <span class="text-[10px] text-slate-500 font-mono">التاريخ: 2026-11-15</span>
+                    </div>
+
+                    <div class="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-center space-y-2">
+                        <span class="text-[10px] text-slate-400 block">توقيع الجراح الاستشاري</span>
+                        <div class="h-12 border-b border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center font-bold text-indigo-700 dark:text-indigo-400">
+                            د. الجراح المعتمد
+                        </div>
+                        <span class="text-[10px] text-slate-500 font-mono">ترخيص مزاولة المهنة: 98124</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800">
+                <button type="button" onclick="window.print()" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white transition flex items-center gap-1.5">
+                    <span>🖨️</span>
+                    <span>طباعة الموافقة الرسمية</span>
+                </button>
+                <button type="button" onclick="document.getElementById('doc-surgical-consent-modal').classList.add('hidden')" class="btn-press px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md">
+                    ✓ اعتماد وإغلاق
+                </button>
             </div>
         </div>
     </div>
