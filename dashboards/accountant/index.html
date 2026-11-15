@@ -106,9 +106,12 @@
                     <h3 class="text-base font-bold text-slate-900">دفتر الحركات المالية اليومية وسلطة التعديل والإلغاء</h3>
                     <p class="text-xs text-slate-500">صلاحية حصرية للمحاسب والمدير العام لتعديل قيمة أو إلغاء كشف مع توثيق السبب رقابياً</p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="AccountantApp.exportFinancialLedgerExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                        <span>📗 تصدير اليومية (Excel)</span>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="AccountantApp.exportFinancialLedgerExcel()" class="btn-press px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                        <span>📗 اليومية المالية</span>
+                    </button>
+                    <button onclick="AccountantApp.exportComprehensiveFinancialReport()" class="btn-press px-3.5 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                        <span>📊 التقرير المالي الشامل</span>
                     </button>
                     <span class="text-xs text-amber-700 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200 font-semibold">
                         🔒 الاستقبال مقفل من التعديل المالي
