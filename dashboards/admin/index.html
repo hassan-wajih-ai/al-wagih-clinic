@@ -135,13 +135,20 @@
                         <span class="text-sm">👨‍⚕️</span>
                         <span data-i18n="tab_commissions">عمولات وتسويات الأطباء</span>
                     </button>
+                    <button id="tab-btn-pharmacy" onclick="ClinicAdminApp.switchTab('pharmacy')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <span class="text-sm">💊</span>
+                        <span data-i18n="tab_pharmacy">الصيدلية والروشتات (Pharmacy)</span>
+                    </button>
                     <button id="tab-btn-reports" onclick="ClinicAdminApp.switchTab('reports')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
                         <span class="text-sm">📊</span>
                         <span data-i18n="tab_reports">مركز التقارير والإحصائيات</span>
                     </button>
                 </div>
                 <div class="flex items-center gap-2">
-                    <a href="../queue/index.html" target="_blank" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
+                    <a href="../pharmacy/index.html" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
+                        <span>💊 الصيدلية والـ POS</span>
+                    </a>
+                    <a href="../queue/index.html" target="_blank" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
                         <span>📺 شاشة التلفزيون (TV)</span>
                     </a>
                     <a href="../accountant/index.html" class="px-3 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
@@ -1334,6 +1341,139 @@
             </div>
         </div>
 
+        <!-- TAB 11: In-House Pharmacy & E-Prescriptions Hub -->
+        <div id="tab-content-pharmacy" class="hidden space-y-6 animate-fade-in">
+            <!-- Pharmacy KPIs Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="pharm_kpi_sales">إجمالي مبيعات الصيدلية</span>
+                        <span class="p-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 text-sm">💵</span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" id="admin-pharm-kpi-sales">0 ج.م</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">مبيعات نقدية وتأمينية معتمدة</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="pharm_kpi_prescriptions">روشتات تم صرفها</span>
+                        <span class="p-2 rounded-2xl bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 text-sm">💊</span>
+                    </div>
+                    <div class="text-2xl font-black text-sky-600 dark:text-sky-400 mt-2" id="admin-pharm-kpi-dispensed">0</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">روشتات مسجلة ومخصومة</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">روشتات قيد الصرف</span>
+                        <span class="p-2 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 text-sm">⏳</span>
+                    </div>
+                    <div class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2" id="admin-pharm-kpi-pending">0</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">واردة من عيادات الأطباء</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="pharm_kpi_expiry_alerts">تنبيهات الصلاحية والرصيد</span>
+                        <span class="p-2 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 text-sm">⚠️</span>
+                    </div>
+                    <div class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-2" id="admin-pharm-kpi-alerts">0</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">أصناف أوشكت على النفاد أو الانتهاء</div>
+                </div>
+            </div>
+
+            <!-- Pharmacy Action Bar -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto flex-1">
+                    <div class="relative w-full sm:w-64">
+                        <input type="text" id="admin-pharm-search-input" onkeyup="ClinicAdminApp.filterAdminPharmacy()" placeholder="بحث باسم الدواء أو المريض أو الروشتة..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <select id="admin-pharm-filter-type" onchange="ClinicAdminApp.filterAdminPharmacy()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-medium">
+                        <option value="all">جميع الأصناف والروشتات</option>
+                        <option value="low_stock">أصناف أوشكت على النفاد</option>
+                        <option value="expiring_soon">تنتهي خلال 90 يوماً</option>
+                        <option value="pending_rx">الروشتات المعلقة</option>
+                    </select>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                    <a href="../pharmacy/index.html" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/25 transition flex items-center gap-1.5">
+                        <span>💊</span>
+                        <span>فتح شاشة الصيدلية والـ POS المخصصة</span>
+                    </a>
+                    <button onclick="ClinicAdminApp.exportAdminPharmacyInventoryExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white shadow-sm transition flex items-center gap-1.5">
+                        <span>📗</span>
+                        <span>تصدير جرد الأدوية</span>
+                    </button>
+                    <button onclick="ClinicAdminApp.exportAdminPharmacySalesExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition flex items-center gap-1.5">
+                        <span>📊</span>
+                        <span>تصدير مبيعات الصيدلية</span>
+                    </button>
+                    <button onclick="ClinicAdminApp.openAdminAddDrugModal()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 dark:bg-slate-700 text-white shadow-sm transition flex items-center gap-1">
+                        <span>+</span>
+                        <span>إضافة دواء جديد</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grid: Drugs Catalog & Prescriptions Stream -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Col 7: Pharmacy Formulary & Stock -->
+                <div class="lg:col-span-7 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>📦</span>
+                            <span>مخزون الأدوية وتواريخ الصلاحية (Formulary Stock)</span>
+                        </h3>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold" id="admin-pharm-drugs-count">0 صنف</span>
+                    </div>
+
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-2.5 px-3">الدواء والتركيز</th>
+                                    <th class="py-2.5 px-3">الصلاحية</th>
+                                    <th class="py-2.5 px-3">الرصيد</th>
+                                    <th class="py-2.5 px-3">سعر البيع</th>
+                                    <th class="py-2.5 px-3 text-center">إجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-pharmacy-drugs-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated via admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Col 5: E-Prescriptions Stream -->
+                <div class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>🩺</span>
+                            <span>الروشتات الإلكترونية الواردة والمصروفة</span>
+                        </h3>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 font-bold" id="admin-pharm-rx-count">0 روشتة</span>
+                    </div>
+
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-2.5 px-3">الروشتة</th>
+                                    <th class="py-2.5 px-3">المريض والطبيب</th>
+                                    <th class="py-2.5 px-3">الحالة</th>
+                                    <th class="py-2.5 px-3 text-center">التفاصيل</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-pharmacy-rx-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated via admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Modal: Add CRM Patient -->
@@ -2508,6 +2648,112 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal 13: Admin Add Drug to Formulary -->
+    <div id="admin-add-drug-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">💊</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm">إضافة دواء جديد إلى صيدلية المجمع</h4>
+                        <p class="text-[11px] text-slate-400">تحديث الكتالوج الدوائي ورصيد التشغيلات والصلاحية</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('admin-add-drug-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <form id="admin-add-drug-form" class="space-y-3.5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الاسم التجاري للدواء <span class="text-rose-500">*</span></label>
+                        <input type="text" id="admin-drug-name" required placeholder="مثال: Augmentin" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الاسم العلمي (Generic) <span class="text-rose-500">*</span></label>
+                        <input type="text" id="admin-drug-generic" required placeholder="مثال: Amoxicillin + Clavulanate" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الشكل الصيدلاني</label>
+                        <select id="admin-drug-form-select" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="أقراص">أقراص (Tablets)</option>
+                            <option value="كبسولات">كبسولات (Capsules)</option>
+                            <option value="شراب">شراب (Syrup)</option>
+                            <option value="حقن">حقن (Injections / Vials)</option>
+                            <option value="مرهم / كريم">مرهم / كريم (Ointment)</option>
+                            <option value="قطرة">قطرات (Drops)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">التركيز والعيار</label>
+                        <input type="text" id="admin-drug-strength" required placeholder="مثال: 1000 mg" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">رقم التشغيلة (Batch No.)</label>
+                        <input type="text" id="admin-drug-batch" placeholder="مثال: B-8812" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">تاريخ انتهاء الصلاحية <span class="text-rose-500">*</span></label>
+                        <input type="date" id="admin-drug-expiry" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الرصيد المتاح (علب)</label>
+                        <input type="number" id="admin-drug-stock" min="1" value="40" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">سعر الشراء</label>
+                        <input type="number" id="admin-drug-cost" min="0" step="0.5" value="60" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">سعر البيع</label>
+                        <input type="number" id="admin-drug-price" min="0" step="0.5" value="80" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('admin-add-drug-modal').classList.add('hidden')" class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">إلغاء</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition-all flex items-center gap-1.5">
+                        <span>💾 حفظ الدواء في الصيدلية</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 14: Admin E-Prescription Details & Clinical Interactions -->
+    <div id="admin-rx-details-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-sm">📋</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm" id="admin-rx-modal-title">تفاصيل الروشتة الطبية الإلكترونية</h4>
+                        <p class="text-[11px] text-slate-400" id="admin-rx-modal-subtitle">—</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('admin-rx-details-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            
+            <div id="admin-rx-modal-content" class="space-y-3">
+                <!-- Filled dynamically via admin.js -->
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                <a href="../pharmacy/index.html" class="px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition">
+                    صرف في بوابة الصيدلية
+                </a>
+                <button type="button" onclick="document.getElementById('admin-rx-details-modal').classList.add('hidden')" class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">إغلاق</button>
+            </div>
         </div>
     </div>
     <script src="../../js/config.js"></script>
