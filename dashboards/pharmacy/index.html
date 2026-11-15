@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الصيدلية الداخلية والروشتة الإلكترونية | مجمع الوجيه الطبي</title>
+    <!-- Tailwind CSS with dark mode class -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .table-responsive-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-sm transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="../../index.html" class="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-black text-xl shadow-md shadow-emerald-600/30 btn-press">
+                    و
+                </a>
+                <div>
+                    <h1 class="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>صيدلية مجمع الوجيه التخصصي</span>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold">POS & E-Prescription</span>
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">صرف الروشتات اللحظي، فحص التداخلات الدوائية، وتتبع الصلاحية بالباركود</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Theme Toggle Button -->
+                <button type="button" onclick="ThemeManager.toggleTheme()" class="theme-toggle-btn flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition shadow-sm btn-press" title="تبديل الثيم">
+                    <span class="text-sm">🌙</span>
+                </button>
+
+                <!-- Language Switcher Button -->
+                <button type="button" onclick="I18n.toggleLanguage()" class="lang-toggle-btn flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition shadow-sm btn-press" title="Switch Language">
+                    <span class="font-bold text-emerald-600">EN</span>
+                </button>
+
+                <!-- Shift Status -->
+                <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>وردية الصيدلية نشطة</span>
+                </span>
+
+                <!-- TV Queue Shortcut -->
+                <a href="../queue/index.html" target="_blank" class="btn-press hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 text-xs font-bold transition shadow-sm">
+                    <span>📺</span>
+                    <span>شاشة الصالة</span>
+                </a>
+
+                <span id="user-display-name" class="hidden sm:inline-block text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    د. سارة عثمان
+                </span>
+                <button onclick="Auth.logout()" class="text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-white hover:bg-rose-600 bg-rose-50 dark:bg-rose-950/40 px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900 transition btn-press" data-i18n="logout">
+                    خروج
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fade-in">
+
+        <!-- Pharmacy KPIs Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="pharm_kpi_sales">إجمالي مبيعات الصيدلية اليوم</span>
+                    <span class="p-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 text-sm">💵</span>
+                </div>
+                <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" id="pharm-kpi-sales">0 ج.م</div>
+                <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">نقدي + مطالبات شركات التأمين</div>
+            </div>
+
+            <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="pharm_kpi_prescriptions">روشتات تم صرفها اليوم</span>
+                    <span class="p-2 rounded-2xl bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 text-sm">💊</span>
+                </div>
+                <div class="text-2xl font-black text-sky-600 dark:text-sky-400 mt-2" id="pharm-kpi-dispensed">0 روشتة</div>
+                <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">مصروفة ومخصومة من المخزن</div>
+            </div>
+
+            <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400">روشتات بانتظار الصرف</span>
+                    <span class="p-2 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 text-sm">⏳</span>
+                </div>
+                <div class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2" id="pharm-kpi-pending">0 روشتة</div>
+                <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">واردة إلكترونياً من العيادات</div>
+            </div>
+
+            <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="pharm_kpi_expiry_alerts">تنبيهات الصلاحية والرصيد</span>
+                    <span class="p-2 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 text-sm">⚠️</span>
+                </div>
+                <div class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-2" id="pharm-kpi-alerts">0 تنبيه</div>
+                <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">أصناف حرجة أو أوشكت على الانتهاء</div>
+            </div>
+        </div>
+
+        <!-- Navigation Subtabs Bar -->
+        <div class="bg-white dark:bg-slate-900 p-3 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
+                <button type="button" id="sub-btn-dispense" onclick="PharmacyApp.switchSubView('dispense')" class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-sm transition flex items-center gap-1.5">
+                    <span>🩺</span>
+                    <span>صرف الروشتات الفورية (E-Prescriptions POS)</span>
+                </button>
+                <button type="button" id="sub-btn-inventory" onclick="PharmacyApp.switchSubView('inventory')" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <span>💊</span>
+                    <span>كتالوج ومخزون الأدوية (Formulary & Stock)</span>
+                </button>
+                <button type="button" id="sub-btn-interactions" onclick="PharmacyApp.switchSubView('interactions')" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <span>⚠️</span>
+                    <span>فاحص التداخلات الدوائية (Interactions)</span>
+                </button>
+                <button type="button" id="sub-btn-history" onclick="PharmacyApp.switchSubView('history')" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <span>📊</span>
+                    <span>سجل الفواتير والمبيعات</span>
+                </button>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                <button type="button" onclick="PharmacyApp.openAddDrugModal()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white shadow-sm transition flex items-center gap-1.5">
+                    <span>+</span>
+                    <span>إضافة دواء جديد</span>
+                </button>
+                <button type="button" onclick="PharmacyApp.openOTCSaleModal()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition flex items-center gap-1.5">
+                    <span>⚡</span>
+                    <span>بيع مباشر OTC</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- SUBVIEW 1: E-Prescription Dispensing & POS Station              -->
+        <!-- ============================================================== -->
+        <div id="subview-dispense" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- Left: Incoming E-Prescriptions List (Col 7) -->
+                <div class="lg:col-span-7 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-xl bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-sm">📥</span>
+                            <div>
+                                <h3 class="text-sm font-black text-slate-900 dark:text-white">الروشتات الطبية الإلكترونية الواردة</h3>
+                                <p class="text-[11px] text-slate-400">تحديث لحظي فور انتهاء كشف الطبيب بالعيادة</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 px-2.5 py-0.5 rounded-full" id="rx-pending-badge">
+                            0 روشتات
+                        </span>
+                    </div>
+
+                    <div class="space-y-3" id="pending-rx-container">
+                        <!-- Populated via pharmacy.js -->
+                    </div>
+                </div>
+
+                <!-- Right: Active Dispensing Station & Drug Verification (Col 5) -->
+                <div class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4 sticky top-20">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>💊</span>
+                            <span>محطة الصرف والتحقق الإكلينيكي</span>
+                        </h3>
+                        <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-md">
+                            Barcode Verified
+                        </span>
+                    </div>
+
+                    <div id="active-dispense-content" class="space-y-4">
+                        <div class="p-8 text-center bg-slate-50 dark:bg-slate-950 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                            <span class="text-3xl block mb-2">👈</span>
+                            <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300">لم يتم اختيار روشتة بعد</h4>
+                            <p class="text-[11px] text-slate-400 mt-1">اختر إحدى الروشتات الواردة من القائمة لبدء فحص التداخلات والصرف</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- SUBVIEW 2: Drugs Formulary, Stocktaking & Expiry Tracking       -->
+        <!-- ============================================================== -->
+        <div id="subview-inventory" class="hidden space-y-6">
+            <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                
+                <!-- Filter Bar -->
+                <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto flex-1">
+                        <div class="relative w-full sm:w-64">
+                            <input type="text" id="drug-search-input" onkeyup="PharmacyApp.filterDrugs()" placeholder="بحث باسم الدواء أو المادة الفعالة..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <select id="drug-expiry-filter" onchange="PharmacyApp.filterDrugs()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-medium">
+                            <option value="all">جميع حالات الصلاحية</option>
+                            <option value="valid">أدوية سارية الصلاحية</option>
+                            <option value="expiring_soon">تنتهي قريباً (أقل من 90 يوماً)</option>
+                            <option value="expired">منتهية الصلاحية ⚠️</option>
+                        </select>
+                        <select id="drug-form-filter" onchange="PharmacyApp.filterDrugs()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-medium">
+                            <option value="all">جميع الأشكال الصيدلانية</option>
+                            <option value="أقراص">أقراص (Tablets)</option>
+                            <option value="كبسولات">كبسولات (Capsules)</option>
+                            <option value="شراب">شراب (Syrup)</option>
+                            <option value="حقن">حقن (Injections / Vials)</option>
+                            <option value="مرهم / كريم">مراهم وكريمات</option>
+                            <option value="قطرة">قطرات (Drops)</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="PharmacyApp.exportInventoryExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex items-center gap-1.5">
+                            <span>📗</span>
+                            <span>تصدير جرد الصيدلية Excel</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Formulary Table -->
+                <div class="table-responsive-wrapper">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                <th class="py-3 px-3">الدواء والمادة الفعالة</th>
+                                <th class="py-3 px-3">الشكل والتركيز</th>
+                                <th class="py-3 px-3">التشغيلة (Batch)</th>
+                                <th class="py-3 px-3">تاريخ الصلاحية</th>
+                                <th class="py-3 px-3">الرصيد المتاح</th>
+                                <th class="py-3 px-3">سعر البيع</th>
+                                <th class="py-3 px-3 text-center">الباركود والإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pharmacy-drugs-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Populated via pharmacy.js -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- SUBVIEW 3: Drug-Drug Interactions Safety Checker               -->
+        <!-- ============================================================== -->
+        <div id="subview-interactions" class="hidden space-y-6">
+            <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-5">
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-9 h-9 rounded-xl bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold text-base">⚠️</span>
+                        <div>
+                            <h3 class="text-sm font-black text-slate-900 dark:text-white">نظام التحقق الآلي من التداخلات وموانع الاستعمال الدوائية</h3>
+                            <p class="text-[11px] text-slate-400">فحص تعارض المواد الفعالة والجرعات لحماية سلامة المريض (Patient Safety)</p>
+                        </div>
+                    </div>
+                    <span class="text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold">
+                        Clinical Decision Support (CDS)
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اختر الدواء الأول (Drug A)</label>
+                        <select id="interaction-drug-a" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اختر الدواء الثاني (Drug B)</label>
+                        <select id="interaction-drug-b" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-center">
+                    <button type="button" onclick="PharmacyApp.checkSelectedInteraction()" class="btn-press px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-600/25 transition flex items-center gap-2">
+                        <span>🔍</span>
+                        <span>فحص التداخل والتعارض الإكلينيكي</span>
+                    </button>
+                </div>
+
+                <!-- Interaction Result Box -->
+                <div id="interaction-result-box" class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 space-y-2">
+                    <div class="text-xs text-slate-500 dark:text-slate-400 text-center py-2">
+                        اختر الدوائين واضغط على زر الفحص للتحقق الفوري من سلامة الاستخدام المتزامن.
+                    </div>
+                </div>
+
+                <!-- Known Clinical Interactions Table -->
+                <div class="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-3">
+                    <h4 class="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span>📚</span>
+                        <span>أشهر التداخلات وموانع الاستعمال المسجلة في بروتوكول الصيدلية:</span>
+                    </h4>
+                    <div class="space-y-2" id="known-interactions-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- SUBVIEW 4: Dispensing Ledger & Sales History                   -->
+        <!-- ============================================================== -->
+        <div id="subview-history" class="hidden space-y-6">
+            <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>🧾</span>
+                            <span>دفتر فواتير ومبيعات الصيدلية (Dispensing Ledger)</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-400">سجل كامل للحركات المصروفة نقداً وعبر شركات التأمين</p>
+                    </div>
+                    <button type="button" onclick="PharmacyApp.exportSalesExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex items-center gap-1.5">
+                        <span>📗</span>
+                        <span>تصدير المبيعات Excel</span>
+                    </button>
+                </div>
+
+                <div class="table-responsive-wrapper">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                <th class="py-3 px-3">رقم الفاتورة / الروشتة</th>
+                                <th class="py-3 px-3">المريض</th>
+                                <th class="py-3 px-3">الطبيب المعالج</th>
+                                <th class="py-3 px-3">الأدوية المصروفة</th>
+                                <th class="py-3 px-3">نوع الدفع</th>
+                                <th class="py-3 px-3">الإجمالي</th>
+                                <th class="py-3 px-3">تحمل المريض</th>
+                                <th class="py-3 px-3">مطالبة الشركة</th>
+                                <th class="py-3 px-3 text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pharmacy-sales-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Populated via pharmacy.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ============================================================== -->
+    <!-- MODALS SECTION                                                 -->
+    <!-- ============================================================== -->
+
+    <!-- Modal 1: Add New Drug to Formulary -->
+    <div id="add-drug-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">💊</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm">إضافة دواء جديد لكتالوج الصيدلية</h4>
+                        <p class="text-[11px] text-slate-400">تسجيل بيانات الدواء والمادة الفعالة ورقم التشغيلة</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('add-drug-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <form id="add-drug-form" class="space-y-3.5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الاسم التجاري للدواء <span class="text-rose-500">*</span></label>
+                        <input type="text" id="new-drug-name" required placeholder="مثال: Augmentin" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الاسم العلمي (Generic Name) <span class="text-rose-500">*</span></label>
+                        <input type="text" id="new-drug-generic" required placeholder="مثال: Amoxicillin / Clavulanate" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الشكل الصيدلاني <span class="text-rose-500">*</span></label>
+                        <select id="new-drug-form-select" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="أقراص">أقراص (Tablets)</option>
+                            <option value="كبسولات">كبسولات (Capsules)</option>
+                            <option value="شراب">شراب (Syrup)</option>
+                            <option value="حقن">حقن (Injections / Vials)</option>
+                            <option value="مرهم / كريم">مرهم / كريم (Ointment)</option>
+                            <option value="قطرة">قطرة (Drops)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">التركيز والعيار <span class="text-rose-500">*</span></label>
+                        <input type="text" id="new-drug-strength" required placeholder="مثال: 1000 mg (1g)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">رقم التشغيلة (Batch No.)</label>
+                        <input type="text" id="new-drug-batch" placeholder="مثال: B-9941" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">تاريخ انتهاء الصلاحية <span class="text-rose-500">*</span></label>
+                        <input type="date" id="new-drug-expiry" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الرصيد المتاح (علب)</label>
+                        <input type="number" id="new-drug-stock" min="1" value="50" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">سعر الشراء (التكلفة)</label>
+                        <input type="number" id="new-drug-cost" min="0" step="0.5" value="65" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">سعر البيع للجمهور</label>
+                        <input type="number" id="new-drug-price" min="0" step="0.5" value="85" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('add-drug-modal').classList.add('hidden')" class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">إلغاء</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition-all flex items-center gap-1.5">
+                        <span>💾 حفظ الدواء في الكتالوج</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2: Patient Dosage Instruction Sticker (ملصق تعليمات الجرعة) -->
+    <div id="dosage-sticker-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 no-print">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-sm">🏷️</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm">ملصق إرشادات الجرعة للمريض</h4>
+                        <p class="text-[11px] text-slate-400">جاهز للطباعة على علب الأدوية والورق اللاصق</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('dosage-sticker-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+
+            <!-- Sticker Preview Container -->
+            <div class="p-5 bg-white text-slate-900 rounded-2xl border-2 border-dashed border-emerald-500 space-y-3 font-sans print-sheet">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-emerald-600 text-white font-black text-xs flex items-center justify-center">و</span>
+                        <span class="font-black text-xs text-slate-900">صيدلية الوجيه الطبية</span>
+                    </div>
+                    <span class="text-[10px] text-slate-500 font-mono" id="sticker-date">2026-11-15</span>
+                </div>
+
+                <div>
+                    <span class="text-[10px] text-slate-400 block">اسم المريض:</span>
+                    <strong class="text-sm font-black text-slate-900" id="sticker-patient-name">—</strong>
+                </div>
+
+                <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 space-y-1">
+                    <div class="flex items-center justify-between">
+                        <strong class="text-xs font-black text-emerald-950" id="sticker-drug-name">—</strong>
+                        <span class="text-[10px] font-bold text-emerald-700" id="sticker-drug-strength">—</span>
+                    </div>
+                    <div class="text-xs font-bold text-slate-800 leading-relaxed" id="sticker-dosage-instructions">
+                        « قرص واحد كل 12 ساعة بعد الأكل لمدة 5 أيام »
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-slate-200 text-[10px] text-slate-500">
+                    <div>الطبيب: <span class="font-bold text-slate-800" id="sticker-doctor">—</span></div>
+                    <div class="font-mono">Rx #<span id="sticker-rx-number">RX-101</span></div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 no-print">
+                <button type="button" onclick="document.getElementById('dosage-sticker-modal').classList.add('hidden')" class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">إغلاق</button>
+                <button type="button" onclick="window.print()" class="px-5 py-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl shadow-md transition-all flex items-center gap-1.5">
+                    <span>🖨️ طباعة الملصق اللاصق</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: OTC Direct Sale Station (بيع مباشر بدون روشتة) -->
+    <div id="otc-sale-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold text-sm">⚡</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm">بيع مباشر بدون روشتة (OTC Walk-in)</h4>
+                        <p class="text-[11px] text-slate-400">صرف مسكنات أو فيتامينات أو مستلزمات طبية</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('otc-sale-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <form id="otc-sale-form" class="space-y-3.5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم المشتري / العميل (اختياري)</label>
+                    <input type="text" id="otc-patient-name" placeholder="عميل نقدي خارجي" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اختر الصنف الدوائي <span class="text-rose-500">*</span></label>
+                    <select id="otc-drug-select" onchange="PharmacyApp.onOTCDrugChange()" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الكمية المصروفة</label>
+                        <input type="number" id="otc-quantity" min="1" value="1" oninput="PharmacyApp.recalcOTCTotal()" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-teal-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الإجمالي المطلوب سداده</label>
+                        <div class="px-3 py-2 text-xs rounded-xl bg-slate-100 dark:bg-slate-800 font-mono font-black text-teal-600 dark:text-teal-400 border border-slate-200 dark:border-slate-700" id="otc-total-display">
+                            0 ج.م
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('otc-sale-modal').classList.add('hidden')" class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">إلغاء</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-teal-600 hover:bg-teal-700 rounded-xl shadow-md transition-all flex items-center gap-1.5">
+                        <span>💵 صرف واستلام النقدية</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../../js/config.js"></script>
+    <script src="../../js/utils.js"></script>
+    <script src="../../js/auth.js"></script>
+    <script src="../../js/i18n.js"></script>
+    <script src="../../js/reports.js"></script>
+    <script src="pharmacy.js"></script>
+</body>
+</html>
