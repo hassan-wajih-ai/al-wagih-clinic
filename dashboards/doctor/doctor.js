@@ -7,6 +7,7 @@ const DoctorApp = {
     currentDoctor: null,
     appointments: [],
     activeAppointment: null,
+    currentPrescriptionItems: [],
 
     async init() {
         // حماية الصفحة والتحقق من الصلاحيات
@@ -17,6 +18,7 @@ const DoctorApp = {
         document.getElementById('user-display-name').textContent = this.currentDoctor.full_name || 'د. الطبيب المعالج';
         document.getElementById('doctor-title').textContent = `عيادة: ${this.currentDoctor.full_name || 'الكشف الطبي'}`;
 
+        this.populateDrugSelect();
         await this.loadDoctorWaitingList();
         this.bindEvents();
 
@@ -131,6 +133,10 @@ const DoctorApp = {
         document.getElementById('prescription-input').value = apt.prescription || '';
         document.getElementById('notes-input').value = apt.doctor_notes || '';
 
+        this.currentPrescriptionItems = [];
+        this.renderPrescriptionItems();
+        this.checkInteractions();
+
         Utils.showToast(`جاري الآن فحص المريض: ${patientName}`, 'info');
         this.renderWaitingList();
     },
@@ -151,6 +157,10 @@ const DoctorApp = {
                 const diagnosis = document.getElementById('diagnosis-input').value.trim();
                 const prescription = document.getElementById('prescription-input').value.trim();
                 const notes = document.getElementById('notes-input').value.trim();
+                const autoSendPharmacy = document.getElementById('doc-auto-send-pharmacy')?.checked ?? true;
+
+                const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
+                const patientPhone = this.activeAppointment.patient ? this.activeAppointment.patient.phone : this.activeAppointment.patient_phone;
 
                 try {
                     if (window.db && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
@@ -173,10 +183,19 @@ const DoctorApp = {
                     }
                     this.saveStoredAppointments();
 
+                    // إرسال الروشتة إلكترونياً للصيدلية الداخلية إذا رغب الطبيب
+                    if (autoSendPharmacy && (this.currentPrescriptionItems.length > 0 || prescription.length > 0)) {
+                        this.dispatchPrescriptionToPharmacy(patientName, patientPhone, diagnosis, prescription);
+                    }
+
                     Utils.showToast('تم حفظ التشخيص والروشتة وإتمام الكشف بنجاح', 'success');
                     
                     // إعادة ضبط غرفة الفحص
                     this.activeAppointment = null;
+                    this.currentPrescriptionItems = [];
+                    this.renderPrescriptionItems();
+                    this.checkInteractions();
+
                     document.getElementById('current-patient-name').textContent = '— لم يتم استدعاء مريض بعد —';
                     document.getElementById('current-patient-info').textContent = 'اختر مريضاً من قائمة الانتظار لبدء الكشف';
                     form.reset();
@@ -365,6 +384,251 @@ const DoctorApp = {
     openMyCommissionsModal() {
         const modal = document.getElementById('doctor-my-commissions-modal');
         if (modal) modal.classList.remove('hidden');
+    },
+
+    // =========================================================================
+    // الصيدلية الإلكترونية وفاحص التداخلات الدوائية (E-Prescription & CDS)
+    // =========================================================================
+    getPharmacyDrugs() {
+        const stored = localStorage.getItem('alwagih_pharmacy_drugs');
+        if (stored) {
+            try { return JSON.parse(stored); } catch (e) {}
+        }
+        return [
+            { id: 'drug_1', name: 'Augmentin (أوجمنتين)', generic: 'Amoxicillin + Clavulanic Acid', strength: '1000 mg', default_inst: 'قرص كل 12 ساعة بعد الأكل لمدة 7 أيام', price: 99.5 },
+            { id: 'drug_2', name: 'Panadol Extra (بنادول إكسترا)', generic: 'Paracetamol + Caffeine', strength: '500 mg', default_inst: 'قرص عند اللزوم للصداع والحرارة', price: 42 },
+            { id: 'drug_3', name: 'Concor (كونكور)', generic: 'Bisoprolol Fumarate', strength: '5 mg', default_inst: 'قرص صباحاً يومياً بعد الإفطار', price: 60 },
+            { id: 'drug_4', name: 'Ciprolon (سيبرولون)', generic: 'Ciprofloxacin', strength: '750 mg', default_inst: 'قرص كل 12 ساعة بعد الأكل', price: 52 },
+            { id: 'drug_5', name: 'Antacid Gaviscon (جافيسكون شراب)', generic: 'Sodium Alginate + Calcium', strength: '150 ml', default_inst: '10 مل بعد الوجبات وقبل النوم', price: 75 },
+            { id: 'drug_6', name: 'Warfarin Marevan (ماريفان)', generic: 'Warfarin Sodium', strength: '5 mg', default_inst: 'قرص مساءً حسب جدول السيولة INR', price: 35 },
+            { id: 'drug_7', name: 'Aspirin Protect (أسبيرين بروتكت)', generic: 'Acetylsalicylic Acid', strength: '100 mg', default_inst: 'قرص بعد الغداء يومياً للوقاية', price: 28 },
+            { id: 'drug_8', name: 'Ceftriaxone (سفترياكسون فيال)', generic: 'Ceftriaxone Sodium', strength: '1 g Vial', default_inst: 'حقنة عضلية كل 24 ساعة بعد اختبار الحساسية', price: 55 }
+        ];
+    },
+
+    populateDrugSelect() {
+        const select = document.getElementById('doc-drug-select');
+        if (!select) return;
+        const drugs = this.getPharmacyDrugs();
+        select.innerHTML = '<option value="">-- اختر صنفاً من صيدلية العيادة --</option>' +
+            drugs.map(d => `<option value="${d.name}" data-dosage="${d.strength}" data-instructions="${d.default_inst || ''}" data-price="${d.price || 40}">${d.name} (${d.strength})</option>`).join('');
+    },
+
+    onDrugSelectChange() {
+        const select = document.getElementById('doc-drug-select');
+        if (!select) return;
+        const selectedOpt = select.options[select.selectedIndex];
+        if (!selectedOpt || !selectedOpt.value) return;
+
+        const dosageInput = document.getElementById('doc-drug-dosage');
+        const instInput = document.getElementById('doc-drug-instructions');
+
+        if (dosageInput && selectedOpt.dataset.dosage) dosageInput.value = selectedOpt.dataset.dosage;
+        if (instInput && selectedOpt.dataset.instructions) instInput.value = selectedOpt.dataset.instructions;
+    },
+
+    addPrescriptionItem() {
+        const select = document.getElementById('doc-drug-select');
+        const dosageInput = document.getElementById('doc-drug-dosage');
+        const instInput = document.getElementById('doc-drug-instructions');
+
+        let drugName = select ? select.value : '';
+        const dosage = dosageInput ? dosageInput.value.trim() : '';
+        const instructions = instInput ? instInput.value.trim() : '';
+        const selectedOpt = select ? select.options[select.selectedIndex] : null;
+        const price = selectedOpt && selectedOpt.dataset.price ? parseFloat(selectedOpt.dataset.price) : 50;
+
+        if (!drugName) {
+            Utils.showToast('يرجى اختيار صنف دواء من القائمة أولاً', 'warning');
+            return;
+        }
+
+        const newItem = {
+            drug_name: drugName,
+            dosage: dosage || 'جرعة قياسية',
+            instructions: instructions || 'حسب إرشادات الطبيب',
+            quantity: 1,
+            price: price
+        };
+
+        this.currentPrescriptionItems.push(newItem);
+        this.renderPrescriptionItems();
+        this.checkInteractions();
+        this.syncPrescriptionText();
+
+        if (select) select.value = '';
+        if (dosageInput) dosageInput.value = '';
+        if (instInput) instInput.value = '';
+
+        Utils.showToast(`تمت إضافة (${drugName}) إلى الروشتة بنجاح`, 'success');
+    },
+
+    removePrescriptionItem(index) {
+        if (index >= 0 && index < this.currentPrescriptionItems.length) {
+            this.currentPrescriptionItems.splice(index, 1);
+            this.renderPrescriptionItems();
+            this.checkInteractions();
+            this.syncPrescriptionText();
+        }
+    },
+
+    renderPrescriptionItems() {
+        const container = document.getElementById('doc-rx-items-container');
+        const tbody = document.getElementById('doc-rx-items-tbody');
+        const totalBadge = document.getElementById('doc-rx-total-badge');
+
+        if (!container || !tbody) return;
+
+        if (this.currentPrescriptionItems.length === 0) {
+            container.classList.add('hidden');
+            if (totalBadge) totalBadge.textContent = '';
+            return;
+        }
+
+        container.classList.remove('hidden');
+        let total = 0;
+
+        tbody.innerHTML = this.currentPrescriptionItems.map((item, idx) => {
+            const itemTotal = (item.price || 0) * (item.quantity || 1);
+            total += itemTotal;
+            return `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                    <td class="py-2 px-3 font-bold text-slate-800 dark:text-slate-200">${item.drug_name}</td>
+                    <td class="py-2 px-3 text-[11px] text-slate-600 dark:text-slate-400">
+                        <span class="font-mono font-bold text-purple-700 dark:text-purple-300">${item.dosage}</span> - ${item.instructions}
+                    </td>
+                    <td class="py-2 px-3 font-mono font-bold text-slate-700 dark:text-slate-300">${item.quantity || 1} علبة</td>
+                    <td class="py-2 px-3 font-mono font-bold text-emerald-700 dark:text-emerald-300">${Utils.formatCurrency(itemTotal)}</td>
+                    <td class="py-2 px-3 text-center">
+                        <button type="button" onclick="DoctorApp.removePrescriptionItem(${idx})" class="p-1 rounded text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950 text-xs">✕</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        if (totalBadge) totalBadge.textContent = `إجمالي الروشتة التقديري: ${Utils.formatCurrency(total)}`;
+    },
+
+    checkInteractions() {
+        const alertBox = document.getElementById('doc-interaction-alerts');
+        if (!alertBox) return;
+
+        const drugs = this.currentPrescriptionItems.map(item => (item.drug_name || '').toLowerCase());
+        const alerts = [];
+
+        // قواعد التداخلات الإكلينيكية
+        const hasWarfarin = drugs.some(d => d.includes('warfarin') || d.includes('ماريفان'));
+        const hasAspirin = drugs.some(d => d.includes('aspirin') || d.includes('أسبيرين'));
+        const hasCipro = drugs.some(d => d.includes('cipro') || d.includes('سيبرولون'));
+        const hasAntacid = drugs.some(d => d.includes('antacid') || d.includes('gaviscon') || d.includes('جافيسكون'));
+        const hasConcor = drugs.some(d => d.includes('concor') || d.includes('bisoprolol') || d.includes('كونكور'));
+        const hasAugmentin = drugs.some(d => d.includes('augmentin') || d.includes('أوجمنتين'));
+
+        if (hasWarfarin && hasAspirin) {
+            alerts.push({
+                severity: 'high',
+                title: 'تداخل عالي الخطورة (Major Interaction): Warfarin + Aspirin',
+                desc: 'مزيج الوارفارين والأسبرين يرفع خطر النزيف المعدي الحاد والداخلي بأكثر من 300%. يُوصى ببديل آمن أو مراقبة دقيقة ومكثفة لـ INR.'
+            });
+        }
+
+        if (hasCipro && hasAntacid) {
+            alerts.push({
+                severity: 'moderate',
+                title: 'تداخل متوسط (Moderate Interaction): Ciprofloxacin + Antacid',
+                desc: 'مركبات الكالسيوم والألومنيوم والماغنيسيوم تمخلب السيبروفلوكساسين وتقلل امتصاصه الحيوي حتى 70%. يجب الفصل بساعتين على الأقل.'
+            });
+        }
+
+        if (hasConcor && hasCipro) {
+            alerts.push({
+                severity: 'moderate',
+                title: 'تداخل محتمل (Moderate Interaction): Concor + Ciprofloxacin',
+                desc: 'قد يزيد السيبروفلوكساسين من احتمالية إطالة فترة QT وبطء نبضات القلب (Bradycardia) لدى مرضى حاصرات بيتا.'
+            });
+        }
+
+        if (hasWarfarin && hasAugmentin) {
+            alerts.push({
+                severity: 'moderate',
+                title: 'تداخل محتمل (Moderate Interaction): Warfarin + Augmentin',
+                desc: 'المضادات الحيوية واسعة المجال تثبط فلورا الأمعاء المصنعة لفيتامين K مما يرفع حساسية الوارفارين ويزيد الـ INR.'
+            });
+        }
+
+        if (alerts.length === 0) {
+            alertBox.classList.add('hidden');
+            alertBox.innerHTML = '';
+            return;
+        }
+
+        alertBox.classList.remove('hidden');
+        alertBox.innerHTML = alerts.map(a => `
+            <div class="p-3 rounded-2xl border ${a.severity === 'high' ? 'bg-rose-50 dark:bg-rose-950/60 border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200' : 'bg-amber-50 dark:bg-amber-950/60 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200'}">
+                <div class="flex items-center gap-2 font-bold text-xs mb-1">
+                    <span>${a.severity === 'high' ? '🚨' : '⚠️'}</span>
+                    <span>${a.title}</span>
+                </div>
+                <div class="text-[11px] leading-relaxed opacity-90">${a.desc}</div>
+            </div>
+        `).join('');
+    },
+
+    syncPrescriptionText() {
+        const textarea = document.getElementById('prescription-input');
+        if (!textarea) return;
+
+        if (this.currentPrescriptionItems.length === 0) {
+            return;
+        }
+
+        const lines = this.currentPrescriptionItems.map((item, idx) => {
+            return `${idx + 1}. ${item.drug_name} (${item.dosage}) - ${item.instructions} [الكمية: ${item.quantity || 1} علبة]`;
+        });
+
+        textarea.value = lines.join('\n');
+    },
+
+    dispatchPrescriptionToPharmacy(patientName, patientPhone, diagnosis, prescriptionText) {
+        try {
+            const stored = localStorage.getItem('alwagih_pharmacy_prescriptions');
+            let rxs = [];
+            if (stored) {
+                try { rxs = JSON.parse(stored); } catch (e) {}
+            }
+
+            const rxItems = this.currentPrescriptionItems.length > 0 ? this.currentPrescriptionItems : [
+                { drug_name: prescriptionText.slice(0, 40) || 'علاج دوائي مركب', dosage: 'حسب إرشادات الطبيب', instructions: prescriptionText, quantity: 1, price: 60 }
+            ];
+
+            let total = 0;
+            rxItems.forEach(i => total += (i.price || 50) * (i.quantity || 1));
+
+            const newRx = {
+                id: 'rx_' + Date.now(),
+                rx_number: 'RX-' + new Date().getFullYear() + '-' + Math.floor(100 + Math.random() * 900),
+                patient_name: patientName,
+                patient_phone: patientPhone,
+                doctor_name: this.currentDoctor ? this.currentDoctor.full_name : 'د. استشاري العيادة',
+                clinic_name: 'عيادة الكشف الطبي',
+                payment_type: 'cash',
+                company_name: '',
+                copay_percentage: 100,
+                created_time: 'اليوم ' + new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+                status: 'pending',
+                diagnosis: diagnosis || '',
+                items: rxItems,
+                total_amount: total,
+                patient_copay: total,
+                insurance_claim: 0
+            };
+
+            rxs.unshift(newRx);
+            localStorage.setItem('alwagih_pharmacy_prescriptions', JSON.stringify(rxs));
+            Utils.showToast(`✓ تم إرسال الروشتة (#${newRx.rx_number}) بنجاح إلى صيدلية المجمع لصرفها فوراً`, 'success');
+        } catch (e) {
+            console.error('Failed to dispatch prescription to pharmacy:', e);
+        }
     }
 };
 
