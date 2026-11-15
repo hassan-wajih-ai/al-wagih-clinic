@@ -40,6 +40,18 @@
                 </div>
             </div>
             <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Global Multi-Branch Switcher -->
+                <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-xl shadow-sm">
+                    <span class="text-sm">🏢</span>
+                    <select id="admin-branch-filter-select" onchange="ClinicAdminApp.changeBranchFilter(this.value)" class="text-xs font-bold bg-transparent border-0 focus:ring-0 text-slate-800 dark:text-slate-100 cursor-pointer pr-1">
+                        <option value="all">كافة الفروع مجمعة (الكل)</option>
+                        <option value="br_maadi">فرع المعادي الرئيسي (HQ)</option>
+                        <option value="br_nasr">فرع مدينة نصر</option>
+                        <option value="br_mohandessin">فرع المهندسين</option>
+                        <option value="br_tagamoa">فرع التجمع الخامس</option>
+                    </select>
+                </div>
+
                 <!-- Theme Toggle Button -->
                 <button type="button" onclick="ThemeManager.toggleTheme()" class="theme-toggle-btn flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition shadow-sm btn-press" title="تبديل الثيم">
                     <span class="text-sm">🌙</span>
@@ -146,6 +158,10 @@
                     <button id="tab-btn-reports" onclick="ClinicAdminApp.switchTab('reports')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
                         <span class="text-sm">📊</span>
                         <span data-i18n="tab_reports">مركز التقارير والإحصائيات</span>
+                    </button>
+                    <button id="tab-btn-multibranch" onclick="ClinicAdminApp.switchTab('multibranch')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <span class="text-sm">🏢</span>
+                        <span data-i18n="tab_multibranch">الفروع والباقات الطبية</span>
                     </button>
                 </div>
                 <div class="flex items-center gap-2">
@@ -1600,6 +1616,162 @@
             </div>
         </div>
 
+        <!-- TAB 13: Multi-Branch & Medical Packages (الفروع والباقات الطبية) -->
+        <div id="tab-content-multibranch" class="hidden space-y-6 animate-fade-in">
+            <!-- Header & Action Row -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>🏢</span>
+                        <span>إدارة الفروع المتعددة والباقات الطبية الشاملة (Multi-Branch ERP)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">مراقبة الأداء المالي والتشغيلي للفروع، حركة التحويلات الداخلية، وإدارة باقات الفحص الطبي الشامل</p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="ClinicAdminApp.openAdminAddPackageModal()" class="btn-press px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition flex items-center gap-1.5">
+                        <span>+ إضافة باقة فحص طبية</span>
+                    </button>
+                    <button onclick="ClinicAdminApp.exportAdminMultiBranchExcel()" class="btn-press px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5">
+                        <span>📊 تقرير الفروع إكسيل</span>
+                    </button>
+                    <button onclick="ClinicAdminApp.exportAdminPackagesExcel()" class="btn-press px-3.5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-md shadow-sky-600/20 transition flex items-center gap-1.5">
+                        <span>🎁 تقرير الباقات إكسيل</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4 KPIs Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">الفروع النشطة</span>
+                        <span class="p-2 rounded-xl bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-300 text-sm">🏢</span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" id="admin-mb-kpi-branches">4 فروع</div>
+                    <div class="text-xs text-slate-400 mt-1">القاهرة الكبرى والمحافظات</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">الإيراد المجمع للفروع</span>
+                        <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-300 text-sm">💰</span>
+                    </div>
+                    <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2" id="admin-mb-kpi-revenue">1,690,000 ج.م</div>
+                    <div class="text-xs text-slate-400 mt-1">الشهر الحالي عبر 4 فروع</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">أعلى الفروع إشغالاً</span>
+                        <span class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-300 text-sm">⚡</span>
+                    </div>
+                    <div class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2" id="admin-mb-kpi-top-branch">التجمع (91%)</div>
+                    <div class="text-xs text-slate-400 mt-1">معدل الإشغال والاستيعاب</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">مبيعات الباقات الطبية</span>
+                        <span class="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-300 text-sm">🎁</span>
+                    </div>
+                    <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-2" id="admin-mb-kpi-pkg-sales">337 باقة</div>
+                    <div class="text-xs text-slate-400 mt-1">إجمالي: 289,500 ج.م</div>
+                </div>
+            </div>
+
+            <!-- Section 1 & 2: Branch Comparison & Referrals Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- جدول مقارنة الفروع (7 أعمدة) -->
+                <div class="lg:col-span-7 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>🏢</span>
+                            <span>مقارنة مؤشرات أداء الفروع (Branch Performance)</span>
+                        </h3>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 font-bold" id="admin-branch-count-badge">4 فروع مسجلة</span>
+                    </div>
+
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-2.5 px-3">الفرع والمدير</th>
+                                    <th class="py-2.5 px-3">العيادات / الأطباء</th>
+                                    <th class="py-2.5 px-3">الإيراد الشهري</th>
+                                    <th class="py-2.5 px-3">نسبة الإشغال</th>
+                                    <th class="py-2.5 px-3">الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-branches-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated via admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- جدول تحويلات المرضى بين الفروع (5 أعمدة) -->
+                <div class="lg:col-span-5 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>🔄</span>
+                            <span>حركة التحويلات بين الفروع (Referrals)</span>
+                        </h3>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold" id="admin-transfers-count-badge">4 تحويلات</span>
+                    </div>
+
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-2.5 px-3">المريض</th>
+                                    <th class="py-2.5 px-3">مسار التحويل</th>
+                                    <th class="py-2.5 px-3">الخدمة المطلوبة</th>
+                                    <th class="py-2.5 px-3">الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-transfers-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated via admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Comprehensive Medical Packages Table -->
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">🎁</span>
+                        <div>
+                            <h3 class="text-sm font-black text-slate-900 dark:text-white">إدارة باقات الفحص الطبي الشامل والعروض الترويجية</h3>
+                            <p class="text-xs text-slate-400">باقات طبية تجمع الفحوصات والتحاليل والعيادات بتخفيضات محفزة للمرضى</p>
+                        </div>
+                    </div>
+                    <span class="text-xs px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 font-bold" id="admin-packages-count-badge">5 باقات معتمدة</span>
+                </div>
+
+                <div class="table-responsive-wrapper">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                <th class="py-3 px-4">كود واسم الباقة</th>
+                                <th class="py-3 px-4">التصنيف</th>
+                                <th class="py-3 px-4">الخدمات والفحوصات المشمولة</th>
+                                <th class="py-3 px-4">السعر الأصلي</th>
+                                <th class="py-3 px-4">سعر العرض</th>
+                                <th class="py-3 px-4">التوفير</th>
+                                <th class="py-3 px-4">الحجوزات</th>
+                                <th class="py-3 px-4">الحالة</th>
+                                <th class="py-3 px-4 text-center">الإجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-packages-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Populated via admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Modal: Add CRM Patient -->
@@ -2972,6 +3144,67 @@
                     <button type="button" onclick="document.getElementById('admin-add-surgery-modal').classList.add('hidden')" class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">إلغاء</button>
                     <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md transition-all">
                         💾 حفظ وجدولة العملية
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Add Medical Package -->
+    <div id="admin-add-package-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">🎁</span>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">إضافة باقة فحص طبي شامل جديدة</h4>
+                </div>
+                <button onclick="document.getElementById('admin-add-package-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+
+            <form id="admin-add-package-form" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم الباقة الطبية</label>
+                    <input type="text" id="admin-pkg-name" required placeholder="باقة فحص الغدد الصماء والمناعة" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">التصنيف الطبي</label>
+                        <select id="admin-pkg-category" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                            <option value="فحص وقائي وباطني">فحص وقائي وباطني</option>
+                            <option value="أمراض مزمنة وغدد">أمراض مزمنة وغدد</option>
+                            <option value="صحة المرأة ورعاية الأجنة">صحة المرأة ورعاية الأجنة</option>
+                            <option value="طب وجراحة الأسنان">طب وجراحة الأسنان</option>
+                            <option value="طب رياضي ولياقة">طب رياضي ولياقة</option>
+                            <option value="باقة عامة متقدمة">باقة عامة متقدمة</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">شارة الباقة (Badge)</label>
+                        <input type="text" id="admin-pkg-badge" required value="عرض خاص ⭐" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">السعر الأصلي (ج.م)</label>
+                        <input type="number" id="admin-pkg-reg-price" required value="1200" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">سعر العرض المخفض (ج.م)</label>
+                        <input type="number" id="admin-pkg-offer-price" required value="800" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-mono">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الفحوصات والخدمات المشمولة (كل خدمة في سطر)</label>
+                    <textarea id="admin-pkg-services" required rows="3" placeholder="كشف استشاري باطنة وغدد&#10;تحليل وظائف غدة درقية TSH&#10;تحليل سكر تراكمي ودهون ثلاثية&#10;سونار رقبة ومتابعة مجانية" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('admin-add-package-modal').classList.add('hidden')" class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">إلغاء</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md transition-all">
+                        💾 حفظ واعتماد الباقة
                     </button>
                 </div>
             </form>
