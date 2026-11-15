@@ -34,6 +34,10 @@ const ClinicAdminApp = {
     doctorCommissions: [],
     pharmacyDrugs: [],
     pharmacyPrescriptions: [],
+    selectedBranch: 'all',
+    branches: [],
+    branchTransfers: [],
+    medicalPackages: [],
     scanViewerState: { invert: false, highContrast: false },
     revenueChartInstance: null,
     analyticsTrendChartInstance: null,
@@ -76,6 +80,8 @@ const ClinicAdminApp = {
             this.renderQueueBoard();
             this.renderDoctorCommissions();
             this.renderAdminPharmacy();
+            this.renderAdminSurgerySuite();
+            this.renderAdminMultiBranch();
             this.updateKPIs();
         });
     },
@@ -107,6 +113,9 @@ const ClinicAdminApp = {
         this.pharmacyPrescriptions = this.getMockPharmacyPrescriptions();
         this.daySurgeries = this.getMockDaySurgeries();
         this.dentalProcedures = this.getMockDentalProcedures();
+        this.branches = this.getMockBranches();
+        this.branchTransfers = this.getMockBranchTransfers();
+        this.medicalPackages = this.getMockMedicalPackages();
 
         this.renderCRM();
         this.renderCallCenter();
@@ -126,6 +135,7 @@ const ClinicAdminApp = {
         this.renderDoctorCommissions();
         this.renderAdminPharmacy();
         this.renderAdminSurgerySuite();
+        this.renderAdminMultiBranch();
         this.populateLabCatalogSelect();
         this.populateRadExamSelect();
         this.updateKPIs();
@@ -133,7 +143,7 @@ const ClinicAdminApp = {
 
     switchTab(tabId) {
         this.activeTab = tabId;
-        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports', 'lab', 'radiology', 'queue', 'commissions', 'pharmacy', 'surgery'];
+        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports', 'lab', 'radiology', 'queue', 'commissions', 'pharmacy', 'surgery', 'multibranch'];
         tabs.forEach(t => {
             const el = document.getElementById(`tab-content-${t}`);
             const btn = document.getElementById(`tab-btn-${t}`);
@@ -160,6 +170,8 @@ const ClinicAdminApp = {
             this.renderAdminPharmacy();
         } else if (tabId === 'surgery') {
             this.renderAdminSurgerySuite();
+        } else if (tabId === 'multibranch') {
+            this.renderAdminMultiBranch();
         }
     },
 
@@ -1370,6 +1382,47 @@ const ClinicAdminApp = {
                 adminSurgModal.classList.add('hidden');
                 adminSurgForm.reset();
                 this.renderAdminSurgerySuite();
+                this.updateKPIs();
+            };
+        }
+
+        const adminPkgForm = document.getElementById('admin-add-package-form');
+        const adminPkgModal = document.getElementById('admin-add-package-modal');
+        if (adminPkgForm && adminPkgModal) {
+            adminPkgForm.onsubmit = (e) => {
+                e.preventDefault();
+                const name = document.getElementById('admin-pkg-name').value.trim();
+                const category = document.getElementById('admin-pkg-category').value;
+                const badge = document.getElementById('admin-pkg-badge').value.trim();
+                const regPrice = parseFloat(document.getElementById('admin-pkg-reg-price').value) || 1200;
+                const offerPrice = parseFloat(document.getElementById('admin-pkg-offer-price').value) || 800;
+                const servicesRaw = document.getElementById('admin-pkg-services').value.trim();
+                const services = servicesRaw.split('\n').map(s => s.trim()).filter(Boolean);
+                const savingsPct = Math.round(((regPrice - offerPrice) / regPrice) * 100);
+
+                const newPkg = {
+                    id: 'pkg_' + Date.now(),
+                    code: 'PKG-' + Math.floor(100 + Math.random() * 900),
+                    name,
+                    category,
+                    badge,
+                    regular_price: regPrice,
+                    package_price: offerPrice,
+                    savings_percentage: savingsPct > 0 ? savingsPct : 25,
+                    bookings_count: 0,
+                    status: 'active',
+                    services: services.length > 0 ? services : ['استشارة طبية متخصصة', 'فحوصات معملية وسونار']
+                };
+
+                this.medicalPackages.unshift(newPkg);
+                try {
+                    localStorage.setItem('alwagih_medical_packages', JSON.stringify(this.medicalPackages));
+                } catch(e) {}
+
+                Utils.showToast(`تمت إضافة باقة (${name}) بنجاح واعتمادها في النظام 🎁`, 'success');
+                adminPkgModal.classList.add('hidden');
+                adminPkgForm.reset();
+                this.renderAdminMultiBranch();
                 this.updateKPIs();
             };
         }
@@ -3176,6 +3229,417 @@ const ClinicAdminApp = {
         } else {
             Utils.showToast('جاري تصدير سجل إجراءات الأسنان...', 'info');
         }
+    },
+
+    changeBranchFilter(branchId) {
+        this.selectedBranch = branchId || 'all';
+        const branchNames = {
+            all: 'كافة الفروع مجمعة (الكل)',
+            br_maadi: 'فرع المعادي الرئيسي (HQ)',
+            br_nasr: 'فرع مدينة نصر',
+            br_mohandessin: 'فرع المهندسين',
+            br_tagamoa: 'فرع التجمع الخامس'
+        };
+        const branchName = branchNames[this.selectedBranch] || this.selectedBranch;
+        Utils.showToast(`تم تبديل نطاق العرض إلى: ${branchName} 🏢`, 'info');
+        this.renderAdminMultiBranch();
+        this.updateKPIs();
+    },
+
+    renderAdminMultiBranch() {
+        const branches = this.branches || this.getMockBranches();
+        const transfers = this.branchTransfers || this.getMockBranchTransfers();
+        const packages = this.medicalPackages || this.getMockMedicalPackages();
+
+        // 1. Update KPIs
+        const totalBranches = branches.length;
+        const totalRevenue = branches.reduce((sum, b) => sum + Number(b.monthly_revenue || 0), 0);
+        const topBranch = [...branches].sort((a, b) => (b.occupancy_rate || 0) - (a.occupancy_rate || 0))[0];
+        const totalPkgBookings = packages.reduce((sum, p) => sum + Number(p.bookings_count || 0), 0);
+        const totalPkgSales = packages.reduce((sum, p) => sum + (Number(p.bookings_count || 0) * Number(p.package_price || 0)), 0);
+
+        const kpiBranchesEl = document.getElementById('admin-mb-kpi-branches');
+        const kpiRevenueEl = document.getElementById('admin-mb-kpi-revenue');
+        const kpiTopBranchEl = document.getElementById('admin-mb-kpi-top-branch');
+        const kpiPkgSalesEl = document.getElementById('admin-mb-kpi-pkg-sales');
+
+        if (kpiBranchesEl) kpiBranchesEl.textContent = `${totalBranches} فروع`;
+        if (kpiRevenueEl) {
+            if (this.selectedBranch !== 'all') {
+                const curB = branches.find(b => b.id === this.selectedBranch);
+                kpiRevenueEl.textContent = curB ? Utils.formatCurrency(curB.monthly_revenue) : Utils.formatCurrency(totalRevenue);
+            } else {
+                kpiRevenueEl.textContent = Utils.formatCurrency(totalRevenue);
+            }
+        }
+        if (kpiTopBranchEl && topBranch) kpiTopBranchEl.textContent = `${topBranch.short_name || topBranch.name} (${topBranch.occupancy_rate}%)`;
+        if (kpiPkgSalesEl) kpiPkgSalesEl.textContent = `${totalPkgBookings} باقة (${Utils.formatCurrency(totalPkgSales)})`;
+
+        // 2. Render Branches Comparison Table
+        const branchTbody = document.getElementById('admin-branches-table-body');
+        if (branchTbody) {
+            branchTbody.innerHTML = branches.map(b => {
+                const isSelected = this.selectedBranch === b.id;
+                const occ = b.occupancy_rate || 75;
+                const occColor = occ >= 85 ? 'bg-emerald-500' : (occ >= 75 ? 'bg-sky-500' : 'bg-amber-500');
+
+                return `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-100 dark:border-slate-800 ${isSelected ? 'bg-sky-50/50 dark:bg-sky-950/30' : ''}">
+                        <td class="py-3 px-3">
+                            <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                <span>${b.name}</span>
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">${b.code}</span>
+                            </div>
+                            <div class="text-[11px] text-slate-400">المدير: ${b.manager} | 📍 ${b.address}</div>
+                        </td>
+                        <td class="py-3 px-3 font-semibold text-slate-700 dark:text-slate-300">
+                            <div>${b.clinics_count} عيادات تخصصية</div>
+                            <div class="text-[11px] text-slate-400 font-normal">👨‍⚕️ ${b.doctors_count} طبيب مناوب</div>
+                        </td>
+                        <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                            ${Utils.formatCurrency(b.monthly_revenue)}
+                        </td>
+                        <td class="py-3 px-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-16 bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                    <div class="${occColor} h-2 rounded-full" style="width: ${occ}%"></div>
+                                </div>
+                                <span class="font-mono font-bold text-slate-700 dark:text-slate-300 text-[11px]">${occ}%</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                                ${b.status === 'active' ? 'نشط 100%' : 'صيانة'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 3. Render Inter-Branch Referrals Table
+        const transferTbody = document.getElementById('admin-transfers-table-body');
+        if (transferTbody) {
+            transferTbody.innerHTML = transfers.map(t => {
+                const statusBadge = t.status === 'completed'
+                    ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">تم الفحص</span>'
+                    : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">قيد الإجراء</span>';
+
+                return `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-100 dark:border-slate-800">
+                        <td class="py-3 px-3">
+                            <div class="font-bold text-slate-900 dark:text-white">${t.patient_name}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">${t.date}</div>
+                        </td>
+                        <td class="py-3 px-3 text-[11px]">
+                            <div class="text-slate-500">من: <strong class="text-slate-700 dark:text-slate-300">${t.from_branch}</strong></div>
+                            <div class="text-indigo-600 dark:text-indigo-400 font-bold">إلى: ${t.to_branch} ➔</div>
+                        </td>
+                        <td class="py-3 px-3">
+                            <div class="font-semibold text-slate-800 dark:text-slate-200 text-xs">${t.reason}</div>
+                            <div class="text-[10px] text-slate-400">${t.doctor_name}</div>
+                        </td>
+                        <td class="py-3 px-3">
+                            ${statusBadge}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 4. Render Medical Packages Table
+        const pkgTbody = document.getElementById('admin-packages-table-body');
+        if (pkgTbody) {
+            pkgTbody.innerHTML = packages.map(pkg => {
+                const servicesText = Array.isArray(pkg.services) 
+                    ? pkg.services.map(s => `<span class="inline-block bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[10px] ml-1 mb-1">✓ ${s}</span>`).join('') 
+                    : pkg.services;
+
+                return `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-100 dark:border-slate-800 text-xs">
+                        <td class="py-3 px-4">
+                            <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                <span>${pkg.name}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <span class="font-mono text-[10px] text-slate-400">${pkg.code}</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">${pkg.badge}</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">
+                            ${pkg.category}
+                        </td>
+                        <td class="py-3 px-4 max-w-xs">
+                            <div class="flex flex-wrap">${servicesText}</div>
+                        </td>
+                        <td class="py-3 px-4 font-mono text-slate-400 line-through">
+                            ${Utils.formatCurrency(pkg.regular_price)}
+                        </td>
+                        <td class="py-3 px-4 font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                            ${Utils.formatCurrency(pkg.package_price)}
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-0.5 rounded-lg text-[11px] font-black bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                                توفير ${pkg.savings_percentage}%
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 font-mono font-bold text-slate-800 dark:text-slate-200">
+                            ${pkg.bookings_count} حجز
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${pkg.status === 'active' ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600'}">
+                                ${pkg.status === 'active' ? 'متاح للحجز' : 'معطل'}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <button onclick="ClinicAdminApp.togglePackageStatus('${pkg.id}')" class="btn-press px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                                ${pkg.status === 'active' ? 'إيقاف مؤقت' : 'تفعيل'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    },
+
+    openAdminAddPackageModal() {
+        const modal = document.getElementById('admin-add-package-modal');
+        if (modal) modal.classList.remove('hidden');
+    },
+
+    togglePackageStatus(pkgId) {
+        const pkg = (this.medicalPackages || []).find(p => p.id === pkgId);
+        if (pkg) {
+            pkg.status = pkg.status === 'active' ? 'inactive' : 'active';
+            try {
+                localStorage.setItem('alwagih_medical_packages', JSON.stringify(this.medicalPackages));
+            } catch(e) {}
+            Utils.showToast(`تم تحديث حالة الباقة (${pkg.name})`, 'success');
+            this.renderAdminMultiBranch();
+        }
+    },
+
+    exportAdminMultiBranchExcel() {
+        if (window.Reports && Reports.exportMultiBranchReport) {
+            Reports.exportMultiBranchReport(this.branches, this.branchTransfers);
+        } else {
+            Utils.showToast('جاري تصدير تقرير الفروع المجمعة...', 'info');
+        }
+    },
+
+    exportAdminPackagesExcel() {
+        if (window.Reports && Reports.exportMedicalPackagesReport) {
+            Reports.exportMedicalPackagesReport(this.medicalPackages);
+        } else {
+            Utils.showToast('جاري تصدير تقرير باقات الفحص الطبي الشامل...', 'info');
+        }
+    },
+
+    getMockBranches() {
+        return [
+            {
+                id: 'br_maadi',
+                code: 'BR-MAADI-01',
+                name: 'فرع المعادي الرئيسي (HQ)',
+                short_name: 'المعادي الرئيسي',
+                address: 'مبنى الشفاء الطبي - شارع النصر، المعادي',
+                manager: 'د. هاني رضوان',
+                clinics_count: 12,
+                doctors_count: 28,
+                monthly_revenue: 485000,
+                occupancy_rate: 88,
+                status: 'active'
+            },
+            {
+                id: 'br_nasr',
+                code: 'BR-NASR-02',
+                name: 'فرع مدينة نصر',
+                short_name: 'مدينة نصر',
+                address: 'شارع مكرم عبيد - تقاطع النزهة',
+                manager: 'د. سميرة فوزي',
+                clinics_count: 10,
+                doctors_count: 22,
+                monthly_revenue: 375000,
+                occupancy_rate: 82,
+                status: 'active'
+            },
+            {
+                id: 'br_mohandessin',
+                code: 'BR-ENG-03',
+                name: 'فرع المهندسين',
+                short_name: 'المهندسين',
+                address: 'شارع جامعة الدول العربية - المهندسين',
+                manager: 'د. إيهاب ممدوح',
+                clinics_count: 8,
+                doctors_count: 18,
+                monthly_revenue: 310000,
+                occupancy_rate: 76,
+                status: 'active'
+            },
+            {
+                id: 'br_tagamoa',
+                code: 'BR-TAGAMOA-04',
+                name: 'فرع التجمع الخامس (القاهرة الجديدة)',
+                short_name: 'التجمع الخامس',
+                address: 'القطاع التجاري - التسعين الجنوبي',
+                manager: 'د. ريم المهدي',
+                clinics_count: 14,
+                doctors_count: 32,
+                monthly_revenue: 520000,
+                occupancy_rate: 91,
+                status: 'active'
+            }
+        ];
+    },
+
+    getMockBranchTransfers() {
+        return [
+            {
+                id: 'tr_101',
+                patient_name: 'كريم عصام بدر',
+                from_branch: 'فرع المهندسين',
+                to_branch: 'فرع المعادي الرئيسي',
+                reason: 'رنين مغناطيسي 3 تسلا (MRI High Field)',
+                doctor_name: 'د. طارق العريان',
+                date: '2026-11-15',
+                status: 'completed'
+            },
+            {
+                id: 'tr_102',
+                patient_name: 'منى سعيد علام',
+                from_branch: 'فرع مدينة نصر',
+                to_branch: 'فرع التجمع الخامس',
+                reason: 'فحص ليزك وتصحيح إبصار متقدم (Femto-LASIK)',
+                doctor_name: 'د. هدى منصور',
+                date: '2026-11-15',
+                status: 'in_progress'
+            },
+            {
+                id: 'tr_103',
+                patient_name: 'شريف محمود عبد الله',
+                from_branch: 'فرع المعادي الرئيسي',
+                to_branch: 'فرع مدينة نصر',
+                reason: 'قسطرة قلبية وجراحة أوعية دقيقة',
+                doctor_name: 'د. أحمد الشناوي',
+                date: '2026-11-14',
+                status: 'completed'
+            },
+            {
+                id: 'tr_104',
+                patient_name: 'دعاء عبد الوهاب',
+                from_branch: 'فرع التجمع الخامس',
+                to_branch: 'فرع المهندسين',
+                reason: 'استشارة جراحة تجميلية وأسنان متقدمة',
+                doctor_name: 'د. سارة محمود',
+                date: '2026-11-13',
+                status: 'completed'
+            }
+        ];
+    },
+
+    getMockMedicalPackages() {
+        const stored = localStorage.getItem('alwagih_medical_packages');
+        if (stored) {
+            try { return JSON.parse(stored); } catch (e) {}
+        }
+        return [
+            {
+                id: 'pkg_comprehensive',
+                code: 'PKG-CHECKUP-01',
+                name: 'باقة الفحص الطبي الشامل (Executive Checkup)',
+                category: 'فحص وقائي وباطني',
+                badge: 'الأكثر طلباً ⭐',
+                regular_price: 1450,
+                package_price: 950,
+                savings_percentage: 34,
+                bookings_count: 84,
+                status: 'active',
+                services: [
+                    'استشارة وفحص سريري باطنة عامة',
+                    'تحليل صورة دم كاملة (CBC)',
+                    'فحص سكر صائم ودهون كاملة (Lipid Profile)',
+                    'وظائف كبد وكلى كاملة (Liver & Kidney Panel)',
+                    'سونار وقائي للبطن والحوض (Abdominal US)',
+                    'كشف وقائي للأسنان واللثة'
+                ]
+            },
+            {
+                id: 'pkg_diabetic',
+                code: 'PKG-CARDIO-02',
+                name: 'باقة رعاية السكري وصحة القلب (Cardio-Diabetic Care)',
+                category: 'أمراض مزمنة وغدد',
+                badge: 'عناية متخصصة 🩺',
+                regular_price: 1100,
+                package_price: 750,
+                savings_percentage: 32,
+                bookings_count: 62,
+                status: 'active',
+                services: [
+                    'استشارة استشاري سكر وغدد صماء',
+                    'تحليل سكر تراكمي (HbA1c)',
+                    'تحليل زلال بول دقيق (Microalbuminuria)',
+                    'تخطيط ورسم قلب كهربائي (ECG)',
+                    'فحص قاع العين وقائي لمضاعفات السكر'
+                ]
+            },
+            {
+                id: 'pkg_women',
+                code: 'PKG-WOMEN-03',
+                name: 'باقة صحة المرأة ومتابعة الحمل (Women & Maternity)',
+                category: 'صحة المرأة ورعاية الأجنة',
+                badge: 'عناية فائقة 🌸',
+                regular_price: 1600,
+                package_price: 1100,
+                savings_percentage: 31,
+                bookings_count: 53,
+                status: 'active',
+                services: [
+                    'كشف استشارية نساء وتوليد',
+                    'أشعة سونار رباعي الأبعاد (4D Ultrasound)',
+                    'فحص مخزون حديد وفيتامينات (Ferritin + Vit D)',
+                    'مزرعة بول وتحليل مسحة وقائية',
+                    'جلسة استشارة تغذية للحوامل والرضاعة'
+                ]
+            },
+            {
+                id: 'pkg_dental',
+                code: 'PKG-DENTAL-04',
+                name: 'باقة ابتسامة هوليوود والعناية الفموية (Dental Care)',
+                category: 'طب وجراحة الأسنان',
+                badge: 'ابتسامة مشرقة ✨',
+                regular_price: 900,
+                package_price: 550,
+                savings_percentage: 39,
+                bookings_count: 97,
+                status: 'active',
+                services: [
+                    'فحص فموي وشجري كامل 32 سناً (Odontogram)',
+                    'أشعة بانوراما رقمية للفكين (OPG X-Ray)',
+                    'جلسة تنظيف وتلميع أسنان بالموجات الصوتية',
+                    'إزالة الترسبات الجيرية والتصبغات السطحية',
+                    'جلسة فلورايد وقائي لحماية المينا'
+                ]
+            },
+            {
+                id: 'pkg_athletic',
+                code: 'PKG-FITNESS-05',
+                name: 'باقة اللياقة والفحص الرياضي للشباب (Athletic Screening)',
+                category: 'طب رياضي ولياقة بدنية',
+                badge: 'صحة ولياقة ⚡',
+                regular_price: 1250,
+                package_price: 800,
+                savings_percentage: 36,
+                bookings_count: 41,
+                status: 'active',
+                services: [
+                    'فحص لياقة قلبية ومؤشرات الحيوية',
+                    'تحليل صورة دم كاملة وأملاح الدم (Electrolytes)',
+                    'فحص فيتامين د وكالسيوم ومغنسيوم (Vit D + Ca + Mg)',
+                    'فحص العمود الفقري والتوازن العضلي',
+                    'استشارة أخصائي علاج طبيعي وإصابات ملاعب'
+                ]
+            }
+        ];
     },
 
     getMockDaySurgeries() {
