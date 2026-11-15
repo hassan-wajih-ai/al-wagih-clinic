@@ -127,14 +127,27 @@
                         <span class="text-sm">🩻</span>
                         <span data-i18n="tab_radiology">قسم الأشعة (RIS)</span>
                     </button>
+                    <button id="tab-btn-queue" onclick="ClinicAdminApp.switchTab('queue')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <span class="text-sm">⏱️</span>
+                        <span data-i18n="tab_queue">شاشات ونداء الانتظار</span>
+                    </button>
+                    <button id="tab-btn-commissions" onclick="ClinicAdminApp.switchTab('commissions')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <span class="text-sm">👨‍⚕️</span>
+                        <span data-i18n="tab_commissions">عمولات وتسويات الأطباء</span>
+                    </button>
                     <button id="tab-btn-reports" onclick="ClinicAdminApp.switchTab('reports')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
                         <span class="text-sm">📊</span>
                         <span data-i18n="tab_reports">مركز التقارير والإحصائيات</span>
                     </button>
                 </div>
-                <a href="../accountant/index.html" class="px-3 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
-                    <span>💼 فتح لوحة المحاسب والرقابة</span>
-                </a>
+                <div class="flex items-center gap-2">
+                    <a href="../queue/index.html" target="_blank" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
+                        <span>📺 شاشة التلفزيون (TV)</span>
+                    </a>
+                    <a href="../accountant/index.html" class="px-3 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
+                        <span>💼 لوحة المحاسب</span>
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -1111,6 +1124,216 @@
             </div>
         </div>
 
+        <!-- TAB 9: Smart Waiting Queue & TV System -->
+        <div id="tab-content-queue" class="hidden space-y-6 animate-fade-in">
+            <!-- Queue KPIs Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="queue_kpi_total">إجمالي تذاكر اليوم</span>
+                        <span class="p-2 rounded-2xl bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 text-sm">🎫</span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" id="queue-kpi-total">0</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">تذكرة دور مسجلة</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="queue_kpi_completed">حالات تم فحصها</span>
+                        <span class="p-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 text-sm">✅</span>
+                    </div>
+                    <div class="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-2" id="queue-kpi-completed">0</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">أتمت الكشف والمغادرة</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="queue_kpi_waiting">حالات بالانتظار</span>
+                        <span class="p-2 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 text-sm">⏳</span>
+                    </div>
+                    <div class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2" id="queue-kpi-waiting">0</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">في صالات الانتظار الآن</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="queue_kpi_avg_wait">متوسط وقت الانتظار</span>
+                        <span class="p-2 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 text-sm">⚡</span>
+                    </div>
+                    <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-2" id="queue-kpi-avg-wait">12 دقيقة</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">كفاءة تشغيل العيادات 96%</div>
+                </div>
+            </div>
+
+            <!-- Queue Action Bar -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <a href="../queue/index.html" target="_blank" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/25 transition flex items-center gap-2">
+                        <span class="text-sm">📺</span>
+                        <span>فتح شاشة التلفزيون في صالة الانتظار (TV Queue Board)</span>
+                    </a>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="ClinicAdminApp.callNextQueueVoice()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white shadow-sm transition flex items-center gap-1.5">
+                        <span>🔊</span>
+                        <span>نداء صوتي للحالة التالية</span>
+                    </button>
+                    <button onclick="ClinicAdminApp.openNewQueueTicketModal()" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white shadow-sm transition flex items-center gap-1.5">
+                        <span>+</span>
+                        <span>إصدار تذكرة انتظار لمريض</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live Queue Board Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Col 7: Active Examination Rooms (غرف الكشف الجارية) -->
+                <div class="lg:col-span-7 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>🩺</span>
+                            <span>غرف الكشف والنداء المباشر (Active Consultation Rooms)</span>
+                        </h3>
+                        <span class="text-[11px] text-slate-400">تحكم صوتي فوري</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="admin-rooms-grid">
+                        <!-- Populated via admin.js -->
+                    </div>
+                </div>
+
+                <!-- Col 5: Waiting Tickets Queue Table -->
+                <div class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>⏳</span>
+                            <span>تذاكر صالة الانتظار القادمة</span>
+                        </h3>
+                        <span class="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full" id="admin-waiting-badge">
+                            0 تذاكر
+                        </span>
+                    </div>
+
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-2.5 px-3">التذكرة</th>
+                                    <th class="py-2.5 px-3">المريض</th>
+                                    <th class="py-2.5 px-3">العيادة</th>
+                                    <th class="py-2.5 px-3 text-center">النداء</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-queue-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated via admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 10: Doctor Commissions & Split Settlements -->
+        <div id="tab-content-commissions" class="hidden space-y-6 animate-fade-in">
+            <!-- Doctor Commissions KPIs Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="comm_kpi_gross">إجمالي إيراد الأطباء (Gross)</span>
+                        <span class="p-2 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 text-sm">💰</span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" id="comm-kpi-gross">0 ج.م</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">كشوفات وإجراءات وإحالات</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="comm_kpi_clinic_share">حصة المركز والعيادة</span>
+                        <span class="p-2 rounded-2xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 text-sm">🏥</span>
+                    </div>
+                    <div class="text-2xl font-black text-purple-700 dark:text-purple-300 mt-2" id="comm-kpi-clinic-share">0 ج.م</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">هامش تشغيل المجمع الطبي</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="comm_kpi_net_payout">صافي مستحقات الأطباء (Net)</span>
+                        <span class="p-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 text-sm">💵</span>
+                    </div>
+                    <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2" id="comm-kpi-net-payout">0 ج.م</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">مستحقات واجبة السداد والصرف</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="comm_kpi_paid">تسويات مصروفة هذا الشهر</span>
+                        <span class="p-2 rounded-2xl bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 text-sm">✓</span>
+                    </div>
+                    <div class="text-2xl font-black text-teal-700 dark:text-teal-300 mt-2" id="comm-kpi-paid">0 ج.م</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">تم تسليمها بإيصالات رسمية</div>
+                </div>
+            </div>
+
+            <!-- Doctor Commissions Action Bar -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto flex-1">
+                    <div class="relative w-full sm:w-64">
+                        <input type="text" id="comm-search-input" onkeyup="ClinicAdminApp.filterDoctorCommissions()" placeholder="بحث باسم الطبيب أو التخصص..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <select id="comm-status-filter" onchange="ClinicAdminApp.filterDoctorCommissions()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-medium">
+                        <option value="all">جميع الحالات</option>
+                        <option value="pending">مستحقات معلقة لم تصرف</option>
+                        <option value="paid">تسويات تم صرفها</option>
+                    </select>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                    <button onclick="ClinicAdminApp.exportDoctorCommissionsExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex items-center gap-1.5">
+                        <span>📗</span>
+                        <span>تصدير Excel (UTF-8)</span>
+                    </button>
+                    <button onclick="ClinicAdminApp.openCommissionRulesModal()" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/25 transition flex items-center gap-1.5">
+                        <span>⚙️</span>
+                        <span>لائحة نسب عمولات الأطباء</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Doctor Settlements Ledger Table -->
+            <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>👨‍⚕️ جدول تسويات مستحقات وعمولات الأطباء (Settlements Ledger)</span>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 font-bold" id="comm-table-count">0 طبيب</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">حساب تلقائي لنسب الكشف، العمليات، إحالات التحاليل والأشعة، واستقطاعات المواد</p>
+                    </div>
+                </div>
+
+                <div class="table-responsive-wrapper">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-950/70 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                <th class="py-3 px-3">الطبيب المعالج</th>
+                                <th class="py-3 px-3">الحالات</th>
+                                <th class="py-3 px-3">إجمالي الإيراد</th>
+                                <th class="py-3 px-3">نسبة الكشف</th>
+                                <th class="py-3 px-3">نسبة الإجراءات</th>
+                                <th class="py-3 px-3">عمولة الإحالات</th>
+                                <th class="py-3 px-3">الاستقطاعات</th>
+                                <th class="py-3 px-3">صافي المستحق (Net)</th>
+                                <th class="py-3 px-3">الحالة</th>
+                                <th class="py-3 px-3 text-center">الإجراءات والصرف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doctor-commissions-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Populated via admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Modal: Add CRM Patient -->
@@ -1946,6 +2169,345 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal 9: Issue Smart Waiting Queue Ticket -->
+    <div id="queue-ticket-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400 flex items-center justify-center text-base">🎫</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm" data-i18n="queue_modal_issue_title">إصدار تذكرة انتظار ذكية</h4>
+                        <p class="text-[11px] text-slate-400">طباعة رقم الدور والربط الصوتي مع شاشة العيادة</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('queue-ticket-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <form id="queue-ticket-form" class="space-y-3.5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم المريض <span class="text-rose-500">*</span></label>
+                        <input type="text" id="ticket-patient-name" required placeholder="مثال: عبد الرحمن محمود" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">رقم الهاتف</label>
+                        <input type="tel" id="ticket-patient-phone" placeholder="01xxxxxxxxx" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">العيادة المستهدفة <span class="text-rose-500">*</span></label>
+                        <select id="ticket-clinic-select" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                            <option value="العيادة الباطنية التخصصية">العيادة الباطنية التخصصية (غرفة 101)</option>
+                            <option value="عيادة جراحة العظام">عيادة جراحة العظام والمفاصل (غرفة 102)</option>
+                            <option value="عيادة طب وجراحة العيون">عيادة طب وجراحة العيون (غرفة 103)</option>
+                            <option value="عيادة الجلدية والليزر">عيادة الجلدية والليزر (غرفة 104)</option>
+                            <option value="عيادة طب وجراحة الأسنان">عيادة طب وجراحة الأسنان (غرفة 105)</option>
+                            <option value="معمل التحاليل الطبية (LIS)">معمل التحاليل الطبية - سحب عينات (غرفة L1)</option>
+                            <option value="مركز الأشعة التشخيصية (RIS)">مركز الأشعة والرنين (غرفة R1)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الطبيب المعالج</label>
+                        <select id="ticket-doctor-select" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                            <option value="د. محمد عبد العزيز">د. محمد عبد العزيز (باطنة)</option>
+                            <option value="د. هدى منصور">د. هدى منصور (عظام)</option>
+                            <option value="د. طارق العريان">د. طارق العريان (عيون)</option>
+                            <option value="د. ريم المهدي">د. ريم المهدي (جلدية)</option>
+                            <option value="د. أحمد الشناوي">د. أحمد الشناوي (أسنان)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">أولوية الدور</label>
+                        <select id="ticket-priority-select" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                            <option value="normal">حالة عادية (Normal)</option>
+                            <option value="urgent">أسبقية كشف (Urgent)</option>
+                            <option value="emergency">طوارئ حرجة (Emergency 🚨)</option>
+                            <option value="vip">كبار الشخصيات (VIP ⭐)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">نوع الخدمة</label>
+                        <select id="ticket-service-type" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                            <option value="كشف جديد">كشف طبي جديد</option>
+                            <option value="إعادة واستشارة">استشارة / إعادة كشف</option>
+                            <option value="إجراء / جلسة علاجية">إجراء / جلسة علاجية</option>
+                            <option value="سحب عينة / فحص أشعة">سحب عينات / أشعة</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">ملاحظات إضافية للممرضة والطبيب</label>
+                    <input type="text" id="ticket-notes" placeholder="مثال: قياس سكر وضغط قبل الدخول" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:outline-none">
+                </div>
+
+                <div class="p-3 bg-sky-50 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/50 rounded-2xl flex items-center gap-3">
+                    <span class="text-2xl">🖨️</span>
+                    <div class="text-[11px] text-sky-800 dark:text-sky-300">
+                        سيتم تخصيص رمز تذكرة تسلسلي تلقائياً، وإدراجه فوراً على شاشة صالة الانتظار وبث إشعار نداء.
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('queue-ticket-modal').classList.add('hidden')" class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">إلغاء</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl shadow-md transition-all flex items-center gap-1.5">
+                        <span>🖨️ إصدار وطباعة التذكرة</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 10: Configure Doctor Commission Rules -->
+    <div id="doctor-commission-rules-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-base">⚙️</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm" data-i18n="comm_modal_rules_title">إعداد نسب وقواعد عمولات الطبيب</h4>
+                        <p class="text-[11px] text-slate-400" id="rules-doctor-subtitle">تعديل نسب الكشف، الإجراءات، الإحالات والاستقطاعات</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('doctor-commission-rules-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <form id="doctor-commission-rules-form" class="space-y-3.5">
+                <input type="hidden" id="rules-doctor-id">
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم الطبيب والعيادة</label>
+                    <input type="text" id="rules-doctor-name" readonly class="w-full px-3 py-2 text-xs rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 font-bold text-slate-900 dark:text-white focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">نسبة كشف العيادة (%)</label>
+                        <div class="relative">
+                            <input type="number" id="rules-consult-split" min="0" max="100" step="1" required class="w-full px-3 py-2 pl-8 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <span class="absolute left-3 top-2 text-xs font-bold text-slate-400">%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">نسبة العمليات والإجراءات (%)</label>
+                        <div class="relative">
+                            <input type="number" id="rules-procedure-split" min="0" max="100" step="1" required class="w-full px-3 py-2 pl-8 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <span class="absolute left-3 top-2 text-xs font-bold text-slate-400">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">عمولة إحالة المعمل LIS (%)</label>
+                        <div class="relative">
+                            <input type="number" id="rules-lab-comm" min="0" max="100" step="1" required class="w-full px-3 py-2 pl-8 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <span class="absolute left-3 top-2 text-xs font-bold text-slate-400">%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">عمولة إحالة مركز الأشعة RIS (%)</label>
+                        <div class="relative">
+                            <input type="number" id="rules-rad-comm" min="0" max="100" step="1" required class="w-full px-3 py-2 pl-8 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <span class="absolute left-3 top-2 text-xs font-bold text-slate-400">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">نسبة استقطاع المستهلكات والمواد (%)</label>
+                    <div class="relative">
+                        <input type="number" id="rules-deduction-rate" min="0" max="50" step="0.5" required class="w-full px-3 py-2 pl-8 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <span class="absolute left-3 top-2 text-xs font-bold text-slate-400">%</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-1">تستقطع تلقائياً من قيمة العمليات لتغطية المواد الطبية والتعقيم</p>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('doctor-commission-rules-modal').classList.add('hidden')" class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">إلغاء</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md transition-all flex items-center gap-1.5">
+                        <span>💾 حفظ القواعد وتحديث التسويات</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 11: Formal Doctor Statement & Payout Slip (Printable Letterhead) -->
+    <div id="doctor-statement-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 my-8">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 no-print">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base">📑</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm" data-i18n="comm_modal_statement_title">كشف حساب ومستحقات الطبيب المعتمد</h4>
+                        <p class="text-[11px] text-slate-400">بيان تفصيلي معتمد للطباعة والتسوية المالية الرسمية</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.print()" class="px-3 py-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow flex items-center gap-1 transition-all">
+                        <span>🖨️ طباعة الكشف</span>
+                    </button>
+                    <button onclick="document.getElementById('doctor-statement-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+                </div>
+            </div>
+
+            <!-- Formal Letterhead Document Container -->
+            <div class="p-6 bg-white text-slate-900 rounded-2xl border border-slate-200 space-y-4 font-sans printable-sheet">
+                <!-- Letterhead Top Bar -->
+                <div class="flex items-center justify-between border-b-2 border-indigo-600 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl font-black">
+                            🏥
+                        </div>
+                        <div>
+                            <h2 class="text-base font-black text-indigo-950 tracking-tight">مجمع ومستشفيات الوجيه الطبية التخصصية</h2>
+                            <p class="text-[11px] text-slate-500 font-semibold">إدارة الشؤون المالية والحسابات الطبية العامة</p>
+                        </div>
+                    </div>
+                    <div class="text-left font-mono text-[11px] text-slate-600">
+                        <div>رقم الكشف: <strong class="text-indigo-900" id="stmt-number">STMT-2026-081</strong></div>
+                        <div>تاريخ البيان: <strong id="stmt-date">15 نوفمبر 2026</strong></div>
+                        <div>الفترة المالية: <span class="bg-indigo-50 px-2 py-0.5 rounded font-bold text-indigo-700">نوفمبر 2026</span></div>
+                    </div>
+                </div>
+
+                <!-- Doctor Info Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">اسم الطبيب:</span>
+                        <strong class="text-slate-900 text-xs" id="stmt-doctor-name">—</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">التخصص / العيادة:</span>
+                        <strong class="text-slate-900 text-xs" id="stmt-doctor-spec">—</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">الغرفة / العيادة:</span>
+                        <strong class="text-slate-900 text-xs" id="stmt-doctor-room">—</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">حالة التسوية:</span>
+                        <strong class="text-emerald-700 text-xs" id="stmt-doctor-status">جاهز للصرف</strong>
+                    </div>
+                </div>
+
+                <!-- Financial Highlights Summary Cards -->
+                <div class="grid grid-cols-3 gap-3 text-center">
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <span class="text-[10px] text-slate-500 font-bold block mb-1">إجمالي الدخل الإجمالي (Gross)</span>
+                        <span class="text-sm font-black text-slate-900" id="stmt-gross-rev">0 ج.م</span>
+                    </div>
+                    <div class="p-3 bg-rose-50/60 rounded-xl border border-rose-100">
+                        <span class="text-[10px] text-rose-600 font-bold block mb-1">استقطاعات المواد والمركز</span>
+                        <span class="text-sm font-black text-rose-700" id="stmt-deductions">0 ج.م</span>
+                    </div>
+                    <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                        <span class="text-[10px] text-emerald-800 font-black block mb-1">صافي مستحقات الطبيب (Net Payable)</span>
+                        <span class="text-base font-black text-emerald-700" id="stmt-net-pay">0 ج.م</span>
+                    </div>
+                </div>
+
+                <!-- Statement Line Items Table -->
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-slate-100 text-slate-700 font-bold">
+                            <tr>
+                                <th class="py-2.5 px-3">بند الإيراد / الخدمة</th>
+                                <th class="py-2.5 px-3">عدد الحالات</th>
+                                <th class="py-2.5 px-3">إجمالي القيمة</th>
+                                <th class="py-2.5 px-3">نسبة الطبيب</th>
+                                <th class="py-2.5 px-3 text-left">مستحق الطبيب</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stmt-table-lines" class="divide-y divide-slate-100">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Signatures & Official Stamp Row -->
+                <div class="grid grid-cols-3 gap-4 pt-6 mt-4 border-t border-slate-200 text-xs text-center">
+                    <div>
+                        <span class="text-slate-400 block text-[10px] mb-6">إعداد المحاسب المالي</span>
+                        <div class="border-b border-slate-300 w-3/4 mx-auto mb-1"></div>
+                        <span class="text-[11px] font-bold text-slate-800">أ / حازم القاضي</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px] mb-2">خاتم الإدارة المالية والاعتماد</span>
+                        <div class="w-14 h-14 rounded-full border-2 border-dashed border-indigo-400 mx-auto flex items-center justify-center text-[9px] text-indigo-700 font-bold">
+                            معتمد رسمياً
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px] mb-6">توقيع واستلام الطبيب</span>
+                        <div class="border-b border-slate-300 w-3/4 mx-auto mb-1"></div>
+                        <span class="text-[11px] font-bold text-slate-800" id="stmt-sign-doctor-name">د. الطبيب</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 12: Doctor Payout Disbursement -->
+    <div id="doctor-payout-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base">💵</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm" data-i18n="comm_modal_payout_title">صرف وتسوية مستحقات الطبيب</h4>
+                        <p class="text-[11px] text-slate-400">إصدار سند الصرف المالي وتحديث حالة الطبيب إلى "تم الصرف"</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('doctor-payout-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <form id="doctor-payout-form" class="space-y-3.5">
+                <input type="hidden" id="payout-doctor-id">
+
+                <div class="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <span class="text-xs text-emerald-800 dark:text-emerald-300 block font-bold" id="payout-doc-name-display">—</span>
+                        <span class="text-[10px] text-emerald-600 dark:text-emerald-400">صافي المستحق القائم للصرف</span>
+                    </div>
+                    <div class="text-lg font-black text-emerald-700 dark:text-emerald-300 font-mono" id="payout-amount-display">
+                        0 ج.م
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">طريقة الصرف المالي <span class="text-rose-500">*</span></label>
+                    <select id="payout-payment-method" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <option value="نقداً من الخزينة الرئيسية">نقداً من الخزينة الرئيسية (Cash)</option>
+                        <option value="تحويل بنكي / حساب مصرفي">تحويل بنكي / حساب مصرفي (Bank Transfer)</option>
+                        <option value="شيك بنكي معتمد">شيك بنكي معتمد (Cheque)</option>
+                        <option value="محفظة إلكترونية (InstaPay / Smart Wallet)">محفظة إلكترونية (InstaPay / Smart Wallet)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">رقم مرجع الصرف / رقم الشيك أو التحويل</label>
+                    <input type="text" id="payout-reference-no" placeholder="مثال: VCH-2026-904" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">ملاحظات الصرف والخصم إن وجدت</label>
+                    <input type="text" id="payout-notes" placeholder="مثال: تم خصم سلفة سابقة بقيمة 500 ج.م وتسليم الإيصال" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('doctor-payout-modal').classList.add('hidden')" class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">إلغاء</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition-all flex items-center gap-1.5">
+                        <span>✅ تأكيد الصرف وإغلاق الفترة</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
     <script src="../../js/config.js"></script>
