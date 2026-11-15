@@ -119,6 +119,14 @@
                     <button id="tab-btn-contracts" onclick="ClinicAdminApp.switchTab('contracts')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
                         🏢 التعاقدات والتأمين (Co-Pay)
                     </button>
+                    <button id="tab-btn-lab" onclick="ClinicAdminApp.switchTab('lab')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <span class="text-sm">🔬</span>
+                        <span data-i18n="tab_lab">قسم المعمل (LIS)</span>
+                    </button>
+                    <button id="tab-btn-radiology" onclick="ClinicAdminApp.switchTab('radiology')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <span class="text-sm">🩻</span>
+                        <span data-i18n="tab_radiology">قسم الأشعة (RIS)</span>
+                    </button>
                     <button id="tab-btn-reports" onclick="ClinicAdminApp.switchTab('reports')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
                         <span class="text-sm">📊</span>
                         <span data-i18n="tab_reports">مركز التقارير والإحصائيات</span>
@@ -901,6 +909,208 @@
             </div>
         </div>
 
+        <!-- TAB 7: Laboratory Information System (LIS) -->
+        <div id="tab-content-lab" class="hidden space-y-6 animate-fade-in">
+            <!-- Lab KPIs Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="lab_kpi_total">إجمالي طلبات التحاليل</span>
+                        <span class="p-2 rounded-2xl bg-cyan-50 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400 text-sm">🧪</span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" id="lab-kpi-total">0</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">عينات مسجلة بالمعمل</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="lab_kpi_pending">عينات قيد السحب والتحليل</span>
+                        <span class="p-2 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 text-sm">⏳</span>
+                    </div>
+                    <div class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2" id="lab-kpi-pending">0</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">جاري تجهيز نتائجها على الأجهزة</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="lab_kpi_completed">نتائج مكتملة ومعتمدة</span>
+                        <span class="p-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 text-sm">✅</span>
+                    </div>
+                    <div class="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-2" id="lab-kpi-completed">0</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">جاهزة للتسليم والطباعة والواتساب</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-rose-600 dark:text-rose-400 font-bold" data-i18n="lab_kpi_critical">تنبيهات حرجة (Panic Values)</span>
+                        <span class="p-2 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 text-sm animate-pulse">🚨</span>
+                    </div>
+                    <div class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-2" id="lab-kpi-critical">0</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">قيم تستدعي الاتصال العاجل بالطبيب</div>
+                </div>
+            </div>
+
+            <!-- Lab Action Bar & Search Filters -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto flex-1">
+                    <div class="relative w-full sm:w-64">
+                        <input type="text" id="lab-search-input" onkeyup="ClinicAdminApp.filterLabOrders()" placeholder="بحث باسم المريض أو رقم العينة..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                    </div>
+                    <select id="lab-status-filter" onchange="ClinicAdminApp.filterLabOrders()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-medium">
+                        <option value="all">جميع الحالات</option>
+                        <option value="pending">بانتظار السحب (Pending)</option>
+                        <option value="in_progress">قيد التحليل (In Progress)</option>
+                        <option value="verified">معتمدة ومكتملة (Verified)</option>
+                        <option value="panic">حرجة تستدعي التدخل (Panic)</option>
+                    </select>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                    <button onclick="ClinicAdminApp.exportLabReportExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex items-center gap-1.5">
+                        <span>📗</span>
+                        <span>تصدير Excel (UTF-8)</span>
+                    </button>
+                    <button onclick="ClinicAdminApp.openNewLabOrderModal()" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-700 text-white shadow-md shadow-cyan-600/25 transition flex items-center gap-1.5">
+                        <span>+</span>
+                        <span data-i18n="btn_new_lab_order">طلب تحليل معملي جديد</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lab Orders & Samples Table -->
+            <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>🧪 سجل عينات وفحوصات المختبر الطبي</span>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 font-bold" id="lab-table-count">0 عينة</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">تتبع مراحل العينات، طباعة الباركود، إدخال النتائج، والتقارير المعتمدة</p>
+                    </div>
+                </div>
+
+                <div class="table-responsive-wrapper">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-950/70 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                <th class="py-3 px-3">رقم العينة والباركود</th>
+                                <th class="py-3 px-3">المريض</th>
+                                <th class="py-3 px-3">الفحص المطلوب</th>
+                                <th class="py-3 px-3">نوع الأنبوبة</th>
+                                <th class="py-3 px-3">الطبيب المعالج</th>
+                                <th class="py-3 px-3">التاريخ والتكلفة</th>
+                                <th class="py-3 px-3">الحالة والنتيجة</th>
+                                <th class="py-3 px-3 text-center">الإجراءات المتكاملة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lab-orders-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Populated via admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 8: Radiology Information System (RIS) -->
+        <div id="tab-content-radiology" class="hidden space-y-6 animate-fade-in">
+            <!-- Radiology KPIs Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="rad_kpi_total">إجمالي فحوصات الأشعة</span>
+                        <span class="p-2 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 text-sm">🩻</span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" id="rad-kpi-total">0</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">دراسة تشخيصية مسجلة</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="rad_kpi_pending">فحوصات بانتظار التقرير</span>
+                        <span class="p-2 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 text-sm">⏳</span>
+                    </div>
+                    <div class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2" id="rad-kpi-pending">0</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">قيد الفحص وكتابة التقرير</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400" data-i18n="rad_kpi_completed">تقارير معتمدة وموقعة</span>
+                        <span class="p-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 text-sm">🖋️</span>
+                    </div>
+                    <div class="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-2" id="rad-kpi-completed">0</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">موقعة من استشاري الأشعة</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 font-bold" data-i18n="rad_kpi_modalities">الأجهزة المفعلة</span>
+                        <span class="p-2 rounded-2xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 text-sm">📡</span>
+                    </div>
+                    <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-2" id="rad-kpi-modalities">4 أجهزة</div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">MRI • CT • X-Ray • Ultrasound</div>
+                </div>
+            </div>
+
+            <!-- Radiology Action Bar & Modality Filters -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto flex-1">
+                    <div class="relative w-full sm:w-64">
+                        <input type="text" id="rad-search-input" onkeyup="ClinicAdminApp.filterRadStudies()" placeholder="بحث باسم المريض أو رقم الفحص..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <select id="rad-modality-filter" onchange="ClinicAdminApp.filterRadStudies()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-medium">
+                        <option value="all">جميع الأجهزة (Modalities)</option>
+                        <option value="X-Ray">أشعة عادية (X-Ray)</option>
+                        <option value="MRI">رنين مغناطيسي (MRI)</option>
+                        <option value="CT">أشعة مقطعية (CT)</option>
+                        <option value="Ultrasound">سونار وموجات صوتية (US)</option>
+                    </select>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                    <button onclick="ClinicAdminApp.exportRadReportExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex items-center gap-1.5">
+                        <span>📗</span>
+                        <span>تصدير Excel (UTF-8)</span>
+                    </button>
+                    <button onclick="ClinicAdminApp.openNewRadOrderModal()" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/25 transition flex items-center gap-1.5">
+                        <span>+</span>
+                        <span data-i18n="btn_new_rad_order">حجز فحص أشعة جديد</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Radiology Worklist Table -->
+            <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>🩻 جدول فحوصات الأشعة والتصوير التشخيصي (Worklist)</span>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 font-bold" id="rad-table-count">0 فحص</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-400 mt-0.5">إدارة الدراسات، استعراض الصور، كتابة التقارير بالقوالب، والاعتماد الطبي</p>
+                    </div>
+                </div>
+
+                <div class="table-responsive-wrapper">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-950/70 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                <th class="py-3 px-3">رقم الفحص (Study ID)</th>
+                                <th class="py-3 px-3">المريض</th>
+                                <th class="py-3 px-3">الجهاز والعضو المطلوب</th>
+                                <th class="py-3 px-3">الصبغة (Contrast)</th>
+                                <th class="py-3 px-3">الطبيب المعالج</th>
+                                <th class="py-3 px-3">التاريخ والتكلفة</th>
+                                <th class="py-3 px-3">حالة الفحص</th>
+                                <th class="py-3 px-3 text-center">الإجراءات والصور</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rad-studies-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Populated via admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Modal: Add CRM Patient -->
@@ -1158,7 +1368,586 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- =========================================================================
+         LIS & RIS MODALS (أنظمة المعمل والأشعة)
+         ========================================================================= -->
+
+    <!-- Modal 1: New Lab Order Modal -->
+    <div id="lab-order-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h4 class="font-bold text-cyan-900 dark:text-cyan-300 text-sm flex items-center gap-2">
+                    <span>🧪</span>
+                    <span>طلب فحص وتحليل معملي جديد (LIS)</span>
+                </h4>
+                <button onclick="document.getElementById('lab-order-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+            <form id="lab-order-form" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">اسم المريض</label>
+                        <input type="text" id="lab-order-patient-name" required placeholder="اسم المريض بالكامل" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-cyan-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">رقم الهاتف (الواتساب)</label>
+                        <input type="tel" id="lab-order-patient-phone" required placeholder="01xxxxxxxxx" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-cyan-500 font-mono">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">السن / النوع</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="number" id="lab-order-patient-age" value="32" min="1" max="110" class="w-full px-2 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+                            <select id="lab-order-patient-gender" class="w-full px-2 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+                                <option value="male">ذكر</option>
+                                <option value="female">أنثى</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">الفحص أو الباقة المطلوبة</label>
+                        <select id="lab-order-test-select" onchange="ClinicAdminApp.onLabTestSelected(this.value)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-bold text-cyan-700 dark:text-cyan-400">
+                            <!-- Populated dynamically via admin.js -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">أنبوبة السحب المقترحة</label>
+                        <input type="text" id="lab-order-tube-type" readonly class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">الطبيب المحول</label>
+                        <input type="text" id="lab-order-doctor-input" value="د. أحمد الشناوي (استشاري باطنة)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">نظام المحاسبة</label>
+                        <select id="lab-order-payment-type" onchange="ClinicAdminApp.toggleLabPaymentContract(this.value)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold">
+                            <option value="cash">سداد نقدي مباشر (Cash)</option>
+                            <option value="corporate">تعاقد شركة / تأمين (Co-Pay)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">تكلفة الفحص (ج.م)</label>
+                        <input type="number" id="lab-order-cost-input" value="250" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-mono font-bold text-emerald-600">
+                    </div>
+                </div>
+
+                <div id="lab-order-contract-row" class="hidden">
+                    <label class="block text-xs font-semibold text-purple-700 dark:text-purple-300 mb-1">شركة التأمين أو التعاقد</label>
+                    <select id="lab-order-contract-select" class="w-full px-3 py-2 text-xs rounded-xl border border-purple-300 dark:border-purple-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('lab-order-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">إلغاء</button>
+                    <button type="submit" class="btn-press px-5 py-2 rounded-xl text-xs font-bold text-white bg-cyan-600 hover:bg-cyan-700 shadow-md shadow-cyan-600/30">توليد كود العينة والطلب</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2: Tube Barcode Thermal Sticker Preview & Print -->
+    <div id="lab-barcode-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-center space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <span>🏷️</span>
+                    <span>ملصق الباركود الحراري للأنبوبة</span>
+                </span>
+                <button onclick="document.getElementById('lab-barcode-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+
+            <!-- Sticker Render Box (50x30mm thermal label simulation) -->
+            <div class="mx-auto barcode-sticker text-slate-900" id="barcode-sticker-print-area">
+                <div class="flex items-center justify-between text-[11px] font-bold border-b border-slate-300 pb-1 mb-1">
+                    <span>مختبر الوجيه الطبي</span>
+                    <span id="barcode-tube-cap" class="px-1.5 py-0.5 rounded text-[9px] bg-purple-100 text-purple-900 font-mono">EDTA 🟣</span>
+                </div>
+                <div class="text-right text-[11px] font-bold leading-tight" id="barcode-patient-name">أحمد سعيد عبد الله</div>
+                <div class="flex justify-between items-center text-[9px] text-slate-600 my-1">
+                    <span id="barcode-patient-info">38 سنة • ذكر</span>
+                    <span id="barcode-test-name" class="font-bold">صورة دم كاملة CBC</span>
+                </div>
+                
+                <!-- Barcode Graphics -->
+                <div class="barcode-lines my-1.5 rounded-sm"></div>
+                
+                <div class="font-mono text-center text-xs font-black tracking-widest" id="barcode-sample-id">LAB-2026-8801</div>
+                <div class="text-[9px] text-slate-500 text-left mt-0.5 font-mono" id="barcode-timestamp">2026-11-15 10:30 AM</div>
+            </div>
+
+            <div class="flex justify-center gap-2 pt-2">
+                <button onclick="window.print()" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 dark:bg-slate-700 text-white shadow-sm flex items-center gap-1.5">
+                    <span>🖨️</span>
+                    <span>طباعة الملصق (Thermal 50x30)</span>
+                </button>
+                <button onclick="document.getElementById('lab-barcode-modal').classList.add('hidden')" class="btn-press px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200">
+                    إغلاق
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Lab Test Parameter Results Editor -->
+    <div id="lab-results-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div>
+                    <h4 class="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                        <span>📝</span>
+                        <span>إدخال وتعديل نتائج الفحص المخبري</span>
+                    </h4>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5" id="lab-results-modal-subtitle">عينة رقم: LAB-2026-8801 | صورة دم كاملة CBC</p>
+                </div>
+                <button onclick="document.getElementById('lab-results-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+
+            <form id="lab-results-form" class="space-y-4">
+                <input type="hidden" id="lab-results-active-order-id">
+                
+                <!-- Dynamic Parameters Table -->
+                <div class="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                <th class="py-2.5 px-3">المعامل (Parameter)</th>
+                                <th class="py-2.5 px-3">النتيجة المقاسة</th>
+                                <th class="py-2.5 px-3">الوحدة</th>
+                                <th class="py-2.5 px-3">القيم الطبيعية (Reference Range)</th>
+                                <th class="py-2.5 px-3 text-center">المؤشر</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lab-results-parameters-tbody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Populated dynamically via admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pathologist / Lab Doctor Notes -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">تعليق وملاحظات استشاري الباثولوجيا الإكلينيكية</label>
+                    <textarea id="lab-results-comment" rows="2" placeholder="ملاحظات سريرية، عينة مصللحة، توصية بإعادة الفحص أو استشارة طبيب..." class="w-full p-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-cyan-500"></textarea>
+                </div>
+
+                <!-- Verified / Approved Checkbox -->
+                <div class="flex items-center gap-2 p-3 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800">
+                    <input type="checkbox" id="lab-results-approve-check" checked class="w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500">
+                    <label for="lab-results-approve-check" class="text-xs font-bold text-cyan-900 dark:text-cyan-300 cursor-pointer">
+                        اعتماد النتيجة رسمياً ونشرها للمريض والطبيب المعالج مع التوقيع الإلكتروني
+                    </label>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('lab-results-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">إلغاء</button>
+                    <button type="submit" class="btn-press px-5 py-2 rounded-xl text-xs font-bold text-white bg-cyan-600 hover:bg-cyan-700 shadow-md shadow-cyan-600/30">حفظ واعتماد النتيجة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 4: Official Medical Lab Report (Letterhead & QR Verification) -->
+    <div id="lab-print-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[92vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 no-print">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🖨️</span>
+                    <h4 class="font-bold text-slate-900 dark:text-white text-sm">معاينة وطباعة التقرير الطبي المخبري الرسمي</h4>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.print()" class="btn-press px-4 py-1.5 rounded-xl text-xs font-bold bg-cyan-600 text-white shadow-sm flex items-center gap-1.5">
+                        <span>طباعة التقرير</span>
+                    </button>
+                    <button onclick="document.getElementById('lab-print-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+                </div>
+            </div>
+
+            <!-- Formal Medical Letterhead Container -->
+            <div id="lab-report-letterhead-content" class="bg-white text-slate-900 p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 font-sans">
+                <!-- Header -->
+                <div class="flex items-center justify-between border-b-2 border-cyan-600 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-cyan-600 text-white flex items-center justify-center font-black text-2xl shadow-md">
+                            🧪
+                        </div>
+                        <div>
+                            <h2 class="text-base font-black text-slate-900">مختبر الوجيه للتحاليل والباثولوجيا الإكلينيكية</h2>
+                            <p class="text-[11px] text-slate-500">Al Wagih Diagnostic & Clinical Pathology Laboratories</p>
+                            <p class="text-[10px] text-cyan-700 font-medium">معتمد ومجهز بأحدث أجهزة التحليل الآلية • كود الجودة: ISO-15189</p>
+                        </div>
+                    </div>
+                    <div class="text-left font-mono text-[11px]">
+                        <div class="font-bold text-slate-800" id="print-lab-sample-id">LAB-2026-8801</div>
+                        <div class="text-slate-500" id="print-lab-date">2026-11-15</div>
+                    </div>
+                </div>
+
+                <!-- Patient Meta Table -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">اسم المريض:</span>
+                        <strong class="text-slate-900" id="print-lab-patient-name">—</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">السن / الجنس:</span>
+                        <strong class="text-slate-900" id="print-lab-patient-info">—</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">الطبيب المعالج:</span>
+                        <strong class="text-slate-900" id="print-lab-doctor">—</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">الفحص المطلوب:</span>
+                        <strong class="text-cyan-700" id="print-lab-test-name">—</strong>
+                    </div>
+                </div>
+
+                <!-- Results Table -->
+                <table class="w-full text-right text-xs border border-slate-200 rounded-xl overflow-hidden">
+                    <thead class="bg-cyan-50 text-cyan-950 font-bold border-b border-cyan-200">
+                        <tr>
+                            <th class="py-2.5 px-3">المعامل (Test Parameter)</th>
+                            <th class="py-2.5 px-3">النتيجة (Result)</th>
+                            <th class="py-2.5 px-3">الوحدة (Unit)</th>
+                            <th class="py-2.5 px-3">القيم المرجعية الطبيعية</th>
+                            <th class="py-2.5 px-3 text-center">المؤشر</th>
+                        </tr>
+                    </thead>
+                    <tbody id="print-lab-results-tbody" class="divide-y divide-slate-100">
+                        <!-- Filled dynamically -->
+                    </tbody>
+                </table>
+
+                <!-- Notes & Pathology Comments -->
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                    <span class="font-bold text-slate-700 block mb-0.5">تعليق الاستشاري والملاحظات السريرية:</span>
+                    <p class="text-slate-600 text-[11px]" id="print-lab-comment">جميع المؤشرات ضمن الحدود السريرية المقبولة، يُنصح بإعادة المتابعة الدورية.</p>
+                </div>
+
+                <!-- Footer with QR verification & Electronic Signature -->
+                <div class="flex items-center justify-between pt-4 border-t border-slate-200 text-xs">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-14 h-14 bg-slate-100 border border-slate-300 rounded-lg flex items-center justify-center text-[10px] text-slate-500 font-mono text-center p-1">
+                            [QR Code]<br>موثق
+                        </div>
+                        <div class="text-[10px] text-slate-500 leading-tight">
+                            رمز التحقق الرقمي السريع للتقرير الطبي.<br>
+                            يمكن مسح الكود للتحقق من سلامة النتيجة ومنع التزوير.
+                        </div>
+                    </div>
+                    <div class="text-left font-mono">
+                        <div class="text-[11px] font-bold text-slate-900" id="print-lab-verified-by">د. هاني عثمان</div>
+                        <div class="text-[10px] text-slate-500">استشاري الباثولوجيا الإكلينيكية والمناعة</div>
+                        <div class="text-[9px] text-emerald-600 font-bold mt-0.5">✓ تم التوقيع والاعتماد إلكترونياً</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 5: New Radiology Order Modal (RIS) -->
+    <div id="rad-order-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <h4 class="font-bold text-indigo-900 dark:text-indigo-300 text-sm flex items-center gap-2">
+                    <span>🩻</span>
+                    <span>حجز فحص أشعة تشخيصية جديد (RIS)</span>
+                </h4>
+                <button onclick="document.getElementById('rad-order-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+            <form id="rad-order-form" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">اسم المريض</label>
+                        <input type="text" id="rad-order-patient-name" required placeholder="اسم المريض بالكامل" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">رقم الهاتف (الواتساب)</label>
+                        <input type="tel" id="rad-order-patient-phone" required placeholder="01xxxxxxxxx" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 font-mono">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">نوع الجهاز (Modality)</label>
+                        <select id="rad-order-modality-select" onchange="ClinicAdminApp.onRadModalitySelected(this.value)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-bold text-indigo-700 dark:text-indigo-400">
+                            <option value="X-Ray">أشعة عادية (X-Ray)</option>
+                            <option value="MRI">رنين مغناطيسي (MRI 1.5T)</option>
+                            <option value="CT">أشعة مقطعية (CT 128-Slice)</option>
+                            <option value="Ultrasound">موجات صوتية وسونار (US)</option>
+                            <option value="Mammography">ماموجرام للثدي (Digital Mammo)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">الفحص والعضو المطلوب</label>
+                        <select id="rad-order-exam-select" onchange="ClinicAdminApp.onRadExamSelected(this.value)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800">
+                        <input type="checkbox" id="rad-order-contrast-check" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                        <label for="rad-order-contrast-check" class="text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
+                            حقن صبغة وريدية (With Contrast)
+                        </label>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">الطبيب المحول</label>
+                        <input type="text" id="rad-order-doctor-input" value="د. كريم عبد العزيز (استشاري عظام)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">نظام المحاسبة</label>
+                        <select id="rad-order-payment-type" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold">
+                            <option value="cash">سداد نقدي مباشر (Cash)</option>
+                            <option value="corporate">تعاقد شركة / تأمين (Co-Pay)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">تكلفة الفحص (ج.م)</label>
+                        <input type="number" id="rad-order-cost-input" value="450" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-mono font-bold text-emerald-600">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('rad-order-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">إلغاء</button>
+                    <button type="submit" class="btn-press px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/30">حجز الفحص وتوليد كود الدراسة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 6: Radiology Report Editor with Pre-defined Templates -->
+    <div id="rad-report-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[92vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div>
+                    <h4 class="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                        <span>📝</span>
+                        <span>محرر تقارير الأشعة التشخيصية (Structured Report Editor)</span>
+                    </h4>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5" id="rad-report-modal-subtitle">دراسة رقم: RAD-2026-4401 | Lumbar Spine MRI</p>
+                </div>
+                <button onclick="document.getElementById('rad-report-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+            </div>
+
+            <!-- Pre-defined Template Selector Bar -->
+            <div class="p-3 bg-indigo-50 dark:bg-indigo-950/40 rounded-2xl border border-indigo-200 dark:border-indigo-800 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-indigo-600 dark:text-indigo-400 font-bold text-xs">⚡ تحميل قالب جاهز:</span>
+                    <select id="rad-template-select" onchange="ClinicAdminApp.loadRadTemplate(this.value)" class="px-3 py-1.5 text-xs rounded-xl border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-slate-900 text-indigo-900 dark:text-indigo-200 font-bold">
+                        <option value="">— اختر قالباً طبياً معتمداً —</option>
+                        <option value="chest_normal">أشعة عادية على الصدر (Chest X-Ray Normal)</option>
+                        <option value="lumbar_mri">رنين الفقرات القطنية (Lumbar Disc Herniation)</option>
+                        <option value="brain_ct">أشعة مقطعية للمخ (Brain CT Unremarkable)</option>
+                        <option value="pelvi_us">سونار البطن والحوض (Abdominal US Normal)</option>
+                        <option value="knee_xray">أشعة ركبة (Knee Osteoarthritis Grade II)</option>
+                    </select>
+                </div>
+                <span class="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium">يوفر 90% من وقت الكتابة</span>
+            </div>
+
+            <form id="rad-report-form" class="space-y-3">
+                <input type="hidden" id="rad-report-active-study-id">
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">طريقة الفحص والبروتوكول (Technique)</label>
+                    <input type="text" id="rad-report-technique" placeholder="مثال: Plain multislice CT scans performed without intravenous contrast..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">الموجودات والملاحظات الإشعاعية (Findings)</label>
+                    <textarea id="rad-report-findings" rows="5" placeholder="سجل تفاصيل الفحص بالتفصيل..." class="w-full p-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-mono text-[11px] leading-relaxed"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">الاستنتاج والانطباع والتشخيص النهائي (Impression)</label>
+                    <textarea id="rad-report-impression" rows="3" placeholder="التشخيص الملخص للطبيب المعالج..." class="w-full p-2.5 text-xs rounded-xl border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-bold text-xs"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">استشاري الأشعة الموقع</label>
+                        <input type="text" id="rad-report-sign-doctor" value="د. مروان البدري (استشاري الأشعة التشخيصية)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-bold">
+                    </div>
+                    <div class="flex items-center gap-2 pt-5">
+                        <input type="checkbox" id="rad-report-signed-check" checked class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500">
+                        <label for="rad-report-signed-check" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 cursor-pointer">
+                            اعتماد وتوقيع التقرير رسمياً
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('rad-report-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">إلغاء</button>
+                    <button type="submit" class="btn-press px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/30">حفظ واعتماد التقرير</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 7: Interactive Medical Scan & DICOM Viewer Preview -->
+    <div id="rad-viewer-modal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 rounded-3xl max-w-3xl w-full p-5 shadow-2xl border border-slate-800 text-white space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-indigo-400 text-lg">🖼️</span>
+                    <div>
+                        <h4 class="font-bold text-sm text-white" id="rad-viewer-title">عارض الصور الطبية الرقمي (Medical Scan Viewer)</h4>
+                        <p class="text-[11px] text-slate-400" id="rad-viewer-subtitle">دراسة رقم: RAD-2026-4401 | Lumbar Spine MRI</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <!-- Scan adjustment buttons -->
+                    <button type="button" onclick="ClinicAdminApp.toggleScanInvert()" class="btn-press px-2.5 py-1.5 rounded-xl text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700" title="عكس الألوان / Invert Grayscale">
+                        🌓 عكس الألوان
+                    </button>
+                    <button type="button" onclick="ClinicAdminApp.toggleScanContrast()" class="btn-press px-2.5 py-1.5 rounded-xl text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700" title="تباين عالي / High Contrast">
+                        🔆 تباين فائق
+                    </button>
+                    <button type="button" onclick="ClinicAdminApp.resetScanViewer()" class="btn-press px-2.5 py-1.5 rounded-xl text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
+                        🔄 إعادة ضبط
+                    </button>
+                    <button onclick="document.getElementById('rad-viewer-modal').classList.add('hidden')" class="text-slate-400 hover:text-white text-base px-2">✕</button>
+                </div>
+            </div>
+
+            <!-- Imaging Canvas Stage with HUD metadata -->
+            <div class="dicom-viewer-stage border border-slate-800 relative">
+                <!-- Patient HUD overlay top right -->
+                <div class="absolute top-3 right-3 text-right text-[10px] font-mono text-cyan-400 bg-black/60 px-2 py-1 rounded backdrop-blur-sm pointer-events-none" id="rad-viewer-hud-right">
+                    <div>P: <span id="rad-viewer-hud-name">محمد علي عبد الله</span></div>
+                    <div>ID: <span id="rad-viewer-hud-id">RAD-2026-4401</span></div>
+                    <div>Modality: <span id="rad-viewer-hud-modality">MRI 1.5T</span></div>
+                </div>
+
+                <!-- Technical HUD overlay top left -->
+                <div class="absolute top-3 left-3 text-left text-[10px] font-mono text-emerald-400 bg-black/60 px-2 py-1 rounded backdrop-blur-sm pointer-events-none">
+                    <div>TE: 90ms / TR: 4500ms</div>
+                    <div>Slice: 4.0mm / Spacing: 1.0</div>
+                    <div>Matrix: 512x512 Lossless</div>
+                </div>
+
+                <!-- The Scan Image -->
+                <img id="rad-viewer-img" src="" alt="Medical Scan" class="dicom-viewer-image max-h-[420px] rounded shadow-2xl">
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-800">
+                <span class="flex items-center gap-1.5 text-[11px]">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>صور الأشعة مشفرة وفق معايير الأمان الطبي DICOM Web Compliant</span>
+                </span>
+                <button onclick="document.getElementById('rad-viewer-modal').classList.add('hidden')" class="btn-press px-4 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white">
+                    إغلاق العارض
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 8: Official Radiology Print Report (Letterhead & QR Verification) -->
+    <div id="rad-print-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[92vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 no-print">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🖨️</span>
+                    <h4 class="font-bold text-slate-900 dark:text-white text-sm">معاينة وطباعة تقرير الأشعة التشخيصية المعتمد</h4>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.print()" class="btn-press px-4 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm flex items-center gap-1.5">
+                        <span>طباعة التقرير</span>
+                    </button>
+                    <button onclick="document.getElementById('rad-print-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
+                </div>
+            </div>
+
+            <!-- Formal Medical Letterhead Container -->
+            <div id="rad-report-letterhead-content" class="bg-white text-slate-900 p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 font-sans">
+                <!-- Header -->
+                <div class="flex items-center justify-between border-b-2 border-indigo-600 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-md">
+                            🩻
+                        </div>
+                        <div>
+                            <h2 class="text-base font-black text-slate-900">مركز الوجيه للأشعة التشخيصية والتصوير الطبي</h2>
+                            <p class="text-[11px] text-slate-500">Al Wagih Diagnostic Imaging & Radiology Center</p>
+                            <p class="text-[10px] text-indigo-700 font-medium">رنين مغناطيسي 1.5T • مقطعية 128 • سونار ودوبلر رباعي الأبعاد • ماموجرام</p>
+                        </div>
+                    </div>
+                    <div class="text-left font-mono text-[11px]">
+                        <div class="font-bold text-slate-800" id="print-rad-study-id">RAD-2026-4401</div>
+                        <div class="text-slate-500" id="print-rad-date">2026-11-15</div>
+                    </div>
+                </div>
+
+                <!-- Patient & Study Meta -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">اسم المريض:</span>
+                        <strong class="text-slate-900" id="print-rad-patient-name">—</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">السن / الجنس:</span>
+                        <strong class="text-slate-900" id="print-rad-patient-info">—</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">الجهاز والفحص:</span>
+                        <strong class="text-indigo-700" id="print-rad-exam-name">—</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">الطبيب المحول:</span>
+                        <strong class="text-slate-900" id="print-rad-doctor">—</strong>
+                    </div>
+                </div>
+
+                <!-- Technique -->
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                    <span class="font-bold text-slate-700 block mb-0.5">طريقة الفحص (Technique):</span>
+                    <p class="text-slate-600 text-[11px]" id="print-rad-technique">—</p>
+                </div>
+
+                <!-- Findings -->
+                <div class="p-4 bg-white rounded-xl border border-slate-200 text-xs space-y-1">
+                    <span class="font-bold text-slate-900 block text-xs">الموجودات الإشعاعية (Findings):</span>
+                    <div class="text-slate-700 text-xs font-mono whitespace-pre-line leading-relaxed" id="print-rad-findings">—</div>
+                </div>
+
+                <!-- Impression Box -->
+                <div class="p-4 bg-indigo-50/70 rounded-xl border border-indigo-200 text-xs space-y-1">
+                    <span class="font-extrabold text-indigo-900 block text-xs">الانطباع والتشخيص النهائي (Impression):</span>
+                    <p class="text-indigo-950 font-bold text-xs leading-relaxed" id="print-rad-impression">—</p>
+                </div>
+
+                <!-- Footer with QR verification & Electronic Signature -->
+                <div class="flex items-center justify-between pt-4 border-t border-slate-200 text-xs">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-14 h-14 bg-slate-100 border border-slate-300 rounded-lg flex items-center justify-center text-[10px] text-slate-500 font-mono text-center p-1">
+                            [QR Code]<br>موثق
+                        </div>
+                        <div class="text-[10px] text-slate-500 leading-tight">
+                            رمز التحقق الرقمي الرسمي للتقرير الطبي.<br>
+                            معتمد من نقابة الأطباء ووزارة الصحة.
+                        </div>
+                    </div>
+                    <div class="text-left font-mono">
+                        <div class="text-[11px] font-bold text-slate-900" id="print-rad-verified-by">د. مروان البدري</div>
+                        <div class="text-[10px] text-slate-500">استشاري الأشعة التشخيصية والتداخلية</div>
+                        <div class="text-[9px] text-emerald-600 font-bold mt-0.5">✓ تم التوقيع والاعتماد إلكترونياً</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="../../js/config.js"></script>
     <script src="../../js/utils.js"></script>
     <script src="../../js/auth.js"></script>
