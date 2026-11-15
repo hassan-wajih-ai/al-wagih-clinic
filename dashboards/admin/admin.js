@@ -32,6 +32,8 @@ const ClinicAdminApp = {
     queueRooms: [],
     waitingTickets: [],
     doctorCommissions: [],
+    pharmacyDrugs: [],
+    pharmacyPrescriptions: [],
     scanViewerState: { invert: false, highContrast: false },
     revenueChartInstance: null,
     analyticsTrendChartInstance: null,
@@ -73,6 +75,7 @@ const ClinicAdminApp = {
             this.renderRadiologyStudies();
             this.renderQueueBoard();
             this.renderDoctorCommissions();
+            this.renderAdminPharmacy();
             this.updateKPIs();
         });
     },
@@ -100,6 +103,8 @@ const ClinicAdminApp = {
         this.queueRooms = this.getMockQueueRooms();
         this.waitingTickets = this.getMockWaitingTickets();
         this.doctorCommissions = this.getMockDoctorCommissions();
+        this.pharmacyDrugs = this.getMockPharmacyDrugs();
+        this.pharmacyPrescriptions = this.getMockPharmacyPrescriptions();
 
         this.renderCRM();
         this.renderCallCenter();
@@ -117,6 +122,7 @@ const ClinicAdminApp = {
         this.renderRadiologyStudies();
         this.renderQueueBoard();
         this.renderDoctorCommissions();
+        this.renderAdminPharmacy();
         this.populateLabCatalogSelect();
         this.populateRadExamSelect();
         this.updateKPIs();
@@ -124,7 +130,7 @@ const ClinicAdminApp = {
 
     switchTab(tabId) {
         this.activeTab = tabId;
-        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports', 'lab', 'radiology', 'queue', 'commissions'];
+        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports', 'lab', 'radiology', 'queue', 'commissions', 'pharmacy'];
         tabs.forEach(t => {
             const el = document.getElementById(`tab-content-${t}`);
             const btn = document.getElementById(`tab-btn-${t}`);
@@ -147,6 +153,8 @@ const ClinicAdminApp = {
             this.renderQueueBoard();
         } else if (tabId === 'commissions') {
             this.renderDoctorCommissions();
+        } else if (tabId === 'pharmacy') {
+            this.renderAdminPharmacy();
         }
     },
 
@@ -699,6 +707,29 @@ const ClinicAdminApp = {
         if (commNet) commNet.textContent = Utils.formatCurrency(netPendingSum);
         if (commPaid) commPaid.textContent = Utils.formatCurrency(paidSum);
         if (commCount) commCount.textContent = `${docs.length} أطباء`;
+
+        // Pharmacy KPIs
+        const pharmSales = document.getElementById('admin-pharm-kpi-sales');
+        const pharmDisp = document.getElementById('admin-pharm-kpi-dispensed');
+        const pharmPend = document.getElementById('admin-pharm-kpi-pending');
+        const pharmAlerts = document.getElementById('admin-pharm-kpi-alerts');
+        const pharmDrugsCount = document.getElementById('admin-pharm-drugs-count');
+        const pharmRxCount = document.getElementById('admin-pharm-rx-count');
+
+        const drugs = this.pharmacyDrugs || [];
+        const rxs = this.pharmacyPrescriptions || [];
+        const totalSales = rxs.filter(r => r.status === 'dispensed').reduce((acc, r) => acc + (Number(r.total_amount) || 0), 0);
+        const dispensedCount = rxs.filter(r => r.status === 'dispensed').length;
+        const pendingRxCount = rxs.filter(r => r.status === 'pending').length;
+        const lowStockCount = drugs.filter(d => (d.stock_qty || 0) <= (d.reorder_level || 10)).length;
+        const expiryAlerts = drugs.filter(d => d.expiry_status === 'expired' || d.expiry_status === 'expiring_soon').length;
+
+        if (pharmSales) pharmSales.textContent = Utils.formatCurrency(totalSales);
+        if (pharmDisp) pharmDisp.textContent = `${dispensedCount}`;
+        if (pharmPend) pharmPend.textContent = `${pendingRxCount}`;
+        if (pharmAlerts) pharmAlerts.textContent = `${lowStockCount + expiryAlerts}`;
+        if (pharmDrugsCount) pharmDrugsCount.textContent = `${drugs.length} صنف`;
+        if (pharmRxCount) pharmRxCount.textContent = `${rxs.length} روشتة`;
     },
 
     // ==========================================
@@ -1229,6 +1260,45 @@ const ClinicAdminApp = {
                     this.renderDoctorCommissions();
                     this.updateKPIs();
                 }
+            };
+        }
+
+        const adminDrugForm = document.getElementById('admin-add-drug-form');
+        const adminDrugModal = document.getElementById('admin-add-drug-modal');
+        if (adminDrugForm && adminDrugModal) {
+            adminDrugForm.onsubmit = (e) => {
+                e.preventDefault();
+                const name = document.getElementById('admin-drug-name').value.trim();
+                const generic = document.getElementById('admin-drug-generic').value.trim();
+                const form = document.getElementById('admin-drug-form-select').value;
+                const strength = document.getElementById('admin-drug-strength').value.trim();
+                const batch = document.getElementById('admin-drug-batch').value.trim() || `B-${Date.now().toString().slice(-4)}`;
+                const expiry = document.getElementById('admin-drug-expiry').value;
+                const stock = parseInt(document.getElementById('admin-drug-stock').value) || 40;
+                const cost = parseFloat(document.getElementById('admin-drug-cost').value) || 60;
+                const price = parseFloat(document.getElementById('admin-drug-price').value) || 80;
+
+                const newDrug = {
+                    id: 'drug_' + Date.now(),
+                    name,
+                    generic_name: generic,
+                    dosage_form: form,
+                    strength,
+                    batch_no: batch,
+                    expiry_date: expiry,
+                    stock_qty: stock,
+                    reorder_level: 10,
+                    cost_price: cost,
+                    selling_price: price,
+                    barcode: '622' + Math.floor(1000000000 + Math.random() * 9000000000)
+                };
+
+                this.pharmacyDrugs.unshift(newDrug);
+                Utils.showToast(`تمت إضافة الدواء (${name}) بنجاح إلى صيدلية المجمع`, 'success');
+                adminDrugModal.classList.add('hidden');
+                adminDrugForm.reset();
+                this.renderAdminPharmacy();
+                this.updateKPIs();
             };
         }
     },
@@ -2723,6 +2793,177 @@ const ClinicAdminApp = {
     },
 
     // =========================================================================
+    // دوال ونظام الصيدلية والروشتات الإلكترونية للمدير (Pharmacy Management)
+    // =========================================================================
+    renderAdminPharmacy(customDrugsList) {
+        const drugsTbody = document.getElementById('admin-pharmacy-drugs-table-body');
+        const rxTbody = document.getElementById('admin-pharmacy-rx-table-body');
+        const drugsCountEl = document.getElementById('admin-pharm-drugs-count');
+        const rxCountEl = document.getElementById('admin-pharm-rx-count');
+
+        const drugs = customDrugsList || this.pharmacyDrugs || [];
+        const rxs = this.pharmacyPrescriptions || [];
+        const today = new Date();
+
+        if (drugsCountEl) drugsCountEl.textContent = `${drugs.length} صنف`;
+        if (rxCountEl) rxCountEl.textContent = `${rxs.length} روشتة`;
+
+        if (drugsTbody) {
+            if (drugs.length === 0) {
+                drugsTbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 text-xs">لا توجد أصناف مطابقة للبحث</td></tr>`;
+            } else {
+                drugsTbody.innerHTML = drugs.map(drug => {
+                    const expDate = new Date(drug.expiry_date);
+                    const diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
+                    let expBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">ساري</span>`;
+                    if (diffDays <= 0) {
+                        expBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300">منتهي الصلاحية</span>`;
+                        drug.expiry_status = 'expired';
+                    } else if (diffDays <= 90) {
+                        expBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">ينتهي خلال ${diffDays} يوم</span>`;
+                        drug.expiry_status = 'expiring_soon';
+                    } else {
+                        drug.expiry_status = 'valid';
+                    }
+
+                    const isLowStock = (drug.stock_qty || 0) <= (drug.reorder_level || 10);
+
+                    return `
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                            <td class="py-2.5 px-3">
+                                <div class="font-bold text-slate-900 dark:text-white text-xs">${drug.name}</div>
+                                <div class="text-[10px] text-slate-400 font-mono">${drug.strength} - ${drug.dosage_form}</div>
+                            </td>
+                            <td class="py-2.5 px-3">${expBadge}</td>
+                            <td class="py-2.5 px-3">
+                                <span class="font-mono font-bold text-xs ${isLowStock ? 'text-rose-600 dark:text-rose-400' : 'text-slate-800 dark:text-slate-200'}">
+                                    ${drug.stock_qty} علبة
+                                </span>
+                            </td>
+                            <td class="py-2.5 px-3 font-mono font-bold text-emerald-700 dark:text-emerald-300 text-xs">
+                                ${Utils.formatCurrency(drug.selling_price)}
+                            </td>
+                            <td class="py-2.5 px-3 text-center">
+                                <button onclick="ClinicAdminApp.adminRestockDrug('${drug.id}')" class="px-2 py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-600 hover:text-white rounded-lg text-xs font-bold border border-emerald-200 dark:border-emerald-800 transition">
+                                    + توريد
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        if (rxTbody) {
+            rxTbody.innerHTML = rxs.map(rx => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                    <td class="py-2.5 px-3">
+                        <span class="font-mono font-bold text-sky-600 dark:text-sky-400 text-xs">${rx.rx_number}</span>
+                        <div class="text-[10px] text-slate-400">${rx.items ? rx.items.length : 1} أصناف</div>
+                    </td>
+                    <td class="py-2.5 px-3">
+                        <div class="font-bold text-slate-900 dark:text-white text-xs">${rx.patient_name}</div>
+                        <div class="text-[10px] text-slate-400">${rx.doctor_name}</div>
+                    </td>
+                    <td class="py-2.5 px-3">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${rx.status === 'dispensed' ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'}">
+                            ${rx.status === 'dispensed' ? '✓ تم الصرف' : '⏳ قيد الصرف'}
+                        </span>
+                    </td>
+                    <td class="py-2.5 px-3 text-center">
+                        <button onclick="ClinicAdminApp.openAdminRxDetailsModal('${rx.id}')" class="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold">
+                            👁️
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    },
+
+    adminRestockDrug(drugId) {
+        const drug = this.pharmacyDrugs.find(d => d.id === drugId);
+        if (!drug) return;
+        drug.stock_qty = (drug.stock_qty || 0) + 20;
+        Utils.showToast(`تم زيادة رصيد (${drug.name}) بمقدار +20 علبة بنجاح`, 'success');
+        this.renderAdminPharmacy();
+        this.updateKPIs();
+    },
+
+    filterAdminPharmacy() {
+        const query = (document.getElementById('admin-pharm-search-input')?.value || '').toLowerCase().trim();
+        const filterType = document.getElementById('admin-pharm-filter-type')?.value || 'all';
+
+        const filtered = (this.pharmacyDrugs || []).filter(d => {
+            const matchQuery = !query || d.name.toLowerCase().includes(query) || (d.generic_name && d.generic_name.toLowerCase().includes(query));
+            let matchType = true;
+            if (filterType === 'low_stock') matchType = (d.stock_qty || 0) <= (d.reorder_level || 10);
+            else if (filterType === 'expiring_soon') matchType = d.expiry_status === 'expiring_soon' || d.expiry_status === 'expired';
+            return matchQuery && matchType;
+        });
+
+        this.renderAdminPharmacy(filtered);
+    },
+
+    openAdminAddDrugModal() {
+        const modal = document.getElementById('admin-add-drug-modal');
+        if (modal) modal.classList.remove('hidden');
+    },
+
+    openAdminRxDetailsModal(rxId) {
+        const rx = this.pharmacyPrescriptions.find(r => r.id === rxId);
+        if (!rx) return;
+
+        document.getElementById('admin-rx-modal-title').textContent = `روشتة طبية #${rx.rx_number}`;
+        document.getElementById('admin-rx-modal-subtitle').textContent = `المريض: ${rx.patient_name} | الطبيب: ${rx.doctor_name}`;
+
+        const content = document.getElementById('admin-rx-modal-content');
+        if (content) {
+            content.innerHTML = `
+                <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs space-y-1">
+                    <div class="flex justify-between"><span>العيادة:</span><strong>${rx.clinic_name}</strong></div>
+                    <div class="flex justify-between"><span>تاريخ الإنشاء:</span><span class="font-mono">${rx.created_time || 'اليوم'}</span></div>
+                    <div class="flex justify-between"><span>نوع الدفع:</span><strong>${rx.payment_type === 'corporate' ? `تأمين (${rx.company_name})` : 'نقدي'}</strong></div>
+                    <div class="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-1 font-bold">
+                        <span>إجمالي القيمة:</span>
+                        <span class="font-mono text-emerald-600">${Utils.formatCurrency(rx.total_amount)}</span>
+                    </div>
+                </div>
+
+                <div class="space-y-1 text-xs">
+                    <span class="font-bold text-slate-700 dark:text-slate-300 block">الأدوية الموصوفة والجرعات:</span>
+                    ${rx.items.map(it => `
+                        <div class="p-2.5 bg-white dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                            <div>
+                                <strong class="text-slate-900 dark:text-white block">${it.drug_name}</strong>
+                                <span class="text-[10px] text-slate-400">${it.instructions || it.dosage}</span>
+                            </div>
+                            <span class="font-mono font-bold text-emerald-600">${Utils.formatCurrency(it.price)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        document.getElementById('admin-rx-details-modal').classList.remove('hidden');
+    },
+
+    exportAdminPharmacyInventoryExcel() {
+        if (window.Reports && Reports.exportPharmacyInventoryReport) {
+            Reports.exportPharmacyInventoryReport({}, this.pharmacyDrugs);
+        } else {
+            Utils.showToast('جاري تصدير جرد الأدوية...', 'info');
+        }
+    },
+
+    exportAdminPharmacySalesExcel() {
+        if (window.Reports && Reports.exportPharmacyDispenseReport) {
+            Reports.exportPharmacyDispenseReport({}, this.pharmacyPrescriptions);
+        } else {
+            Utils.showToast('جاري تصدير مبيعات الصيدلية...', 'info');
+        }
+    },
+
+    // =========================================================================
     // مولدات البيانات التجريبية للمعمل والأشعة (Mock Catalogs & Studies)
     // =========================================================================
     getMockLabCatalog() {
@@ -3173,6 +3414,216 @@ const ClinicAdminApp = {
 
         docs.forEach(doc => this.recalcDoctorCommission(doc));
         return docs;
+    },
+
+    getMockPharmacyDrugs() {
+        const stored = localStorage.getItem('alwagih_pharmacy_drugs');
+        if (stored) {
+            try { return JSON.parse(stored); } catch (e) { }
+        }
+        return [
+            {
+                id: 'drug_1',
+                name: 'Augmentin (أوجمنتين)',
+                generic_name: 'Amoxicillin + Clavulanic Acid',
+                dosage_form: 'أقراص',
+                strength: '1000 mg (1g)',
+                batch_no: 'AUG-9821',
+                expiry_date: '2027-08-30',
+                stock_qty: 45,
+                reorder_level: 15,
+                cost_price: 78,
+                selling_price: 99.5,
+                barcode: '6221008741021'
+            },
+            {
+                id: 'drug_2',
+                name: 'Panadol Extra (بنادول إكسترا)',
+                generic_name: 'Paracetamol + Caffeine',
+                dosage_form: 'أقراص',
+                strength: '500 mg / 65 mg',
+                batch_no: 'PAN-3312',
+                expiry_date: '2028-01-15',
+                stock_qty: 120,
+                reorder_level: 25,
+                cost_price: 28,
+                selling_price: 42,
+                barcode: '6221005541998'
+            },
+            {
+                id: 'drug_3',
+                name: 'Concor (كونكور)',
+                generic_name: 'Bisoprolol Fumarate',
+                dosage_form: 'أقراص',
+                strength: '5 mg',
+                batch_no: 'CNC-4410',
+                expiry_date: '2026-12-20',
+                stock_qty: 8,
+                reorder_level: 10,
+                cost_price: 45,
+                selling_price: 60,
+                barcode: '6221004410023'
+            },
+            {
+                id: 'drug_4',
+                name: 'Ciprolon (سيبرولون)',
+                generic_name: 'Ciprofloxacin',
+                dosage_form: 'أقراص',
+                strength: '750 mg',
+                batch_no: 'CIP-7721',
+                expiry_date: '2027-04-10',
+                stock_qty: 30,
+                reorder_level: 10,
+                cost_price: 36,
+                selling_price: 52,
+                barcode: '6221007721884'
+            },
+            {
+                id: 'drug_5',
+                name: 'Antacid Gaviscon (جافيسكون شراب)',
+                generic_name: 'Sodium Alginate + Calcium Carbonate',
+                dosage_form: 'شراب',
+                strength: '150 ml Bottle',
+                batch_no: 'GAV-1092',
+                expiry_date: '2026-11-28',
+                stock_qty: 6,
+                reorder_level: 10,
+                cost_price: 55,
+                selling_price: 75,
+                barcode: '6221001092441'
+            },
+            {
+                id: 'drug_6',
+                name: 'Warfarin Marevan (ماريفان)',
+                generic_name: 'Warfarin Sodium',
+                dosage_form: 'أقراص',
+                strength: '5 mg',
+                batch_no: 'WRF-8812',
+                expiry_date: '2027-10-15',
+                stock_qty: 24,
+                reorder_level: 8,
+                cost_price: 22,
+                selling_price: 35,
+                barcode: '6221008812771'
+            },
+            {
+                id: 'drug_7',
+                name: 'Aspirin Protect (أسبيرين بروتكت)',
+                generic_name: 'Acetylsalicylic Acid',
+                dosage_form: 'أقراص',
+                strength: '100 mg',
+                batch_no: 'ASP-5501',
+                expiry_date: '2028-05-18',
+                stock_qty: 85,
+                reorder_level: 20,
+                cost_price: 18,
+                selling_price: 28,
+                barcode: '6221005501332'
+            },
+            {
+                id: 'drug_8',
+                name: 'Ceftriaxone (سفترياكسون فيال)',
+                generic_name: 'Ceftriaxone Sodium',
+                dosage_form: 'حقن',
+                strength: '1 g IM/IV Vial',
+                batch_no: 'CEF-2201',
+                expiry_date: '2026-10-01',
+                stock_qty: 14,
+                reorder_level: 10,
+                cost_price: 40,
+                selling_price: 55,
+                barcode: '6221002201664'
+            }
+        ];
+    },
+
+    getMockPharmacyPrescriptions() {
+        const stored = localStorage.getItem('alwagih_pharmacy_prescriptions');
+        if (stored) {
+            try { return JSON.parse(stored); } catch (e) { }
+        }
+        return [
+            {
+                id: 'rx_101',
+                rx_number: 'RX-2026-801',
+                patient_name: 'طارق حسام مصطفى',
+                patient_phone: '01011223344',
+                doctor_name: 'د. محمد عبد العزيز',
+                clinic_name: 'العيادة الباطنية والجهاز الهضمي',
+                payment_type: 'cash',
+                company_name: '',
+                copay_percentage: 100,
+                created_time: 'اليوم 10:45 ص',
+                status: 'pending',
+                items: [
+                    { drug_name: 'Augmentin (أوجمنتين)', dosage: '1000 mg', instructions: 'قرص كل 12 ساعة بعد الأكل لمدة 7 أيام', quantity: 2, price: 199 },
+                    { drug_name: 'Panadol Extra (بنادول إكسترا)', dosage: '500 mg', instructions: 'قرص عند اللزوم للصداع والحرارة', quantity: 1, price: 42 }
+                ],
+                total_amount: 241,
+                patient_copay: 241,
+                insurance_claim: 0
+            },
+            {
+                id: 'rx_102',
+                rx_number: 'RX-2026-802',
+                patient_name: 'ياسمين عبد الرحمن',
+                patient_phone: '01122334455',
+                doctor_name: 'د. هدى منصور',
+                clinic_name: 'عيادة جراحة العظام والمفاصل',
+                payment_type: 'corporate',
+                company_name: 'شركة مصر للتأمين',
+                copay_percentage: 20,
+                created_time: 'اليوم 11:10 ص',
+                status: 'pending',
+                items: [
+                    { drug_name: 'Concor (كونكور)', dosage: '5 mg', instructions: 'قرص صباحاً يومياً بعد الإفطار', quantity: 1, price: 60 },
+                    { drug_name: 'Aspirin Protect (أسبيرين بروتكت)', dosage: '100 mg', instructions: 'قرص بعد الغداء يومياً للوقاية', quantity: 2, price: 56 }
+                ],
+                total_amount: 116,
+                patient_copay: 23.2,
+                insurance_claim: 92.8
+            },
+            {
+                id: 'rx_103',
+                rx_number: 'RX-2026-803',
+                patient_name: 'كمال الدين حافظ',
+                patient_phone: '01099887766',
+                doctor_name: 'د. طارق العريان',
+                clinic_name: 'عيادة طب وجراحة العيون',
+                payment_type: 'corporate',
+                company_name: 'نقابة المهندسين المصرية',
+                copay_percentage: 15,
+                created_time: 'اليوم 11:35 ص',
+                status: 'pending',
+                items: [
+                    { drug_name: 'Ciprolon (سيبرولون)', dosage: '750 mg', instructions: 'قرص مرتين يومياً كل 12 ساعة', quantity: 1, price: 52 },
+                    { drug_name: 'Antacid Gaviscon (جافيسكون شراب)', dosage: '150 ml', instructions: '10 مل بعد الوجبات وقبل النوم', quantity: 1, price: 75 }
+                ],
+                total_amount: 127,
+                patient_copay: 19.05,
+                insurance_claim: 107.95
+            },
+            {
+                id: 'rx_901',
+                rx_number: 'RX-2026-791',
+                patient_name: 'سلوى محمود شاهين',
+                patient_phone: '01555667788',
+                doctor_name: 'د. سارة محمود',
+                clinic_name: 'عيادة الباطنة العامة',
+                payment_type: 'cash',
+                company_name: '',
+                copay_percentage: 100,
+                created_time: '2026-11-15 09:30 ص',
+                status: 'dispensed',
+                items: [
+                    { drug_name: 'Augmentin (أوجمنتين)', dosage: '1000 mg', instructions: 'قرص مرتين يومياً', quantity: 1, price: 99.5 },
+                    { drug_name: 'Panadol Extra (بنادول إكسترا)', dosage: '500 mg', instructions: 'عند اللزوم', quantity: 2, price: 84 }
+                ],
+                total_amount: 183.5,
+                patient_copay: 183.5,
+                insurance_claim: 0
+            }
+        ];
     }
 };
 
