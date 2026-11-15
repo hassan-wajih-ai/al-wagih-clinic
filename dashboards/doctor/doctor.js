@@ -198,6 +198,92 @@ const DoctorApp = {
             { id: 'apt_102', patient_name: 'مريم عادل خليل', patient_phone: '01155443322', time_slot: '10:30', status: 'confirmed', diagnosis: '', prescription: '' },
             { id: 'apt_103', patient_name: 'يوسف حسام الشريف', patient_phone: '01244332211', time_slot: '11:15', status: 'pending', diagnosis: '', prescription: '' }
         ];
+    },
+
+    openOrderLabModal() {
+        if (!this.activeAppointment) {
+            Utils.showToast('يرجى استدعاء مريض أولاً من قائمة الانتظار', 'warning');
+            return;
+        }
+        const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
+        document.getElementById('doc-lab-patient-name').value = patientName;
+        document.getElementById('doctor-lab-modal').classList.remove('hidden');
+    },
+
+    submitOrderLab() {
+        if (!this.activeAppointment) return;
+        const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
+        const testSelect = document.getElementById('doc-lab-test-select');
+        const testName = testSelect.options[testSelect.selectedIndex].text;
+        const notes = document.getElementById('doc-lab-notes').value.trim();
+
+        const currentRx = document.getElementById('prescription-input').value;
+        document.getElementById('prescription-input').value = (currentRx ? currentRx + '\n' : '') + `[طلب فحص معملي]: ${testName} ${notes ? '(' + notes + ')' : ''}`;
+
+        Utils.showToast(`تم إرسال طلب التحليل (${testName}) للمختبر وتوثيقه بالروشتة 🧪`, 'success');
+        document.getElementById('doctor-lab-modal').classList.add('hidden');
+    },
+
+    openOrderRadModal() {
+        if (!this.activeAppointment) {
+            Utils.showToast('يرجى استدعاء مريض أولاً من قائمة الانتظار', 'warning');
+            return;
+        }
+        const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
+        document.getElementById('doc-rad-patient-name').value = patientName;
+        document.getElementById('doctor-rad-modal').classList.remove('hidden');
+    },
+
+    submitOrderRad() {
+        if (!this.activeAppointment) return;
+        const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
+        const examSelect = document.getElementById('doc-rad-exam-select');
+        const examName = examSelect.options[examSelect.selectedIndex].text;
+        const notes = document.getElementById('doc-rad-notes').value.trim();
+
+        const currentRx = document.getElementById('prescription-input').value;
+        document.getElementById('prescription-input').value = (currentRx ? currentRx + '\n' : '') + `[طلب أشعة]: ${examName} ${notes ? '(الدواعي: ' + notes + ')' : ''}`;
+
+        Utils.showToast(`تم إرسال طلب الأشعة (${examName}) لقسم الأشعة وتوثيقه بالروشتة 🩻`, 'success');
+        document.getElementById('doctor-rad-modal').classList.add('hidden');
+    },
+
+    openPatientHistoryResultsModal() {
+        if (!this.activeAppointment) {
+            Utils.showToast('يرجى استدعاء مريض أولاً لاستعراض ملفه ونتائجه السابقة', 'warning');
+            return;
+        }
+        const container = document.getElementById('doctor-history-content');
+        
+        container.innerHTML = `
+            <div class="p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-bold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <span>🧪</span> <span>صورة دم كاملة CBC (عينة: LAB-2026-8801)</span>
+                    </span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">معتمدة ومكتملة</span>
+                </div>
+                <div class="text-xs text-slate-600 dark:text-slate-400 font-mono">
+                    Hb: 14.2 g/dL • RBCs: 4.8 M/uL • WBCs: 7.1 K/uL • PLT: 260 K/uL
+                </div>
+                <div class="text-[11px] text-slate-500 mt-1">التعليق: صورة دم طبيعية، لا توجد دلالات لفقر دم.</div>
+            </div>
+
+            <div class="p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-bold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <span>🩻</span> <span>رنين مغناطيسي على الفقرات القطنية (RAD-2026-4401)</span>
+                    </span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">معتمد وموقع</span>
+                </div>
+                <div class="text-xs text-indigo-900 dark:text-indigo-300 font-bold">
+                    الانطباع: L4-L5 posterior disc protrusion producing thecal sac impingement.
+                </div>
+                <div class="text-[11px] text-slate-500 mt-1">استشاري الأشعة: د. مروان البدري • التاريخ: 2026-11-15</div>
+            </div>
+        `;
+
+        document.getElementById('doctor-history-modal').classList.remove('hidden');
     }
 };
 
