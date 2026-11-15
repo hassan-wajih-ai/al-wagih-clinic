@@ -13,6 +13,7 @@ const ClinicAdminApp = {
     supportTickets: [],
     sentWhatsAppMessages: [],
     activeWhatsAppPatientId: null,
+    activeReportsSubTab: 'analytics',
     attendanceLogs: [],
     penalties: [],
     roster: [],
@@ -20,7 +21,13 @@ const ClinicAdminApp = {
     inventory: [],
     contracts: [],
     employees: [],
+    patientVisits: [],
+    financialReportData: {},
+    procurementOrders: [],
+    analyticsStatsData: {},
     revenueChartInstance: null,
+    analyticsTrendChartInstance: null,
+    analyticsProceduresChartInstance: null,
 
     async init() {
         const authData = await Auth.protectRoute(['admin', 'superadmin']);
@@ -47,6 +54,7 @@ const ClinicAdminApp = {
             this.renderSuppliers();
             this.renderInventory();
             this.renderContracts();
+            this.renderReportsHub();
             this.updateKPIs();
         });
     },
@@ -63,6 +71,10 @@ const ClinicAdminApp = {
         this.inventory = this.getMockInventory();
         this.contracts = this.getMockContracts();
         this.employees = this.getMockEmployees();
+        this.patientVisits = this.getMockPatientVisits();
+        this.financialReportData = this.getMockFinancialReportData();
+        this.procurementOrders = this.getMockProcurementOrders();
+        this.analyticsStatsData = this.getMockAnalyticsStatsData();
 
         this.renderCRM();
         this.renderCallCenter();
@@ -75,12 +87,13 @@ const ClinicAdminApp = {
         this.renderSuppliers();
         this.renderInventory();
         this.renderContracts();
+        this.renderReportsHub();
         this.updateKPIs();
     },
 
     switchTab(tabId) {
         this.activeTab = tabId;
-        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory'];
+        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports'];
         tabs.forEach(t => {
             const el = document.getElementById(`tab-content-${t}`);
             const btn = document.getElementById(`tab-btn-${t}`);
@@ -89,10 +102,13 @@ const ClinicAdminApp = {
                 if (t === tabId) {
                     btn.className = 'px-3.5 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm transition';
                 } else {
-                    btn.className = 'px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-100 transition';
+                    btn.className = 'px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition';
                 }
             }
         });
+        if (tabId === 'reports') {
+            this.switchReportsSubTab(this.activeReportsSubTab || 'analytics');
+        }
     },
 
     switchCrmSubTab(subTabId) {
@@ -905,6 +921,373 @@ const ClinicAdminApp = {
             { full_name: 'ريم مصطفى', job_title: 'موظف استقبال', base_salary: 4500, allowances: 500, deductions: 150, payroll_status: 'معتمد' },
             { full_name: 'أمل إبراهيم', job_title: 'تمريض', base_salary: 5000, allowances: 600, deductions: 150, payroll_status: 'معتمد' }
         ];
+    },
+
+    // ==========================================
+    // 6. مركز التقارير الشاملة والإحصائيات
+    // ==========================================
+    switchReportsSubTab(subTabId) {
+        this.activeReportsSubTab = subTabId;
+        const subviews = ['analytics', 'financial', 'procurement', 'patient_visits'];
+        subviews.forEach(s => {
+            const el = document.getElementById(`reports-subview-${s}`);
+            const btn = document.getElementById(`reports-sub-btn-${s}`);
+            if (el) el.classList.toggle('hidden', s !== subTabId);
+            if (btn) {
+                if (s === subTabId) {
+                    btn.className = 'px-3.5 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm transition';
+                } else {
+                    btn.className = 'px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition';
+                }
+            }
+        });
+
+        if (subTabId === 'analytics') this.renderAnalyticsCharts();
+    },
+
+    renderReportsHub() {
+        this.renderAnalyticsReport();
+        this.renderFinancialReport();
+        this.renderProcurementReport();
+        this.renderPatientVisitsReport();
+    },
+
+    renderAnalyticsReport() {
+        const stats = this.analyticsStatsData || {};
+        const elVisits = document.getElementById('stat-total-visits');
+        const elRate = document.getElementById('stat-attendance-rate');
+        const elWait = document.getElementById('stat-avg-wait');
+        const elCsat = document.getElementById('stat-csat-rating');
+
+        if (elVisits) elVisits.textContent = `${stats.totalVisits || 348} زيارة`;
+        if (elRate) elRate.textContent = `${stats.attendanceRate || 94}%`;
+        if (elWait) elWait.textContent = `${stats.avgWaitTime || 12} دقيقة`;
+        if (elCsat) elCsat.textContent = `${stats.csatRating || 4.9} ⭐`;
+
+        const docTbody = document.getElementById('analytics-doctor-table');
+        if (docTbody && stats.doctorBreakdown) {
+            docTbody.innerHTML = stats.doctorBreakdown.map((doc, idx) => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-100 dark:border-slate-800 text-xs">
+                    <td class="py-2.5 px-3 font-bold text-slate-900 dark:text-white">${doc.name}</td>
+                    <td class="py-2.5 px-3 text-slate-500 dark:text-slate-400">${doc.specialty}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold">${doc.cases_count}</td>
+                    <td class="py-2.5 px-3 font-bold text-emerald-600 dark:text-emerald-400">${Utils.formatCurrency(doc.revenue)}</td>
+                </tr>
+            `).join('');
+        }
+    },
+
+    renderAnalyticsCharts() {
+        if (typeof Chart === 'undefined') return;
+
+        // 1. رسم بياني لاتجاه الزيارات الشهري
+        const ctxTrend = document.getElementById('chart-visits-trend');
+        if (ctxTrend) {
+            if (this.analyticsTrendChartInstance) {
+                this.analyticsTrendChartInstance.destroy();
+            }
+            this.analyticsTrendChartInstance = new Chart(ctxTrend, {
+                type: 'bar',
+                data: {
+                    labels: ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'],
+                    datasets: [
+                        { label: 'كشوفات الكاش', data: [28, 35, 42, 38, 45, 52], backgroundColor: '#0284c7', borderRadius: 8 },
+                        { label: 'كشوفات التعاقد والتأمين', data: [19, 24, 30, 26, 33, 40], backgroundColor: '#a855f7', borderRadius: 8 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { font: { family: 'Cairo', size: 11 } } } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // 2. رسم بياني للإجراءات الطبية الأكثر طلباً
+        const ctxProc = document.getElementById('chart-procedures-share');
+        if (ctxProc) {
+            if (this.analyticsProceduresChartInstance) {
+                this.analyticsProceduresChartInstance.destroy();
+            }
+            this.analyticsProceduresChartInstance = new Chart(ctxProc, {
+                type: 'doughnut',
+                data: {
+                    labels: ['كشف استشاري', 'تخطيط قلب ECG', 'أشعة وسونار', 'فحوصات معملية', 'جلسات علاج طبيعي'],
+                    datasets: [{
+                        data: [45, 20, 15, 12, 8],
+                        backgroundColor: ['#0ea5e9', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { font: { family: 'Cairo', size: 10 } } } }
+                }
+            });
+        }
+    },
+
+    renderFinancialReport() {
+        const fin = this.financialReportData || {};
+        const elCash = document.getElementById('fin-kpi-cash');
+        const elCorp = document.getElementById('fin-kpi-corp');
+        const elExp = document.getElementById('fin-kpi-exp');
+        const elProfit = document.getElementById('fin-kpi-profit');
+
+        if (elCash) elCash.textContent = Utils.formatCurrency(fin.totalCash || 0);
+        if (elCorp) elCorp.textContent = Utils.formatCurrency(fin.totalCorporate || 0);
+        if (elExp) elExp.textContent = Utils.formatCurrency(fin.totalExpenses || 0);
+        if (elProfit) elProfit.textContent = Utils.formatCurrency(fin.netProfit || 0);
+
+        const tbody = document.getElementById('financial-report-table-body');
+        if (tbody && fin.transactions) {
+            tbody.innerHTML = fin.transactions.map((tx, idx) => {
+                const isCredit = Number(tx.credit || 0) > 0;
+                return `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-100 dark:border-slate-800 text-xs">
+                        <td class="py-3 px-3 font-mono font-bold text-slate-500">#${tx.ref_no}</td>
+                        <td class="py-3 px-3 text-slate-600 dark:text-slate-300">${tx.date}</td>
+                        <td class="py-3 px-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isCredit ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300'}">
+                                ${tx.type === 'income' ? 'إيراد كشوفات' : (tx.type === 'corporate_claim' ? 'مطالبة تأمين' : 'مصروف تشغيلي')}
+                            </span>
+                        </td>
+                        <td class="py-3 px-3 font-semibold text-slate-800 dark:text-slate-200">${tx.description}</td>
+                        <td class="py-3 px-3 text-slate-500 dark:text-slate-400">${tx.account}</td>
+                        <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">${tx.credit ? Utils.formatCurrency(tx.credit) : '—'}</td>
+                        <td class="py-3 px-3 font-mono font-bold text-rose-600 dark:text-rose-400">${tx.debit ? Utils.formatCurrency(tx.debit) : '—'}</td>
+                        <td class="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">${Utils.formatCurrency(tx.balance)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    },
+
+    renderProcurementReport() {
+        const orders = this.procurementOrders || [];
+        const totalAmount = orders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+        const paidAmount = orders.reduce((sum, o) => sum + Number(o.paid_amount || 0), 0);
+        const dueAmount = orders.reduce((sum, o) => sum + Number(o.remaining_amount || 0), 0);
+
+        const elTotal = document.getElementById('proc-kpi-total');
+        const elPaid = document.getElementById('proc-kpi-paid');
+        const elDue = document.getElementById('proc-kpi-due');
+
+        if (elTotal) elTotal.textContent = Utils.formatCurrency(totalAmount);
+        if (elPaid) elPaid.textContent = Utils.formatCurrency(paidAmount);
+        if (elDue) elDue.textContent = Utils.formatCurrency(dueAmount);
+
+        const tbody = document.getElementById('procurement-report-table-body');
+        if (tbody) {
+            tbody.innerHTML = orders.map((ord, idx) => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-100 dark:border-slate-800 text-xs">
+                    <td class="py-3 px-3 font-mono font-bold text-sky-600 dark:text-sky-400">${ord.po_number}</td>
+                    <td class="py-3 px-3">
+                        <div class="font-bold text-slate-900 dark:text-white">${ord.supplier_name}</div>
+                        <div class="text-[11px] text-slate-400">${ord.supplier_phone}</div>
+                    </td>
+                    <td class="py-3 px-3 text-slate-600 dark:text-slate-300">${ord.order_date}</td>
+                    <td class="py-3 px-3 font-bold">${ord.items_count} أصناف</td>
+                    <td class="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">${Utils.formatCurrency(ord.total_amount)}</td>
+                    <td class="py-3 px-3 font-mono text-emerald-600 dark:text-emerald-400 font-bold">${Utils.formatCurrency(ord.paid_amount)}</td>
+                    <td class="py-3 px-3 font-mono text-rose-600 dark:text-rose-400 font-bold">${Utils.formatCurrency(ord.remaining_amount)}</td>
+                    <td class="py-3 px-3">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${ord.payment_status === 'paid' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300'}">
+                            ${ord.payment_status === 'paid' ? 'مسدد بالكامل' : 'آجل معلق'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-3 font-mono text-slate-400">${ord.tax_invoice_no}</td>
+                </tr>
+            `).join('');
+        }
+    },
+
+    renderPatientVisitsReport(filterQuery = '') {
+        let visits = this.patientVisits || [];
+        if (filterQuery) {
+            const q = filterQuery.toLowerCase();
+            visits = visits.filter(v => 
+                (v.patient_name && v.patient_name.toLowerCase().includes(q)) ||
+                (v.doctor_name && v.doctor_name.toLowerCase().includes(q)) ||
+                (v.procedure_name && v.procedure_name.toLowerCase().includes(q)) ||
+                (v.patient_phone && v.patient_phone.includes(q))
+            );
+        }
+
+        const elTotalVisits = document.getElementById('pv-kpi-total');
+        const elTotalProcs = document.getElementById('pv-kpi-procedures');
+        const elCashCases = document.getElementById('pv-kpi-cash');
+        const elCorpCases = document.getElementById('pv-kpi-corp');
+
+        if (elTotalVisits) elTotalVisits.textContent = `${visits.length} زيارات`;
+        if (elTotalProcs) elTotalProcs.textContent = `${visits.length} إجراءات منفذة`;
+        if (elCashCases) elCashCases.textContent = `${visits.filter(v => v.payment_type !== 'corporate').length} كاش`;
+        if (elCorpCases) elCorpCases.textContent = `${visits.filter(v => v.payment_type === 'corporate').length} تعاقد`;
+
+        const tbody = document.getElementById('patient-visits-report-table-body');
+        if (tbody) {
+            if (visits.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400">لا توجد زيارات مطابقة لشرط البحث</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = visits.map((v, idx) => {
+                const isCorp = v.payment_type === 'corporate';
+                return `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-100 dark:border-slate-800 text-xs">
+                        <td class="py-3 px-3 font-mono font-bold text-slate-500">${v.patient_file_no}</td>
+                        <td class="py-3 px-3">
+                            <div class="font-bold text-slate-900 dark:text-white">${v.patient_name}</div>
+                            <div class="text-[11px] text-slate-400">${v.patient_phone} • ${v.patient_age} سنة (${v.patient_gender === 'female' ? 'أنثى' : 'ذكر'})</div>
+                        </td>
+                        <td class="py-3 px-3">
+                            <div class="font-bold text-purple-700 dark:text-purple-300">${v.procedure_name}</div>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400">${v.diagnosis}</div>
+                        </td>
+                        <td class="py-3 px-3 text-slate-700 dark:text-slate-300 font-medium">${v.doctor_name}</td>
+                        <td class="py-3 px-3 font-mono text-slate-500">
+                            <div>${v.date}</div>
+                            <div class="text-[10px] text-slate-400">${Utils.formatTime(v.time_slot)}</div>
+                        </td>
+                        <td class="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">${Utils.formatCurrency(v.procedure_cost)}</td>
+                        <td class="py-3 px-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isCorp ? 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'}">
+                                ${isCorp ? `🏢 تعاقد (${v.contract_name || 'تأمين'})` : '💵 نقدي'}
+                            </span>
+                        </td>
+                        <td class="py-3 px-3 text-center">
+                            <button onclick="WhatsAppService.showBookingConfirmationModal({patient_name: '${v.patient_name}', doctor_name: '${v.doctor_name}', date: '${v.date}', time_slot: '${v.time_slot}', patient_phone: '${v.patient_phone}'})" title="إرسال تأكيد واتساب" class="btn-press px-2 py-1 text-[11px] font-bold rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-800 transition inline-flex items-center gap-1">
+                                💬 واتساب
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    },
+
+    exportAnalyticsReportExcel() {
+        if (!window.Reports) return;
+        Reports.exportAnalyticsStatisticsReport({}, this.analyticsStatsData);
+    },
+
+    exportFinancialReportExcel() {
+        if (!window.Reports) return;
+        Reports.exportComprehensiveFinancialReport({}, this.financialReportData);
+    },
+
+    exportProcurementReportExcel() {
+        if (!window.Reports) return;
+        Reports.exportProcurementReport({}, this.procurementOrders);
+    },
+
+    exportPatientVisitsReportExcel() {
+        if (!window.Reports) return;
+        Reports.exportPatientVisitsAndProceduresReport({}, this.patientVisits);
+    },
+
+    getMockPatientVisits() {
+        return [
+            { id: 'pv_1', patient_file_no: 'FL-1001', patient_name: 'أحمد محمود السعيد', patient_phone: '01012345678', patient_age: 42, patient_gender: 'male', date: '2026-11-15', time_slot: '10:30', doctor_name: 'د. أحمد الشناوي', clinic_name: 'عيادات الشفاء', branch_name: 'فرع المعادي الرئيسي', procedure_name: 'كشف استشاري باطنة + رسم قلب ECG', diagnosis: 'ارتفاع ضغط دم غير منتظم واجهاد', prescription: 'كونكور 5 مجم صباحاً + أسبرين أطفال يومياً', procedure_cost: 350, payment_type: 'cash', discount_percentage: 0, status: 'completed' },
+            { id: 'pv_2', patient_file_no: 'FL-1002', patient_name: 'سارة عبد الرحمن', patient_phone: '01123456789', patient_age: 28, patient_gender: 'female', date: '2026-11-15', time_slot: '11:15', doctor_name: 'د. سارة محمود', clinic_name: 'عيادات الشفاء', branch_name: 'فرع المعادي الرئيسي', procedure_name: 'كشف أطفال + جلسة استنشاق نبيولايزر', diagnosis: 'نوبة حساسية صدرية والتهاب شعبي', prescription: 'فنتولين جلسات + مضاد حيوي شراب', procedure_cost: 280, payment_type: 'corporate', contract_name: 'شركة مصر للتأمين', discount_percentage: 20, status: 'completed' },
+            { id: 'pv_3', patient_file_no: 'FL-1003', patient_name: 'محمود عبد الرازق', patient_phone: '01234567890', patient_age: 55, patient_gender: 'male', date: '2026-11-14', time_slot: '12:00', doctor_name: 'د. كريم عبد العزيز', clinic_name: 'عيادات الشفاء', branch_name: 'فرع المعادي الرئيسي', procedure_name: 'كشف عظام + حقن مفصل الركبة الموضعي', diagnosis: 'خشونة متقدمة بمفصل الركبة اليمنى', prescription: 'مضاد التهاب وكبسولات جيلوكوزامين', procedure_cost: 500, payment_type: 'corporate', contract_name: 'نقابة المهندسين', discount_percentage: 25, status: 'completed' },
+            { id: 'pv_4', patient_file_no: 'FL-1004', patient_name: 'منى إبراهيم خليل', patient_phone: '01567890123', patient_age: 34, patient_gender: 'female', date: '2026-11-14', time_slot: '13:30', doctor_name: 'د. أحمد الشناوي', clinic_name: 'عيادات الشفاء', branch_name: 'فرع المعادي الرئيسي', procedure_name: 'فحص سونار تلفزيوني على البطن والحوض', diagnosis: 'دهون خفيفة على الكبد وتغيرات روتينية', prescription: 'حمية غذائية ومكمل غذائي للكبد', procedure_cost: 400, payment_type: 'cash', discount_percentage: 0, status: 'completed' },
+            { id: 'pv_5', patient_file_no: 'FL-1005', patient_name: 'ياسر عصام مصطفى', patient_phone: '01099887766', patient_age: 39, patient_gender: 'male', date: '2026-11-13', time_slot: '14:45', doctor_name: 'د. سارة محمود', clinic_name: 'عيادات الشفاء', branch_name: 'فرع المعادي الرئيسي', procedure_name: 'كشف طبي دوري ومتابعة نمو', diagnosis: 'صحة عامة ممتازة ونمو طبيعي', prescription: 'فيتامينات متعددة ومعادن', procedure_cost: 200, payment_type: 'corporate', contract_name: 'أكسا للتأمين الطبي (AXA)', discount_percentage: 15, status: 'completed' }
+        ];
+    },
+
+    getMockFinancialReportData() {
+        return {
+            totalCash: 86400,
+            totalCorporate: 48900,
+            totalExpenses: 34200,
+            doctorCommissions: 42000,
+            netProfit: 59100,
+            transactions: [
+                { ref_no: 'TX-101', date: '2026-11-15', type: 'income', description: 'إيراد كشوفات الخزينة النقدية (وردية الصباح)', account: 'الخزينة النقدية الرئيسية', credit: 14200, debit: 0, balance: 14200, authorized_by: 'المحاسب المالي' },
+                { ref_no: 'TX-102', date: '2026-11-15', type: 'corporate_claim', description: 'مطالبة كشوفات تعاقد شركة مصر للتأمين', account: 'حساب العملاء والشركات', credit: 8600, debit: 0, balance: 22800, authorized_by: 'المحاسب المالي' },
+                { ref_no: 'TX-103', date: '2026-11-14', type: 'expense', description: 'سداد دفعة توريد مستلزمات طبية وسرنجات معقمة', account: 'مستلزمات ومشتريات طبية', credit: 0, debit: 6500, balance: 16300, authorized_by: 'المدير العام' },
+                { ref_no: 'TX-104', date: '2026-11-14', type: 'expense', description: 'سداد عمولات وكشوفات الأطباء الاستشاريين', account: 'مستحقات الأطباء', credit: 0, debit: 11000, balance: 5300, authorized_by: 'المحاسب المالي' },
+                { ref_no: 'TX-105', date: '2026-11-13', type: 'income', description: 'إيراد كشوفات الخزينة النقدية (وردية المساء)', account: 'الخزينة النقدية الرئيسية', credit: 18500, debit: 0, balance: 23800, authorized_by: 'المحاسب المالي' },
+                { ref_no: 'TX-106', date: '2026-11-13', type: 'corporate_claim', description: 'مطالبة كشوفات نقابة المهندسين والخدمات البترولية', account: 'حساب العملاء والشركات', credit: 12400, debit: 0, balance: 36200, authorized_by: 'المحاسب المالي' }
+            ]
+        };
+    },
+
+    getMockProcurementOrders() {
+        return [
+            {
+                po_number: 'PO-2026-081',
+                supplier_name: 'شركة الفا ميديكال للمستلزمات الطبية',
+                supplier_phone: '01011223344',
+                order_date: '2026-11-10',
+                delivery_date: '2026-11-12',
+                items_count: 3,
+                total_amount: 14500,
+                paid_amount: 14500,
+                remaining_amount: 0,
+                payment_status: 'paid',
+                delivery_status: 'delivered',
+                tax_invoice_no: 'INV-TAX-9981'
+            },
+            {
+                po_number: 'PO-2026-082',
+                supplier_name: 'مؤسسة الشروق للأدوية والمحاليل الوريدية',
+                supplier_phone: '01122334455',
+                order_date: '2026-11-08',
+                delivery_date: '2026-11-11',
+                items_count: 2,
+                total_amount: 22000,
+                paid_amount: 12000,
+                remaining_amount: 10000,
+                payment_status: 'partial',
+                delivery_status: 'delivered',
+                tax_invoice_no: 'INV-TAX-8840'
+            },
+            {
+                po_number: 'PO-2026-083',
+                supplier_name: 'شركة النيل للكيماويات والمطهرات الطبية',
+                supplier_phone: '01233445566',
+                order_date: '2026-11-05',
+                delivery_date: '2026-11-07',
+                items_count: 2,
+                total_amount: 8800,
+                paid_amount: 8800,
+                remaining_amount: 0,
+                payment_status: 'paid',
+                delivery_status: 'delivered',
+                tax_invoice_no: 'INV-TAX-7721'
+            }
+        ];
+    },
+
+    getMockAnalyticsStatsData() {
+        return {
+            totalVisits: 348,
+            attendanceRate: 94,
+            corporateShare: 46,
+            cashShare: 54,
+            avgWaitTime: 12,
+            csatRating: 4.9,
+            doctorBreakdown: [
+                { name: 'د. أحمد الشناوي', specialty: 'استشاري باطنة وقلب', cases_count: 142, revenue: 49700 },
+                { name: 'د. سارة محمود', specialty: 'أخصائي أطفال وحديثي ولادة', cases_count: 118, revenue: 33040 },
+                { name: 'د. كريم عبد العزيز', specialty: 'استشاري جراحة عظام ومفاصل', cases_count: 88, revenue: 44000 }
+            ],
+            topProcedures: [
+                { name: 'كشف استشاري وفحص سريري', clinic: 'باطنة وأطفال وعظام', count: 260, total_revenue: 65000, share_percentage: 51 },
+                { name: 'تخطيط قلب كهربائي ECG', clinic: 'عيادة القلب والباطنة', count: 48, total_revenue: 14400, share_percentage: 11 },
+                { name: 'فحص سونار بطن وحوض', clinic: 'باطنة وجهاز هضمي', count: 32, total_revenue: 12800, share_percentage: 10 },
+                { name: 'حقن مفصل الركبة الموضعي', clinic: 'عيادة العظام', count: 24, total_revenue: 12000, share_percentage: 9 },
+                { name: 'جلسات استنشاق وتوسيع شعب', clinic: 'عيادة الأطفال', count: 38, total_revenue: 7600, share_percentage: 6 }
+            ]
+        };
     }
 };
 
