@@ -27,6 +27,7 @@ const PatientApp = {
         await this.loadDropdownData();
         await this.loadMyAppointments();
         this.renderLiveQueueTicket();
+        this.renderMedicalPackages();
         this.renderMedicalResultsTable();
         this.renderPatientPrescriptions();
         this.renderPatientProcedures();
@@ -34,6 +35,7 @@ const PatientApp = {
 
         window.addEventListener('alwagih_language_changed', () => {
             this.renderAppointmentsTable();
+            this.renderMedicalPackages();
             this.renderMedicalResultsTable();
             this.renderPatientPrescriptions();
             this.renderPatientProcedures();
@@ -255,16 +257,10 @@ const PatientApp = {
 
                 this.myAppointments.unshift(newApt);
                 this.saveStoredAppointments();
-                Utils.showToast('تم إرسال طلب الحجز بنجاح! جاري فتح تأكيد الواتساب...', 'success');
+                Utils.showToast('تم إرسال طلب الحجز بنجاح! يمكنك إرسال تفاصيل الحجز عبر الواتساب متى رغبت.', 'success');
                 this.renderAppointmentsTable();
+                this.showBookingSuccessBanner(newApt);
                 form.reset();
-
-                // إطلاق نافذة تأكيد الواتساب المباشرة
-                if (typeof WhatsAppService !== 'undefined') {
-                    setTimeout(() => {
-                        WhatsAppService.showBookingConfirmationModal(newApt);
-                    }, 200);
-                }
             };
         }
 
@@ -603,6 +599,212 @@ const PatientApp = {
                 </td>
             </tr>
         `).join('');
+    },
+
+    showBookingSuccessBanner(apt, customMsg) {
+        const banner = document.getElementById('patient-booking-success-banner');
+        const msgEl = document.getElementById('patient-booking-success-msg');
+        const btn = document.getElementById('patient-banner-whatsapp-btn');
+        if (!banner) return;
+
+        if (msgEl) {
+            msgEl.textContent = customMsg || `تم تأكيد حجزك برقم #${apt.id.slice(-6)} مع ${apt.doctor_name} بتاريخ ${apt.date}. يمكنك إرسال تفاصيل الموعد عبر الواتساب بالضغط على الزر أدناه.`;
+        }
+
+        if (btn) {
+            btn.onclick = () => {
+                this.openWhatsAppConfirm(apt.id);
+            };
+        }
+
+        banner.classList.remove('hidden');
+        banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    },
+
+    renderMedicalPackages() {
+        const container = document.getElementById('patient-packages-container');
+        if (!container) return;
+
+        const packages = this.getMockMedicalPackages();
+        container.innerHTML = packages.map(pkg => `
+            <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 flex flex-col justify-between transition relative overflow-hidden group">
+                <div class="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-500"></div>
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-3 py-1 rounded-full text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                            ${pkg.badge}
+                        </span>
+                        <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                            توفير ${pkg.savings_percentage}%
+                        </span>
+                    </div>
+
+                    <h4 class="text-base font-black text-slate-900 dark:text-white mb-1">${pkg.name}</h4>
+                    <p class="text-xs text-slate-400 mb-4">${pkg.category}</p>
+
+                    <div class="space-y-2 mb-5">
+                        ${pkg.services.map(s => `
+                            <div class="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300">
+                                <span class="text-emerald-500 font-bold shrink-0">✓</span>
+                                <span>${s}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <div>
+                        <div class="text-[11px] text-slate-400 line-through">${Utils.formatCurrency(pkg.regular_price)}</div>
+                        <div class="text-lg font-black text-emerald-600 dark:text-emerald-400">${Utils.formatCurrency(pkg.package_price)}</div>
+                    </div>
+                    <button onclick="PatientApp.bookPackage('${pkg.id}')" class="btn-press px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-md shadow-sky-600/20 transition flex items-center gap-1.5">
+                        <span>احجز الباقة الآن</span>
+                        <span>🎯</span>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    bookPackage(packageId) {
+        const pkg = this.getMockMedicalPackages().find(p => p.id === packageId);
+        if (!pkg) return;
+
+        const nameInput = document.getElementById('patient-name-input');
+        const phoneInput = document.getElementById('patient-phone-input');
+        const patientName = (nameInput && nameInput.value.trim()) || (this.currentPatient && this.currentPatient.full_name) || 'مريض الوجيه';
+        const patientPhone = (phoneInput && phoneInput.value.trim()) || '01012345678';
+
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const dateStr = tomorrow.toISOString().split('T')[0];
+
+        const newApt = {
+            id: 'pkg_apt_' + Date.now(),
+            patient_name: patientName,
+            patient_phone: patientPhone,
+            clinic_name: 'مركز الفحص الطبي الشامل والوقاية',
+            branch_name: 'فرع المعادي الرئيسي',
+            doctor_name: 'فريق الفحص الطبي المتكامل',
+            package_name: pkg.name,
+            date: dateStr,
+            time_slot: '10:00',
+            amount: pkg.package_price,
+            payment_type: 'cash',
+            status: 'pending'
+        };
+
+        this.myAppointments.unshift(newApt);
+        this.saveStoredAppointments();
+        Utils.showToast(`تم حجز "${pkg.name}" بنجاح بسعر ${Utils.formatCurrency(pkg.package_price)}!`, 'success');
+        this.renderAppointmentsTable();
+        this.showBookingSuccessBanner(newApt, `تم تأكيد حجزك في "${pkg.name}". نسبة التوفير: ${pkg.savings_percentage}%! يمكنك مشاركة تفاصيل الحجز بالواتساب.`);
+    },
+
+    getMockMedicalPackages() {
+        const stored = localStorage.getItem('alwagih_medical_packages');
+        if (stored) {
+            try { return JSON.parse(stored); } catch (e) {}
+        }
+        return [
+            {
+                id: 'pkg_comprehensive',
+                code: 'PKG-CHECKUP-01',
+                name: 'باقة الفحص الطبي الشامل (Executive Checkup)',
+                category: 'فحص طبي وقائي وباطني',
+                badge: 'الأكثر طلباً ⭐',
+                regular_price: 1450,
+                package_price: 950,
+                savings_percentage: 34,
+                bookings_count: 84,
+                status: 'active',
+                services: [
+                    'استشارة وفحص سريري باطنة عامة',
+                    'تحليل صورة دم كاملة (CBC)',
+                    'فحص سكر صائم ودهون كاملة (Lipid Profile)',
+                    'وظائف كبد وكلى كاملة (Liver & Kidney Panel)',
+                    'سونار وقائي للبطن والحوض (Abdominal US)',
+                    'كشف وقائي للأسنان واللثة'
+                ]
+            },
+            {
+                id: 'pkg_diabetic',
+                code: 'PKG-CARDIO-02',
+                name: 'باقة رعاية السكري وصحة القلب (Cardio-Diabetic Care)',
+                category: 'أمراض مزمنة وغدد',
+                badge: 'عناية متخصصة 🩺',
+                regular_price: 1100,
+                package_price: 750,
+                savings_percentage: 32,
+                bookings_count: 62,
+                status: 'active',
+                services: [
+                    'استشارة استشاري سكر وغدد صماء',
+                    'تحليل سكر تراكمي (HbA1c)',
+                    'تحليل زلال بول دقيق (Microalbuminuria)',
+                    'تخطيط ورسم قلب كهربائي (ECG)',
+                    'فحص قاع العين وقائي لمضاعفات السكر'
+                ]
+            },
+            {
+                id: 'pkg_women',
+                code: 'PKG-WOMEN-03',
+                name: 'باقة صحة المرأة ومتابعة الحمل (Women & Maternity)',
+                category: 'صحة المرأة ورعاية الأجنة',
+                badge: 'عناية فائقة 🌸',
+                regular_price: 1600,
+                package_price: 1100,
+                savings_percentage: 31,
+                bookings_count: 53,
+                status: 'active',
+                services: [
+                    'كشف استشارية نساء وتوليد',
+                    'أشعة سونار رباعي الأبعاد (4D Ultrasound)',
+                    'فحص مخزون حديد وفيتامينات (Ferritin + Vit D)',
+                    'مزرعة بول وتحليل مسحة وقائية',
+                    'جلسة استشارة تغذية للحوامل والرضاعة'
+                ]
+            },
+            {
+                id: 'pkg_dental',
+                code: 'PKG-DENTAL-04',
+                name: 'باقة ابتسامة هوليوود والعناية الفموية (Dental Care)',
+                category: 'طب وجراحة الأسنان',
+                badge: 'ابتسامة مشرقة ✨',
+                regular_price: 900,
+                package_price: 550,
+                savings_percentage: 39,
+                bookings_count: 97,
+                status: 'active',
+                services: [
+                    'فحص فموي وشجري كامل 32 سناً (Odontogram)',
+                    'أشعة بانوراما رقمية للفكين (OPG X-Ray)',
+                    'جلسة تنظيف وتلميع أسنان بالموجات الصوتية',
+                    'إزالة الترسبات الجيرية والتصبغات السطحية',
+                    'جلسة فلورايد وقائي لحماية المينا'
+                ]
+            },
+            {
+                id: 'pkg_athletic',
+                code: 'PKG-FITNESS-05',
+                name: 'باقة اللياقة والفحص الرياضي للشباب (Athletic Screening)',
+                category: 'طب رياضي ولياقة بدنية',
+                badge: 'صحة ولياقة ⚡',
+                regular_price: 1250,
+                package_price: 800,
+                savings_percentage: 36,
+                bookings_count: 41,
+                status: 'active',
+                services: [
+                    'فحص لياقة قلبية ومؤشرات الحيوية',
+                    'تحليل صورة دم كاملة وأملاح الدم (Electrolytes)',
+                    'فحص فيتامين د وكالسيوم ومغنسيوم (Vit D + Ca + Mg)',
+                    'فحص العمود الفقري والتوازن العضلي',
+                    'استشارة أخصائي علاج طبيعي وإصابات ملاعب'
+                ]
+            }
+        ];
     }
 };
 
