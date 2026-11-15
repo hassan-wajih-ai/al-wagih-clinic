@@ -10,7 +10,8 @@ const Auth = {
         accountant: 'dashboards/accountant/index.html',
         receptionist: 'dashboards/receptionist/index.html',
         doctor: 'dashboards/doctor/index.html',
-        patient: 'dashboards/patient/index.html'
+        patient: 'dashboards/patient/index.html',
+        pharmacist: 'dashboards/pharmacy/index.html'
     },
 
     DEMO_PROFILES: {
@@ -60,6 +61,14 @@ const Auth = {
             full_name: 'طارق حسام مصطفى (مريض)',
             role: 'patient',
             phone: '01011223344'
+        },
+        pharmacist: {
+            id: 'demo_pharmacist',
+            email: 'pharmacist@clinic.com',
+            full_name: 'د. سارة عثمان (مسؤول الصيدلية المركزية)',
+            role: 'pharmacist',
+            clinics: { name: 'صيدلية مجمع الوجيه التخصصي' },
+            branches: { name: 'الصيدلية الداخلية والعيادات الخارجية' }
         }
     },
 
@@ -104,6 +113,7 @@ const Auth = {
         else if (normalizedEmail.includes('rec')) detectedRole = 'receptionist';
         else if (normalizedEmail.includes('doc')) detectedRole = 'doctor';
         else if (normalizedEmail.includes('patient')) detectedRole = 'patient';
+        else if (normalizedEmail.includes('pharm') || normalizedEmail.includes('drug')) detectedRole = 'pharmacist';
 
         const profile = this.DEMO_PROFILES[detectedRole] || this.DEMO_PROFILES.admin;
         profile.email = normalizedEmail;
