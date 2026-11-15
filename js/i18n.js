@@ -37,13 +37,14 @@ const I18N_DICTIONARY = {
         confirm: "تأكيد",
 
         // الأدوار
-        role_superadmin: "المدير العام (Super Admin)",
-        role_admin: "مدير العيادة (Admin ERP)",
-        role_accountant: "المحاسب المالي (Accountant)",
-        role_receptionist: "الاستقبال والحجوزات (Receptionist)",
-        role_doctor: "الطبيب وغرفة الكشف (Doctor)",
-        role_patient: "بوابة المريض (Patient)",
-        role_pharmacist: "الصيدلية والروشتات (Pharmacist)",
+        role_superadmin: "المدير العام",
+        role_admin: "مدير العيادة",
+        role_accountant: "المحاسب المالي",
+        role_doctor: "الطبيب",
+        role_pharmacist: "الصيدلي",
+        role_receptionist: "الاستقبال",
+        role_patient: "المريض",
+        role_queue: "شاشة الانتظار",
 
         // الإحصائيات العامة
         kpi_crm_leads: "مرضى الـ CRM والمهتمين",
@@ -194,12 +195,13 @@ const I18N_DICTIONARY = {
 
         // Roles
         role_superadmin: "Super Admin",
-        role_admin: "Clinic Admin (ERP)",
+        role_admin: "Clinic Admin",
         role_accountant: "Financial Accountant",
+        role_doctor: "Doctor",
+        role_pharmacist: "Pharmacist",
         role_receptionist: "Receptionist",
-        role_doctor: "Consultant Doctor",
-        role_patient: "Patient Portal",
-        role_pharmacist: "In-House Pharmacy & POS",
+        role_patient: "Patient",
+        role_queue: "Queue Screen",
 
         // KPIs
         kpi_crm_leads: "CRM Patients & Leads",
