@@ -26,9 +26,13 @@ const PatientApp = {
 
         await this.loadDropdownData();
         await this.loadMyAppointments();
+        this.renderMedicalResultsTable();
         this.bindEvents();
 
-        window.addEventListener('alwagih_language_changed', () => this.renderAppointmentsTable());
+        window.addEventListener('alwagih_language_changed', () => {
+            this.renderAppointmentsTable();
+            this.renderMedicalResultsTable();
+        });
     },
 
     async loadDropdownData() {
@@ -275,6 +279,81 @@ const PatientApp = {
             { id: 'p_apt_1', patient_name: 'محمد إبراهيم علي', patient_phone: '01012345678', clinic_name: 'عيادات الشفاء التخصصية', branch_name: 'فرع المعادي الرئيسي', doctor_name: 'د. أحمد الشناوي', date: '2026-11-10', time_slot: '11:00', payment_type: 'corporate', contract_name: 'شركة مصر للتأمين', status: 'completed' },
             { id: 'p_apt_2', patient_name: 'محمد إبراهيم علي', patient_phone: '01012345678', clinic_name: 'عيادات الشفاء التخصصية', branch_name: 'فرع المعادي الرئيسي', doctor_name: 'د. سارة محمود', date: '2026-11-20', time_slot: '13:30', payment_type: 'cash', status: 'pending' }
         ];
+    },
+
+    renderMedicalResultsTable() {
+        const tbody = document.getElementById('patient-results-table');
+        if (!tbody) return;
+
+        const results = [
+            {
+                id: 'res_lab_1',
+                code: 'LAB-2026-8801',
+                type: 'تحاليل مخبرية',
+                icon: '🧪',
+                name: 'صورة دم كاملة (CBC Glycated & Panel)',
+                date: '2026-11-15',
+                status: 'معتمدة ومكتملة',
+                status_class: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+                summary: 'الهيموجلوبين: 14.2 g/dL • الصفائح: 260 K/uL • كرات الدم البيضاء: 7.1 K/uL (طبيعي)',
+                doctor: 'د. هاني عثمان (استشاري باثولوجيا إكلينيكية)'
+            },
+            {
+                id: 'res_rad_1',
+                code: 'RAD-2026-4401',
+                type: 'أشعة تشخيصية',
+                icon: '🩻',
+                name: 'رنين مغناطيسي على الفقرات القطنية (Lumbar MRI)',
+                date: '2026-11-15',
+                status: 'معتمد وموقع',
+                status_class: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+                summary: 'L4-L5 posterior disc protrusion producing thecal sac impingement.',
+                doctor: 'د. مروان البدري (استشاري أشعة تشخيصية)'
+            }
+        ];
+
+        tbody.innerHTML = results.map(r => `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                <td class="py-3.5 px-4 font-mono font-bold text-cyan-700 dark:text-cyan-400 text-xs">
+                    ${r.code}
+                </td>
+                <td class="py-3.5 px-4">
+                    <div class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span>${r.icon}</span> <span>${r.name}</span>
+                    </div>
+                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">${r.summary}</div>
+                </td>
+                <td class="py-3.5 px-4 text-xs font-mono text-slate-600 dark:text-slate-400">
+                    ${r.date}
+                </td>
+                <td class="py-3.5 px-4">
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${r.status_class}">
+                        ✓ ${r.status}
+                    </span>
+                    <div class="text-[10px] text-slate-400 mt-0.5">${r.doctor}</div>
+                </td>
+                <td class="py-3.5 px-4 text-center">
+                    <div class="flex items-center justify-center gap-2">
+                        <button onclick="PatientApp.openResultDetail('${r.code}')" class="btn-press px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-900 dark:bg-slate-800 text-white shadow-sm flex items-center gap-1">
+                            <span>📄</span> <span>عرض التقرير</span>
+                        </button>
+                        <button onclick="PatientApp.sendResultWhatsApp('${r.code}', '${r.name}')" class="btn-press px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm flex items-center gap-1" title="استلام النتيجة عبر واتساب">
+                            <span>💬</span> <span>واتساب</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    openResultDetail(code) {
+        Utils.showToast(`تقرير الفحص (${code}) موثق ومعتمد رسمياً مع كود QR. يمكنك طباعته من العيادة أو حفظه على هاتفك.`, 'info');
+    },
+
+    sendResultWhatsApp(code, name) {
+        const phone = '01012345678';
+        const msg = `مرحباً، أود استلام التقرير الطبي المعتمد للفحص (${name}) كود (${code}) من مجمع الوجيه الطبي.`;
+        window.open(`https://wa.me/2${phone}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 };
 
