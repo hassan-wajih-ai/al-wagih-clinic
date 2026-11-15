@@ -1116,6 +1116,70 @@ const Reports = {
         } catch (err) {
             Utils.showToast('تعذر تصدير سجل الصيدلية: ' + err.message, 'error');
         }
+    },
+
+    /**
+     * 24. تصدير تقرير إجراءات عيادات طب وجراحة الأسنان (Dental Procedures & Odontogram Report)
+     */
+    exportDentalProceduresReport(dentalList) {
+        try {
+            const list = dentalList || [];
+            const rows = list.map((item, idx) => ({
+                'م': idx + 1,
+                'اسم المريض': item.patient_name,
+                'هاتف المريض': item.patient_phone || '—',
+                'طبيب الأسنان المعالج': item.doctor_name || 'د. أحمد الشناوي',
+                'رقم السن (FDI)': item.tooth_number,
+                'السطح المعالج': item.surface || 'التاج الكامل',
+                'نوع الإجراء والتشخيص': item.procedure_name,
+                'تاريخ التنفيذ': item.procedure_date || new Date().toISOString().split('T')[0],
+                'تكلفة الإجراء (ج.م)': Number(item.cost || 0),
+                'طريقة الدفع': item.payment_type === 'corporate' ? 'تأمين طبي' : 'نقدي',
+                'حالة الإجراء': item.status === 'completed' ? 'تم الإجراء بنجاح' : 'خطة علاجية مستقبلية'
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`تقرير_إجراءات_طب_الأسنان_${dateStr}.xlsx`, [
+                { name: 'إجراءات ومخطط الأسنان', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد إجراءات أسنان مسجلة' }] }
+            ]);
+            Utils.showToast('تم تصدير تقرير إجراءات الأسنان بنجاح 🦷', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير تقرير الأسنان: ' + err.message, 'error');
+        }
+    },
+
+    /**
+     * 25. تصدير تقرير جراحة اليوم الواحد والعمليات الصغرى (Day Surgery & Procedures Report)
+     */
+    exportDaySurgeryReport(surgeryList) {
+        try {
+            const list = surgeryList || [];
+            const rows = list.map((op, idx) => ({
+                'م': idx + 1,
+                'كود العملية الجراحية': op.surgery_code,
+                'اسم المريض': op.patient_name,
+                'الرقم القومي / الهاتف': op.patient_phone || '—',
+                'اسم الجراح الاستشاري': op.surgeon_name,
+                'طبيب التخدير': op.anesthesiologist_name || 'د. استشاري تخدير',
+                'اسم العملية الجراحية': op.procedure_name,
+                'نوع التخدير': op.anesthesia_type || 'موضعي (Local)',
+                'غرفة العمليات': op.or_room || 'غرفة العمليات الصغرى 1',
+                'سرير الإفاقة': op.recovery_bed || 'سرير 2',
+                'تاريخ وتوقيت الجراحة': op.surgery_date || new Date().toISOString().split('T')[0],
+                'قائمة التحقق الآمنة WHO': op.who_checklist_passed ? 'معتمدة بالكامل (100%)' : 'قيد المراجعة',
+                'الموافقة الجراحية Consent': op.consent_signed ? 'موقعة إلكترونياً' : 'مطلوبة',
+                'إجمالي تكلفة العملية (ج.م)': Number(op.total_cost || 0),
+                'حالة الجراحة': op.status === 'completed' ? 'تمت بنجاح وتماثل للشفاء' : (op.status === 'in_progress' ? 'جارية بغرفة العمليات' : 'مجدولة')
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`تقرير_جراحة_اليوم_الواحد_والعمليات_${dateStr}.xlsx`, [
+                { name: 'سجل العمليات الجراحية', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد عمليات جراحية مسجلة' }] }
+            ]);
+            Utils.showToast('تم تصدير تقرير العمليات الجراحية بنجاح 🏥', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير تقرير العمليات: ' + err.message, 'error');
+        }
     }
 };
 
