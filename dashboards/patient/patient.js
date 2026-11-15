@@ -26,12 +26,17 @@ const PatientApp = {
 
         await this.loadDropdownData();
         await this.loadMyAppointments();
+        this.renderLiveQueueTicket();
         this.renderMedicalResultsTable();
+        this.renderPatientPrescriptions();
+        this.renderPatientProcedures();
         this.bindEvents();
 
         window.addEventListener('alwagih_language_changed', () => {
             this.renderAppointmentsTable();
             this.renderMedicalResultsTable();
+            this.renderPatientPrescriptions();
+            this.renderPatientProcedures();
         });
     },
 
@@ -354,6 +359,250 @@ const PatientApp = {
         const phone = '01012345678';
         const msg = `مرحباً، أود استلام التقرير الطبي المعتمد للفحص (${name}) كود (${code}) من مجمع الوجيه الطبي.`;
         window.open(`https://wa.me/2${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    },
+
+    // =========================================================================
+    // تذكرة الانتظار الرقمية الذكية للمريض (Live Queue Ticket)
+    // =========================================================================
+    renderLiveQueueTicket() {
+        const card = document.getElementById('patient-live-ticket-card');
+        const ticketNoEl = document.getElementById('patient-live-ticket-no');
+        const clinicInfoEl = document.getElementById('patient-live-clinic-info');
+        const stateTextEl = document.getElementById('patient-queue-state-text');
+        const estTimeEl = document.getElementById('patient-est-time');
+        const nowCallingAlert = document.getElementById('patient-now-calling-alert');
+
+        if (!card) return;
+
+        // التحقق من وجود حجز مؤكد للمريض اليوم
+        const activeApt = this.myAppointments.find(a => a.status !== 'completed' && a.status !== 'cancelled');
+        if (!activeApt) {
+            card.classList.add('hidden');
+            return;
+        }
+
+        card.classList.remove('hidden');
+        const ticketNo = 'A-102';
+        if (ticketNoEl) ticketNoEl.textContent = ticketNo;
+        if (clinicInfoEl) clinicInfoEl.textContent = `${activeApt.clinic_name || 'عيادات الشفاء'} — ${activeApt.doctor_name || 'د. استشاري'} (غرفة 101)`;
+
+        // التحقق من آخر نداء في شاشة الصالة
+        let lastCall = null;
+        try {
+            const stored = localStorage.getItem('alwagih_queue_last_call');
+            if (stored) lastCall = JSON.parse(stored);
+        } catch (e) {}
+
+        const isCurrentlyCalled = lastCall && (lastCall.ticket_no === ticketNo || lastCall.patient_name === activeApt.patient_name);
+
+        if (isCurrentlyCalled) {
+            if (nowCallingAlert) nowCallingAlert.classList.remove('hidden');
+            if (stateTextEl) stateTextEl.textContent = '📢 دورك الآن في غرفة الكشف!';
+            if (estTimeEl) estTimeEl.textContent = 'تفضل بالدخول للطبيب فوراً';
+        } else {
+            if (nowCallingAlert) nowCallingAlert.classList.add('hidden');
+            if (stateTextEl) stateTextEl.textContent = 'أمامك 1 مريض فقط';
+            if (estTimeEl) estTimeEl.textContent = 'الوقت التقديري: ~ 8 دقائق';
+        }
+    },
+
+    // =========================================================================
+    // محفظة الروشتات وصرف الأدوية بالباركود (My E-Prescriptions Wallet)
+    // =========================================================================
+    getPatientPrescriptions() {
+        const stored = localStorage.getItem('alwagih_pharmacy_prescriptions');
+        if (stored) {
+            try {
+                const all = JSON.parse(stored);
+                if (all && all.length > 0) return all;
+            } catch (e) {}
+        }
+        return [
+            {
+                id: 'rx_101',
+                rx_number: 'RX-2026-801',
+                patient_name: 'طارق حسام مصطفى',
+                doctor_name: 'د. محمد عبد العزيز',
+                clinic_name: 'العيادة الباطنية والجهاز الهضمي',
+                created_time: '2026-11-15 10:45 ص',
+                status: 'pending',
+                barcode: '6221008741021',
+                items: [
+                    { drug_name: 'Augmentin (أوجمنتين)', dosage: '1000 mg', instructions: 'قرص كل 12 ساعة بعد الأكل لمدة 7 أيام', quantity: 2, price: 199 },
+                    { drug_name: 'Panadol Extra (بنادول إكسترا)', dosage: '500 mg', instructions: 'قرص عند اللزوم للصداع والحرارة', quantity: 1, price: 42 }
+                ],
+                total_amount: 241
+            },
+            {
+                id: 'rx_901',
+                rx_number: 'RX-2026-791',
+                patient_name: 'طارق حسام مصطفى',
+                doctor_name: 'د. سارة محمود',
+                clinic_name: 'عيادة الباطنة العامة',
+                created_time: '2026-11-10 11:20 ص',
+                status: 'dispensed',
+                barcode: '6221005541998',
+                items: [
+                    { drug_name: 'Concor (كونكور)', dosage: '5 mg', instructions: 'قرص صباحاً يومياً بعد الإفطار', quantity: 1, price: 60 }
+                ],
+                total_amount: 60
+            }
+        ];
+    },
+
+    renderPatientPrescriptions() {
+        const tbody = document.getElementById('patient-prescriptions-table');
+        if (!tbody) return;
+
+        const prescriptions = this.getPatientPrescriptions();
+        if (prescriptions.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 text-xs">لا توجد روشتات مسجلة في محفظتك</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = prescriptions.map(rx => {
+            const isDispensed = rx.status === 'dispensed';
+            const itemsSummary = (rx.items || []).map(i => i.drug_name).join(' + ') || 'أدوية علاجية متعددة';
+
+            return `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                    <td class="py-3.5 px-4 font-mono font-bold text-sky-600 dark:text-sky-400 text-xs">
+                        ${rx.rx_number}
+                        <div class="text-[10px] text-slate-400 font-sans">${rx.created_time || 'اليوم'}</div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                        <div class="font-bold text-slate-900 dark:text-white text-xs">${rx.doctor_name || 'د. الاستشاري'}</div>
+                        <div class="text-[10px] text-slate-400">${rx.clinic_name || 'العيادة التخصصية'}</div>
+                    </td>
+                    <td class="py-3.5 px-4 text-xs text-slate-700 dark:text-slate-300">
+                        <div class="font-semibold">${itemsSummary}</div>
+                        <div class="text-[10px] text-slate-400">${(rx.items || []).length} أصناف موصوفة</div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${isDispensed ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300' : 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300'}">
+                            ${isDispensed ? '✓ تم الصرف بالصيدلية' : '⏳ جاهزة للصرف بصيدلية المجمع'}
+                        </span>
+                    </td>
+                    <td class="py-3.5 px-4 text-center">
+                        <button onclick="PatientApp.openPatientRxDetailsModal('${rx.id}')" class="btn-press px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-sm flex items-center justify-center gap-1.5 mx-auto">
+                            <span>📲</span>
+                            <span>إظهار الباركود والروشتة</span>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    openPatientRxDetailsModal(rxId) {
+        const prescriptions = this.getPatientPrescriptions();
+        const rx = prescriptions.find(r => r.id === rxId) || prescriptions[0];
+        if (!rx) return;
+
+        document.getElementById('pt-modal-rx-number').textContent = `روشتة إلكترونية #${rx.rx_number}`;
+        document.getElementById('pt-modal-doctor-clinic').textContent = `${rx.doctor_name} — ${rx.clinic_name}`;
+        document.getElementById('pt-modal-code-text').textContent = `RX-CODE: ${rx.barcode || '6221008741021'}`;
+
+        const itemsContainer = document.getElementById('pt-modal-items-list');
+        if (itemsContainer) {
+            itemsContainer.innerHTML = (rx.items || []).map((item, idx) => `
+                <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs">
+                    <div class="flex items-center justify-between font-bold text-slate-900 dark:text-white">
+                        <span>${idx + 1}. ${item.drug_name}</span>
+                        <span class="font-mono text-purple-600 dark:text-purple-400">${item.dosage || ''}</span>
+                    </div>
+                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        التعليمات: ${item.instructions || 'حسب إرشادات الطبيب'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        const modal = document.getElementById('patient-rx-details-modal');
+        if (modal) modal.classList.remove('hidden');
+    },
+
+    // =========================================================================
+    // سجل علاجات الأسنان والعمليات الجراحية للمريض
+    // =========================================================================
+    renderPatientProcedures() {
+        const tbody = document.getElementById('patient-procedures-table');
+        if (!tbody) return;
+
+        let dentals = [];
+        let surgeries = [];
+
+        try {
+            const d = localStorage.getItem('alwagih_dental_procedures');
+            if (d) dentals = JSON.parse(d);
+            const s = localStorage.getItem('alwagih_day_surgeries');
+            if (s) surgeries = JSON.parse(s);
+        } catch (e) {}
+
+        if (dentals.length === 0 && surgeries.length === 0) {
+            // بيانات تجريبية افتراضية للمريض
+            dentals = [
+                {
+                    tooth_number: 16,
+                    tooth_name: 'ضرس أول علوي أيمن (UR6)',
+                    procedure_name: 'حشو ضوئي تجميلي طبقات (Composite)',
+                    procedure_date: '2026-11-12',
+                    doctor_name: 'د. أحمد الشناوي',
+                    status: 'completed'
+                }
+            ];
+            surgeries = [
+                {
+                    procedure_name: 'خياطة جرح تجميلي سطحي مع غرز Vicryl',
+                    surgeon_name: 'د. طارق العريان',
+                    surgery_date: '2026-11-05',
+                    postop_instructions: 'غيار معقم يومياً مع تجنب الإجهاد ومراجعة العيادة بعد 7 أيام',
+                    status: 'completed'
+                }
+            ];
+        }
+
+        const all = [
+            ...dentals.map(d => ({
+                type: '🦷 طب وجراحة الأسنان',
+                title: `${d.procedure_name} (سن #${d.tooth_number} - ${d.tooth_name})`,
+                doctor: d.doctor_name || 'د. طبيب الأسنان',
+                date: d.procedure_date || '2026-11-12',
+                notes: 'تم فحص السن والإطباق بنجاح ومتابعة بعد 6 أشهر',
+                status: 'تم الإجراء بنجاح'
+            })),
+            ...surgeries.map(s => ({
+                type: '🏥 جراحة اليوم الواحد',
+                title: s.procedure_name,
+                doctor: s.surgeon_name || 'د. الجراح الاستشاري',
+                date: s.surgery_date || '2026-11-05',
+                notes: s.postop_instructions || 'تمت الجراحة بنجاح واستقرار العلامات الحيوية',
+                status: 'تمت بنجاح'
+            }))
+        ];
+
+        tbody.innerHTML = all.map(p => `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                <td class="py-3.5 px-4">
+                    <span class="font-bold text-xs text-slate-900 dark:text-white">${p.type}</span>
+                    <div class="text-[11px] text-purple-700 dark:text-purple-300 font-semibold mt-0.5">${p.title}</div>
+                </td>
+                <td class="py-3.5 px-4 text-xs font-bold text-slate-700 dark:text-slate-300">
+                    ${p.doctor}
+                </td>
+                <td class="py-3.5 px-4 font-mono text-xs text-slate-500">
+                    ${p.date}
+                </td>
+                <td class="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-400">
+                    ${p.notes}
+                </td>
+                <td class="py-3.5 px-4 text-center">
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                        ✓ ${p.status}
+                    </span>
+                </td>
+            </tr>
+        `).join('');
     }
 };
 
