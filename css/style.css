@@ -1,44 +1,284 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+/* ==========================================================================
+   متغيرات الثيم والأساسيات (Theme Variables & Base Setup)
+   ========================================================================== */
 :root {
     --primary-color: #0284c7;
     --primary-hover: #0369a1;
     --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-main: #e2e8f0;
 }
 
-body {
+/* الوضع الليلي (Dark Mode Variables) */
+html.dark {
+    --bg-main: #0b1120;
+    --bg-card: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border-main: #334155;
+    --primary-color: #38bdf8;
+    --primary-hover: #0284c7;
+    color-scheme: dark;
+}
+
+/* اللغة والاتجاه والخطوط (Typography & Direction) */
+html[lang="ar"], html[dir="rtl"] {
     font-family: 'Cairo', system-ui, -apple-system, sans-serif;
-    background-color: var(--bg-main);
-    color: #1e293b;
     direction: rtl;
     text-align: right;
 }
 
-/* تحسين شريط التمرير */
+html[lang="en"], html[dir="ltr"] {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    direction: ltr;
+    text-align: left;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   قواعد الدارك مود الشاملة (Universal Dark Mode Overrides)
+   ========================================================================== */
+html.dark body {
+    background-color: #0b1120 !important;
+    color: #f1f5f9 !important;
+}
+
+html.dark .bg-white {
+    background-color: #1e293b !important;
+    color: #f1f5f9;
+}
+
+html.dark .bg-slate-50,
+html.dark .bg-slate-100 {
+    background-color: #0f172a !important;
+}
+
+html.dark .bg-slate-200 {
+    background-color: #1e293b !important;
+}
+
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-300 {
+    border-color: #334155 !important;
+}
+
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-slate-700 {
+    color: #f8fafc !important;
+}
+
+html.dark .text-slate-600,
+html.dark .text-slate-500 {
+    color: #94a3b8 !important;
+}
+
+html.dark .text-slate-400 {
+    color: #64748b !important;
+}
+
+/* حقول الإدخال والاختيار في الوضع الليلي */
+html.dark input:not([type="checkbox"]):not([type="radio"]),
+html.dark select,
+html.dark textarea {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25) !important;
+}
+
+/* الجداول في الوضع الليلي */
+html.dark table thead th {
+    background-color: #0f172a !important;
+    color: #cbd5e1 !important;
+    border-color: #334155 !important;
+}
+
+html.dark table tbody tr {
+    border-color: #334155 !important;
+}
+
+html.dark table tbody tr:hover {
+    background-color: #1e293b !important;
+}
+
+/* ==========================================================================
+   الأنيميشن والحركات التفاعلية الحديثة (Animations & Transitions)
+   ========================================================================== */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(14, 165, 233, 0);
+    }
+}
+
+@keyframes waFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-up {
+    animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-glow {
+    animation: pulseGlow 2.5s infinite;
+}
+
+.animate-wa-float {
+    animation: waFloat 2s ease-in-out infinite;
+}
+
+/* تأثير التمرير فوق البطاقات (Card Hover Lift) */
+.card-hover {
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.08), 0 8px 12px -6px rgba(0, 0, 0, 0.04);
+}
+
+html.dark .card-hover:hover {
+    box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.4), 0 8px 12px -6px rgba(0, 0, 0, 0.2);
+    border-color: #475569;
+}
+
+/* تفاعل الأزرار بالضغط (Button Active Press) */
+.btn-press {
+    transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-press:active {
+    transform: scale(0.96);
+}
+
+/* ==========================================================================
+   الاستجابة للشاشات والهواتف (Mobile Responsiveness)
+   ========================================================================== */
+/* تحسين الجداول على الهواتف */
+.table-responsive-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 1rem;
+}
+
+@media (max-width: 640px) {
+    .max-w-7xl, .max-w-5xl {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+    
+    header {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    /* تكبير مساحة اللمس على الموبايل */
+    button, input, select, a {
+        min-height: 38px;
+    }
+}
+
+/* شريط التمرير المخصص */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f5f9;
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
     background: #cbd5e1;
-    border-radius: 4px;
+    border-radius: 9999px;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+    background: #334155;
 }
 
 ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
 
-/* تأثيرات انتقالية سلسة */
-.transition-all-smooth {
-    transition: all 0.2s ease-in-out;
+html.dark ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
 }
 
-/* أنماط خاصة بالطباعة (jsPDF والطباعة المباشرة) */
+/* أنماط الطباعة */
 @media print {
     .no-print {
         display: none !important;
@@ -47,6 +287,7 @@ body {
         display: block !important;
     }
     body {
-        background-color: #ffffff;
+        background-color: #ffffff !important;
+        color: #000000 !important;
     }
 }
