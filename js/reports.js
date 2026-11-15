@@ -1016,6 +1016,40 @@ const Reports = {
         } catch (err) {
             Utils.showToast('تعذر تصدير تقرير الأشعة: ' + err.message, 'error');
         }
+    },
+
+    /**
+     * 21. تصدير تقرير نسب وعمولات وتسويات الأطباء (Doctor Commissions & Settlements Report)
+     */
+    exportDoctorCommissionsReport(filterInfo, commissionData) {
+        try {
+            const list = commissionData || [];
+            const rows = list.map((doc, idx) => ({
+                'م': idx + 1,
+                'اسم الطبيب المعالج': doc.doctor_name,
+                'التخصص والعيادة': doc.specialty,
+                'عدد الحالات المفحوصة': Number(doc.cases_count || 0),
+                'إجمالي الإيراد الإجمالي Gross (ج.م)': Number(doc.gross_revenue || 0),
+                'نسبة الكشف والاستشارة': `${doc.consultation_split_pct || 70}%`,
+                'مستحق الكشوفات (ج.م)': Number(doc.consultation_amount || 0),
+                'نسبة الإجراءات والعمليات': `${doc.procedure_split_pct || 80}%`,
+                'مستحق الإجراءات (ج.م)': Number(doc.procedure_amount || 0),
+                'عمولات الإحالات (معمل وأشعة) (ج.م)': Number(doc.referrals_amount || 0),
+                'استقطاعات المواد والمستهلكات (ج.م)': Number(doc.deductions || 0),
+                'حصة المركز الطبي (ج.م)': Number(doc.clinic_share || 0),
+                'صافي المستحق للطبيب Net (ج.م)': Number(doc.net_payout || 0),
+                'حالة التسوية': doc.status === 'paid' ? 'تم الصرف والتحويل (Paid)' : 'معلق قيد الصرف (Pending)',
+                'رقم إيصال وتاريخ الصرف': doc.receipt_no ? `${doc.receipt_no} (${doc.paid_date})` : 'قيد التسوية'
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`تقرير_عمولات_وتسويات_الأطباء_${dateStr}.xlsx`, [
+                { name: 'تسويات مستحقات الأطباء', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد بيانات عمولات مسجلة' }] }
+            ]);
+            Utils.showToast('تم تصدير تقرير عمولات وتسويات الأطباء بنجاح 📗', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير تقرير العمولات: ' + err.message, 'error');
+        }
     }
 };
 
