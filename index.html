@@ -123,7 +123,7 @@
                     <h4 class="text-xs font-bold text-slate-300 mb-2.5 flex items-center justify-between" data-i18n="demo_roles_title">
                         <span>⚡ أدوار الدخول السريع (تجربة النظام بضغطة زر):</span>
                     </h4>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
                         <button type="button" onclick="Auth.quickLogin('superadmin')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5">
                             <span>👑</span> <span data-i18n="role_superadmin">المدير العام</span>
                         </button>
@@ -133,13 +133,16 @@
                         <button type="button" onclick="Auth.quickLogin('admin')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5">
                             <span>🏥</span> <span data-i18n="role_admin">مدير العيادة</span>
                         </button>
+                        <button type="button" onclick="Auth.quickLogin('pharmacist')" class="btn-press p-2 bg-teal-700 hover:bg-teal-600 text-white rounded-xl transition font-bold flex items-center justify-center gap-1.5 shadow-md shadow-teal-700/30">
+                            <span>💊</span> <span data-i18n="role_pharmacist">الصيدلي</span>
+                        </button>
                         <button type="button" onclick="Auth.quickLogin('receptionist')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5">
                             <span>📋</span> <span data-i18n="role_receptionist">الاستقبال</span>
                         </button>
                         <button type="button" onclick="Auth.quickLogin('doctor')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5">
                             <span>🩺</span> <span data-i18n="role_doctor">الطبيب</span>
                         </button>
-                        <button type="button" onclick="Auth.quickLogin('patient')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5">
+                        <button type="button" onclick="Auth.quickLogin('patient')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5 col-span-2 sm:col-span-1">
                             <span>👤</span> <span data-i18n="role_patient">المريض</span>
                         </button>
                     </div>
@@ -185,6 +188,9 @@
                         <div class="text-center pt-1 flex flex-wrap items-center justify-center gap-2">
                             <a href="dashboards/queue/index.html" target="_blank" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900 text-sky-700 dark:text-sky-300 text-xs font-bold transition border border-sky-200 dark:border-sky-800 shadow-sm">
                                 <span>📺</span> <span>شاشة صالة الانتظار والنداء الذكي (TV Queue)</span>
+                            </a>
+                            <a href="dashboards/pharmacy/index.html" target="_blank" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900 text-teal-700 dark:text-teal-300 text-xs font-bold transition border border-teal-200 dark:border-teal-800 shadow-sm">
+                                <span>💊</span> <span>صيدلية المجمع ونقطة البيع (Pharmacy POS)</span>
                             </a>
                         </div>
                     </div>
