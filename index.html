@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام الوجيه لإدارة العيادات والمراكز الطبية | بوابة تسجيل الدخول</title>
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS CDN with Dark Mode Class -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -27,121 +28,151 @@
     <!-- Supabase JS Client v2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="css/style.css">
+    <!-- i18n & Theme Manager (Head load to prevent theme flash) -->
+    <script src="js/i18n.js"></script>
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col justify-between">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between transition-colors duration-300">
 
     <!-- Header / Navbar -->
-    <header class="bg-white border-b border-slate-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm sticky top-0 z-40 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-brand-500/20">
+                <div class="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center font-black text-xl shadow-md shadow-brand-500/25 animate-wa-float">
                     و
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-900 leading-tight">نظام الوجيه لإدارة العيادات والمستشفيات</h1>
-                    <p class="text-xs text-slate-500">Al Wagih Hospital & Clinic ERP — سحابي مجاني 100%</p>
+                    <h1 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight" data-i18n="app_title">نظام الوجيه لإدارة العيادات والمستشفيات</h1>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400" data-i18n="app_subtitle">Al Wagih Hospital & Clinic ERP — سحابي مجاني 100%</p>
                 </div>
             </div>
-            <div class="hidden sm:flex items-center gap-2">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+
+            <!-- Navbar Right Controls: Theme Toggle + Language Switcher -->
+            <div class="flex items-center gap-2">
+                <!-- Theme Toggle Button -->
+                <button type="button" onclick="ThemeManager.toggleTheme()" class="theme-toggle-btn flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition shadow-sm btn-press" title="تبديل الثيم / Toggle Dark Mode">
+                    <span class="text-sm">🌙</span>
+                    <span class="hidden sm:inline" data-i18n="dark_mode">ليلي</span>
+                </button>
+
+                <!-- Language Switcher Button -->
+                <button type="button" onclick="I18n.toggleLanguage()" class="lang-toggle-btn flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition shadow-sm btn-press" title="تبديل اللغة / Switch Language">
+                    <span class="font-bold text-sky-600 dark:text-sky-400">EN</span>
+                    <span class="text-xs">English</span>
+                </button>
+
+                <div class="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Enterprise Multi-Tenant System
-                </span>
+                    <span data-i18n="demo_tag">Enterprise Multi-Tenant System</span>
+                </div>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+    <main class="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 animate-fade-in">
         <div class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             
             <!-- Information / Feature Highlights Column -->
-            <div class="lg:col-span-5 space-y-5">
+            <div class="lg:col-span-5 space-y-5 animate-slide-up">
                 <div>
-                    <span class="text-xs font-bold text-brand-600 uppercase tracking-wider bg-brand-50 px-2.5 py-1 rounded-md">منظومة طبية وإدارية ومحاسبية</span>
-                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2 leading-snug">
+                    <span class="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider bg-brand-50 dark:bg-brand-950/60 px-2.5 py-1 rounded-md">منظومة طبية وإدارية ومحاسبية</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-2 leading-snug">
                         إدارة شاملة: CRM، شؤون الموظفين والبصمة، المشتريات، والمحاسبة
                     </h2>
-                    <p class="text-slate-600 text-xs mt-1.5 leading-relaxed">
+                    <p class="text-slate-600 dark:text-slate-400 text-xs mt-1.5 leading-relaxed">
                         نظام متكامل يدعم التعاقدات ونسب الخصم والتحمل (Co-Pay)، جرد المخازن بأرقام التشغيلات، وبصمة الحضور والجزاءات، مع حماية مالية حصرية للمحاسب والمدير.
                     </p>
                 </div>
 
                 <div class="space-y-2.5 text-xs">
-                    <div class="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
-                        <div class="p-2 rounded-lg bg-emerald-50 text-emerald-600 font-bold">💼</div>
+                    <div class="card-hover flex items-start gap-3 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 font-bold text-base">💼</div>
                         <div>
-                            <h4 class="font-bold text-slate-800">إدارة محاسبية حصرية وتدقيق مالي (Audit Trail)</h4>
-                            <p class="text-slate-500 mt-0.5">صلاحية تعديل وإلغاء الحركات محصورة بالمحاسب والمدير العام مع توثيق السبب رقابياً.</p>
+                            <h4 class="font-bold text-slate-800 dark:text-slate-100">إدارة محاسبية حصرية وتدقيق مالي (Audit Trail)</h4>
+                            <p class="text-slate-500 dark:text-slate-400 mt-0.5">صلاحية تعديل وإلغاء الحركات محصورة بالمحاسب والمدير العام مع توثيق السبب رقابياً.</p>
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
-                        <div class="p-2 rounded-lg bg-purple-50 text-purple-600 font-bold">🏢</div>
+                    <div class="card-hover flex items-start gap-3 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 font-bold text-base">🏢</div>
                         <div>
-                            <h4 class="font-bold text-slate-800">تعاقدات الشركات ونسب التحمل (Co-Pay)</h4>
-                            <p class="text-slate-500 mt-0.5">احتساب حصة المريض نقداً ومطالبات الشركات الآجلة وإصدار الفواتير الشهرية.</p>
+                            <h4 class="font-bold text-slate-800 dark:text-slate-100">تعاقدات الشركات ونسب التحمل (Co-Pay)</h4>
+                            <p class="text-slate-500 dark:text-slate-400 mt-0.5">احتساب حصة المريض نقداً ومطالبات الشركات الآجلة وإصدار الفواتير الشهرية.</p>
                         </div>
                     </div>
 
-                    <div class="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
-                        <div class="p-2 rounded-lg bg-sky-50 text-sky-600 font-bold">👆</div>
+                    <div class="card-hover flex items-start gap-3 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 font-bold text-base">👆</div>
                         <div>
-                            <h4 class="font-bold text-slate-800">HR بالبصمة، الجزاءات، والمشتريات</h4>
-                            <p class="text-slate-500 mt-0.5">حضور وانصراف البصمة الإلكتروني، جزاءات المدير المباشر، وجرد كارت الصنف والموردين.</p>
+                            <h4 class="font-bold text-slate-800 dark:text-slate-100">HR بالبصمة، الجزاءات، والمشتريات</h4>
+                            <p class="text-slate-500 dark:text-slate-400 mt-0.5">حضور وانصراف البصمة الإلكتروني، جزاءات المدير المباشر، وجرد كارت الصنف والموردين.</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Fast Dashboard Switcher Preview -->
-                <div class="p-4 rounded-xl bg-slate-900 text-white shadow-lg">
-                    <h4 class="text-xs font-bold text-slate-300 mb-2">روابط سريعة للمعاينة المباشرة للأدوار:</h4>
-                    <div class="flex flex-wrap gap-1.5 text-xs">
-                        <button type="button" onclick="Auth.quickLogin('superadmin')" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">المدير العام</button>
-                        <button type="button" onclick="Auth.quickLogin('accountant')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-md transition font-bold">💼 المحاسب المالي</button>
-                        <button type="button" onclick="Auth.quickLogin('admin')" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">مدير العيادة (ERP)</button>
-                        <button type="button" onclick="Auth.quickLogin('receptionist')" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">الاستقبال</button>
-                        <button type="button" onclick="Auth.quickLogin('doctor')" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">الطبيب</button>
-                        <button type="button" onclick="Auth.quickLogin('patient')" class="px-2.5 py-1 bg-slate-800 hover:bg-brand-600 text-white rounded-md border border-slate-700 transition font-medium">المريض</button>
+                <div class="p-4.5 rounded-2xl bg-slate-900 text-white shadow-xl border border-slate-800 card-hover">
+                    <h4 class="text-xs font-bold text-slate-300 mb-2.5 flex items-center justify-between" data-i18n="demo_roles_title">
+                        <span>⚡ أدوار الدخول السريع (تجربة النظام بضغطة زر):</span>
+                    </h4>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                        <button type="button" onclick="Auth.quickLogin('superadmin')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5">
+                            <span>👑</span> <span data-i18n="role_superadmin">المدير العام</span>
+                        </button>
+                        <button type="button" onclick="Auth.quickLogin('accountant')" class="btn-press p-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/30">
+                            <span>💼</span> <span data-i18n="role_accountant">المحاسب المالي</span>
+                        </button>
+                        <button type="button" onclick="Auth.quickLogin('admin')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5">
+                            <span>🏥</span> <span data-i18n="role_admin">مدير العيادة</span>
+                        </button>
+                        <button type="button" onclick="Auth.quickLogin('receptionist')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5">
+                            <span>📋</span> <span data-i18n="role_receptionist">الاستقبال</span>
+                        </button>
+                        <button type="button" onclick="Auth.quickLogin('doctor')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5">
+                            <span>🩺</span> <span data-i18n="role_doctor">الطبيب</span>
+                        </button>
+                        <button type="button" onclick="Auth.quickLogin('patient')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5">
+                            <span>👤</span> <span data-i18n="role_patient">المريض</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- Login Form Column -->
-            <div class="lg:col-span-7">
-                <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200 p-6 sm:p-8">
+            <div class="lg:col-span-7 animate-slide-up">
+                <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-200 dark:border-slate-800 p-6 sm:p-8">
                     <div class="text-center mb-6">
-                        <h3 class="text-xl font-bold text-slate-900">تسجيل الدخول إلى النظام الطبي</h3>
-                        <p class="text-xs text-slate-500 mt-1">أدخل بيانات اعتماد حسابك للدخول إلى لوحة التحكم المخصصة لصلاحياتك</p>
+                        <h3 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white" data-i18n="login_title">تسجيل الدخول إلى النظام الطبي</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" data-i18n="login_desc">أدخل بيانات اعتماد حسابك للدخول إلى لوحة التحكم المخصصة لصلاحياتك</p>
                     </div>
 
                     <form id="login-form" class="space-y-4">
                         <div>
-                            <label for="email" class="block text-xs font-semibold text-slate-700 mb-1">البريد الإلكتروني</label>
-                            <input type="email" id="email" required placeholder="name@clinic.com"
-                                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition">
+                            <label for="email" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" data-i18n="email_label">البريد الإلكتروني</label>
+                            <input type="email" id="email" required placeholder="name@clinic.com" data-i18n-placeholder="email_placeholder"
+                                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition">
                         </div>
 
                         <div>
                             <div class="flex items-center justify-between mb-1">
-                                <label for="password" class="block text-xs font-semibold text-slate-700">كلمة المرور</label>
-                                <a href="#" onclick="alert('يرجى التواصل مع إدارة النظام لإعادة ضبط كلمة المرور'); return false;" class="text-xs text-brand-600 hover:text-brand-700 font-medium">نسيت كلمة المرور؟</a>
+                                <label for="password" class="block text-xs font-semibold text-slate-700 dark:text-slate-300" data-i18n="password_label">كلمة المرور</label>
+                                <a href="#" onclick="alert('يرجى التواصل مع إدارة النظام لإعادة ضبط كلمة المرور'); return false;" class="text-xs text-brand-600 dark:text-brand-400 hover:underline font-medium">نسيت كلمة المرور؟</a>
                             </div>
-                            <input type="password" id="password" required placeholder="••••••••"
-                                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition">
+                            <input type="password" id="password" required placeholder="••••••••" data-i18n-placeholder="password_placeholder"
+                                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition">
                         </div>
 
                         <button type="submit" id="submit-btn"
-                            class="w-full py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-md shadow-brand-500/25 transition flex items-center justify-center gap-2">
-                            <span>تسجيل الدخول للنظام</span>
+                            class="btn-press w-full py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-md shadow-brand-500/25 transition flex items-center justify-center gap-2">
+                            <span data-i18n="login_btn">تسجيل الدخول للنظام</span>
                             <span class="text-lg">←</span>
                         </button>
                     </form>
 
-                    <div class="mt-6 pt-5 border-t border-slate-100">
-                        <p class="text-xs text-center text-slate-500">
+                    <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">
+                        <p class="text-xs text-center text-slate-500 dark:text-slate-400">
                             مريض جديد؟ 
-                            <a href="dashboards/patient/index.html" class="text-brand-600 font-bold hover:underline">حجز كشف جديد (نقدي / تعاقد تأمين)</a>
+                            <a href="dashboards/patient/index.html" class="text-brand-600 dark:text-brand-400 font-bold hover:underline">حجز كشف جديد وتأكيد واتساب فوري</a>
                         </p>
                     </div>
                 </div>
@@ -151,7 +182,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors duration-300">
         نظام الوجيه لإدارة العيادات والمراكز الطبية (Al Wagih Clinic & Hospital ERP) &copy; 2026 — سحابي متكامل 100%
     </footer>
 
@@ -167,12 +198,12 @@
             const btn = document.getElementById('submit-btn');
 
             btn.disabled = true;
-            btn.innerHTML = 'جاري التحقق وتوجيه الصلاحية...';
+            btn.innerHTML = I18n.currentLang === 'en' ? 'Authenticating...' : 'جاري التحقق وتوجيه الصلاحية...';
 
             await Auth.login(email, password);
 
             btn.disabled = false;
-            btn.innerHTML = '<span>تسجيل الدخول للنظام</span> <span class="text-lg">←</span>';
+            btn.innerHTML = `<span>${I18n.t('login_btn')}</span> <span class="text-lg">←</span>`;
         });
     </script>
 </body>
