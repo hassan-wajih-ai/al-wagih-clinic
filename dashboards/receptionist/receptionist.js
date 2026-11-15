@@ -360,20 +360,13 @@ const ReceptionistApp = {
 
                 this.appointments.unshift(newApt);
                 this.saveStoredAppointments();
-                Utils.showToast('تم تسجيل الحجز بنجاح واحتساب الخصم التعاقدي آلياً', 'success');
+                Utils.showToast('تم تسجيل الحجز بنجاح. يمكنك إرسال رسالة الواتساب للمريض بالضغط على زر الواتساب في الجدول عند الحاجة', 'success');
                 modal.classList.add('hidden');
                 form.reset();
                 corpContainer.classList.add('hidden');
                 calcDisplay.classList.add('hidden');
                 this.renderAppointmentsTable();
                 this.updateShiftSummaryKPIs();
-
-                // فتح نافذة تأكيد الواتساب فورياً
-                if (typeof WhatsAppService !== 'undefined') {
-                    setTimeout(() => {
-                        WhatsAppService.showBookingConfirmationModal(newApt);
-                    }, 200);
-                }
             };
         }
     },
