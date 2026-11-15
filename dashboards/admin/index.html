@@ -139,6 +139,10 @@
                         <span class="text-sm">💊</span>
                         <span data-i18n="tab_pharmacy">الصيدلية والروشتات</span>
                     </button>
+                    <button id="tab-btn-surgery" onclick="ClinicAdminApp.switchTab('surgery')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <span class="text-sm">🦷</span>
+                        <span data-i18n="tab_surgery_dental">جراحة اليوم الواحد والأسنان</span>
+                    </button>
                     <button id="tab-btn-reports" onclick="ClinicAdminApp.switchTab('reports')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
                         <span class="text-sm">📊</span>
                         <span data-i18n="tab_reports">مركز التقارير والإحصائيات</span>
@@ -1474,6 +1478,128 @@
             </div>
         </div>
 
+        <!-- 12. تبويب جراحة اليوم الواحد والعمليات والأسنان (Day Surgery & Dental Operations Suite) -->
+        <div id="tab-content-surgery" class="hidden space-y-6 animate-fade-in">
+            <!-- Surgery & Dental KPIs -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">العمليات الجراحية المعتمدة</span>
+                        <span class="p-2 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 text-sm">🏥</span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" id="admin-surgery-kpi-total">0 عملية</div>
+                    <div class="text-[11px] text-indigo-600 dark:text-indigo-400 mt-1 font-semibold">محققة لمعايير WHO للأمان</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">إشغال غرف العمليات والإفاقة</span>
+                        <span class="p-2 rounded-2xl bg-cyan-50 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400 text-sm">🛏️</span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" id="admin-surgery-kpi-occupancy">33%</div>
+                    <div class="text-[11px] text-cyan-600 dark:text-cyan-400 mt-1 font-semibold">1 من 3 أسرة إفاقة مشغولة</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">إجراءات الأسنان المعتمدة</span>
+                        <span class="p-2 rounded-2xl bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 text-sm">🦷</span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" id="admin-dental-kpi-count">0 سن</div>
+                    <div class="text-[11px] text-teal-600 dark:text-teal-400 mt-1 font-semibold">موثقة بمخطط FDI التفاعلي</div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">إيرادات الجراحة والأسنان</span>
+                        <span class="p-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 text-sm">💰</span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" id="admin-surgery-kpi-revenue">0 ج.م</div>
+                    <div class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-semibold">إجمالي إيراد الإجراءات</div>
+                </div>
+            </div>
+
+            <!-- Toolbar & Actions -->
+            <div class="flex flex-col md:flex-row items-center justify-between gap-3 p-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="flex items-center gap-2 w-full md:w-auto">
+                    <span class="font-bold text-xs text-slate-700 dark:text-slate-300">سجل الإجراءات الجراحية والأسنان:</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                    <button onclick="ClinicAdminApp.exportAdminDaySurgeryExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition flex items-center gap-1.5">
+                        <span>🏥</span>
+                        <span>تصدير سجل العمليات الجراحية</span>
+                    </button>
+                    <button onclick="ClinicAdminApp.exportAdminDentalExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition flex items-center gap-1.5">
+                        <span>🦷</span>
+                        <span>تصدير سجل إجراءات الأسنان</span>
+                    </button>
+                    <button onclick="ClinicAdminApp.openAdminAddSurgeryModal()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-900 dark:bg-slate-800 text-white shadow-sm transition flex items-center gap-1">
+                        <span>+</span>
+                        <span>جدولة عملية جراحية</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tables Grid: Day Surgeries & Dental Procedures -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- جدول سجل العمليات الجراحية (8 أعمدة) -->
+                <div class="lg:col-span-7 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>🏥</span>
+                            <span>سجل عمليات جراحة اليوم الواحد والعمليات الصغرى</span>
+                        </h3>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 font-bold" id="admin-surgery-count">0 عملية</span>
+                    </div>
+
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-2.5 px-3">العملية والمريض</th>
+                                    <th class="py-2.5 px-3">الجراح والتخدير</th>
+                                    <th class="py-2.5 px-3">الغرفة والسرير</th>
+                                    <th class="py-2.5 px-3">WHO الأمان</th>
+                                    <th class="py-2.5 px-3">التكلفة</th>
+                                    <th class="py-2.5 px-3 text-center">التفاصيل</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-surgery-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated via admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- جدول سجل إجراءات ومخطط الأسنان (5 أعمدة) -->
+                <div class="lg:col-span-5 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>🦷</span>
+                            <span>إجراءات الأسنان المعتمدة (Odontogram)</span>
+                        </h3>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 font-bold" id="admin-dental-count">0 إجراء</span>
+                    </div>
+
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-2.5 px-3">السن والمريض</th>
+                                    <th class="py-2.5 px-3">الإجراء المنفذ</th>
+                                    <th class="py-2.5 px-3">التكلفة</th>
+                                    <th class="py-2.5 px-3">الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-dental-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated via admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Modal: Add CRM Patient -->
@@ -2754,6 +2880,101 @@
                 </a>
                 <button type="button" onclick="document.getElementById('admin-rx-details-modal').classList.add('hidden')" class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">إغلاق</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal 15: Admin Surgery Details Modal -->
+    <div id="admin-surgery-details-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">🏥</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm" id="admin-surg-modal-title">تفاصيل العملية الجراحية #OR-501</h4>
+                        <p class="text-[11px] text-slate-400" id="admin-surg-modal-subtitle">—</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('admin-surgery-details-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+
+            <div id="admin-surg-modal-content" class="space-y-3">
+                <!-- Filled dynamically via admin.js -->
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="window.print()" class="px-4 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-xl transition">
+                    🖨️ طباعة السجل
+                </button>
+                <button type="button" onclick="document.getElementById('admin-surgery-details-modal').classList.add('hidden')" class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 16: Admin Add New Day Surgery -->
+    <div id="admin-add-surgery-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">🏥</span>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">جدولة عملية جراحية جديدة</h4>
+                </div>
+                <button onclick="document.getElementById('admin-add-surgery-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+
+            <form id="admin-add-surgery-form" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم المريض</label>
+                        <input type="text" id="admin-surg-pt-name" required placeholder="محمد عبد الحميد" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">رقم الهاتف</label>
+                        <input type="tel" id="admin-surg-pt-phone" required placeholder="01011223344" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-mono">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم العملية الجراحية</label>
+                    <input type="text" id="admin-surg-proc-name" required placeholder="استئصال كيس دهني / خياطة تجميلية / ختان" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الجراح المسؤول</label>
+                        <input type="text" id="admin-surg-doctor" required value="د. طارق العريان" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">نوع التخدير</label>
+                        <select id="admin-surg-anesthesia" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                            <option value="موضعي (Local)">موضعي (Local)</option>
+                            <option value="مهدئ وريدي (Sedation)">مهدئ وريدي (IV Sedation)</option>
+                            <option value="نصفي (Spinal)">نصفي (Spinal)</option>
+                            <option value="كلي (General)">كلي (General)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">غرفة العمليات</label>
+                        <select id="admin-surg-room" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                            <option value="غرفة العمليات 1 (Major OR 1)">غرفة العمليات 1 (Major OR 1)</option>
+                            <option value="غرفة العمليات الصغرى 2 (Minor OR 2)">غرفة العمليات الصغرى 2</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">التكلفة (ج.م)</label>
+                        <input type="number" id="admin-surg-cost" required value="2000" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-mono">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('admin-add-surgery-modal').classList.add('hidden')" class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">إلغاء</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md transition-all">
+                        💾 حفظ وجدولة العملية
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
     <script src="../../js/config.js"></script>
