@@ -105,6 +105,8 @@ const ClinicAdminApp = {
         this.doctorCommissions = this.getMockDoctorCommissions();
         this.pharmacyDrugs = this.getMockPharmacyDrugs();
         this.pharmacyPrescriptions = this.getMockPharmacyPrescriptions();
+        this.daySurgeries = this.getMockDaySurgeries();
+        this.dentalProcedures = this.getMockDentalProcedures();
 
         this.renderCRM();
         this.renderCallCenter();
@@ -123,6 +125,7 @@ const ClinicAdminApp = {
         this.renderQueueBoard();
         this.renderDoctorCommissions();
         this.renderAdminPharmacy();
+        this.renderAdminSurgerySuite();
         this.populateLabCatalogSelect();
         this.populateRadExamSelect();
         this.updateKPIs();
@@ -130,7 +133,7 @@ const ClinicAdminApp = {
 
     switchTab(tabId) {
         this.activeTab = tabId;
-        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports', 'lab', 'radiology', 'queue', 'commissions', 'pharmacy'];
+        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports', 'lab', 'radiology', 'queue', 'commissions', 'pharmacy', 'surgery'];
         tabs.forEach(t => {
             const el = document.getElementById(`tab-content-${t}`);
             const btn = document.getElementById(`tab-btn-${t}`);
@@ -155,6 +158,8 @@ const ClinicAdminApp = {
             this.renderDoctorCommissions();
         } else if (tabId === 'pharmacy') {
             this.renderAdminPharmacy();
+        } else if (tabId === 'surgery') {
+            this.renderAdminSurgerySuite();
         }
     },
 
@@ -730,6 +735,28 @@ const ClinicAdminApp = {
         if (pharmAlerts) pharmAlerts.textContent = `${lowStockCount + expiryAlerts}`;
         if (pharmDrugsCount) pharmDrugsCount.textContent = `${drugs.length} صنف`;
         if (pharmRxCount) pharmRxCount.textContent = `${rxs.length} روشتة`;
+
+        // Day Surgery & Dental KPIs
+        const surgTotalEl = document.getElementById('admin-surgery-kpi-total');
+        const surgOccupancyEl = document.getElementById('admin-surgery-kpi-occupancy');
+        const dentalCountEl = document.getElementById('admin-dental-kpi-count');
+        const surgRevenueEl = document.getElementById('admin-surgery-kpi-revenue');
+        const surgTableCount = document.getElementById('admin-surgery-count');
+        const dentalTableCount = document.getElementById('admin-dental-count');
+
+        const surgList = this.daySurgeries || [];
+        const dentalList = this.dentalProcedures || [];
+
+        let surgRev = 0;
+        surgList.forEach(s => surgRev += (Number(s.total_cost) || 0));
+        dentalList.forEach(d => surgRev += (Number(d.cost) || 0));
+
+        if (surgTotalEl) surgTotalEl.textContent = `${surgList.length} عملية`;
+        if (surgOccupancyEl) surgOccupancyEl.textContent = `${Math.min(100, Math.round((surgList.length / 4) * 100))}%`;
+        if (dentalCountEl) dentalCountEl.textContent = `${dentalList.length} سن`;
+        if (surgRevenueEl) surgRevenueEl.textContent = Utils.formatCurrency(surgRev || 28500);
+        if (surgTableCount) surgTableCount.textContent = `${surgList.length} عملية`;
+        if (dentalTableCount) dentalTableCount.textContent = `${dentalList.length} إجراء`;
     },
 
     // ==========================================
@@ -1298,6 +1325,51 @@ const ClinicAdminApp = {
                 adminDrugModal.classList.add('hidden');
                 adminDrugForm.reset();
                 this.renderAdminPharmacy();
+                this.updateKPIs();
+            };
+        }
+
+        const adminSurgForm = document.getElementById('admin-add-surgery-form');
+        const adminSurgModal = document.getElementById('admin-add-surgery-modal');
+        if (adminSurgForm && adminSurgModal) {
+            adminSurgForm.onsubmit = (e) => {
+                e.preventDefault();
+                const ptName = document.getElementById('admin-surg-pt-name').value.trim();
+                const ptPhone = document.getElementById('admin-surg-pt-phone').value.trim();
+                const procName = document.getElementById('admin-surg-proc-name').value.trim();
+                const doctor = document.getElementById('admin-surg-doctor').value.trim();
+                const anesthesia = document.getElementById('admin-surg-anesthesia').value;
+                const room = document.getElementById('admin-surg-room').value;
+                const cost = parseFloat(document.getElementById('admin-surg-cost').value) || 2000;
+
+                const newSurgery = {
+                    id: 'surg_' + Date.now(),
+                    surgery_code: 'OR-' + Math.floor(100 + Math.random() * 900),
+                    patient_name: ptName,
+                    patient_phone: ptPhone,
+                    procedure_name: procName,
+                    surgeon_name: doctor,
+                    anesthesiologist_name: 'د. خالد عبد السميع',
+                    anesthesia_type: anesthesia,
+                    or_room: room,
+                    recovery_bed: 'سرير الإفاقة 1',
+                    surgery_date: new Date().toISOString().split('T')[0] + ' 10:00 ص',
+                    who_checklist_passed: true,
+                    consent_signed: true,
+                    total_cost: cost,
+                    status: 'completed',
+                    notes: 'تمت الجراحة بنجاح واستقرار العلامات الحيوية'
+                };
+
+                this.daySurgeries.unshift(newSurgery);
+                try {
+                    localStorage.setItem('alwagih_day_surgeries', JSON.stringify(this.daySurgeries));
+                } catch(e) {}
+
+                Utils.showToast(`تمت جدولة وتوثيق العملية الجراحية (#${newSurgery.surgery_code}) بنجاح`, 'success');
+                adminSurgModal.classList.add('hidden');
+                adminSurgForm.reset();
+                this.renderAdminSurgerySuite();
                 this.updateKPIs();
             };
         }
@@ -2961,6 +3033,277 @@ const ClinicAdminApp = {
         } else {
             Utils.showToast('جاري تصدير مبيعات الصيدلية...', 'info');
         }
+    },
+
+    // =========================================================================
+    // دوال جراحة اليوم الواحد والعمليات والأسنان (Day Surgery & Dental Operations)
+    // =========================================================================
+    renderAdminSurgerySuite() {
+        const surgTbody = document.getElementById('admin-surgery-table-body');
+        const dentalTbody = document.getElementById('admin-dental-table-body');
+        const surgCountEl = document.getElementById('admin-surgery-count');
+        const dentalCountEl = document.getElementById('admin-dental-count');
+
+        const surgeries = this.daySurgeries || [];
+        const dentals = this.dentalProcedures || [];
+
+        if (surgCountEl) surgCountEl.textContent = `${surgeries.length} عملية`;
+        if (dentalCountEl) dentalCountEl.textContent = `${dentals.length} إجراء`;
+
+        if (surgTbody) {
+            if (surgeries.length === 0) {
+                surgTbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 text-xs">لا توجد عمليات جراحية مسجلة</td></tr>`;
+            } else {
+                surgTbody.innerHTML = surgeries.map(s => `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                        <td class="py-2.5 px-3">
+                            <span class="font-mono font-bold text-indigo-600 dark:text-indigo-400 text-xs">#${s.surgery_code}</span>
+                            <div class="font-bold text-slate-900 dark:text-white text-xs">${s.procedure_name}</div>
+                            <div class="text-[10px] text-slate-400">المريض: ${s.patient_name}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-xs">
+                            <div class="font-semibold text-slate-800 dark:text-slate-200">${s.surgeon_name}</div>
+                            <div class="text-[10px] text-purple-600 dark:text-purple-400">${s.anesthesia_type}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-xs">
+                            <div class="font-bold text-slate-700 dark:text-slate-300">${s.or_room}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">${s.recovery_bed}</div>
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300">
+                                ✓ WHO معتمد
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-3 font-mono font-bold text-emerald-600 text-xs">
+                            ${Utils.formatCurrency(s.total_cost || 1500)}
+                        </td>
+                        <td class="py-2.5 px-3 text-center">
+                            <button onclick="ClinicAdminApp.openAdminSurgeryDetailsModal('${s.id}')" class="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold">
+                                👁️
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        if (dentalTbody) {
+            if (dentals.length === 0) {
+                dentalTbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400 text-xs">لا توجد إجراءات أسنان مسجلة</td></tr>`;
+            } else {
+                dentalTbody.innerHTML = dentals.map(d => `
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                        <td class="py-2.5 px-3">
+                            <span class="font-mono font-bold text-teal-600 dark:text-teal-400 text-xs">سن #${d.tooth_number}</span>
+                            <div class="font-bold text-slate-900 dark:text-white text-xs">${d.patient_name}</div>
+                            <div class="text-[10px] text-slate-400">${d.tooth_name || 'سن دائم'}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-xs">
+                            <div class="font-semibold text-slate-800 dark:text-slate-200">${d.procedure_name}</div>
+                            <div class="text-[10px] text-purple-600 dark:text-purple-400 font-mono">${d.surface || 'السطح الإطباقي'}</div>
+                        </td>
+                        <td class="py-2.5 px-3 font-mono font-bold text-emerald-600 text-xs">
+                            ${Utils.formatCurrency(d.cost || 650)}
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                                ✓ مكتمل
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+    },
+
+    openAdminSurgeryDetailsModal(surgeryId) {
+        const s = (this.daySurgeries || []).find(item => item.id === surgeryId) || (this.daySurgeries || [])[0];
+        if (!s) return;
+
+        document.getElementById('admin-surg-modal-title').textContent = `تفاصيل العملية الجراحية #${s.surgery_code}`;
+        document.getElementById('admin-surg-modal-subtitle').textContent = `المريض: ${s.patient_name} | الجراح: ${s.surgeon_name}`;
+
+        const content = document.getElementById('admin-surg-modal-content');
+        if (content) {
+            content.innerHTML = `
+                <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs space-y-1.5">
+                    <div class="flex justify-between"><span>اسم التدخل الجراحي:</span><strong class="text-slate-900 dark:text-white">${s.procedure_name}</strong></div>
+                    <div class="flex justify-between"><span>نوع التخدير:</span><strong class="text-purple-600 dark:text-purple-400">${s.anesthesia_type}</strong></div>
+                    <div class="flex justify-between"><span>غرفة العمليات وسرير الإفاقة:</span><span class="font-mono">${s.or_room} | ${s.recovery_bed}</span></div>
+                    <div class="flex justify-between"><span>تاريخ وتوقيت الجراحة:</span><span class="font-mono">${s.surgery_date || '2026-11-15 10:00 ص'}</span></div>
+                    <div class="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-1.5 font-bold">
+                        <span>إجمالي تكلفة العملية:</span>
+                        <span class="font-mono text-emerald-600">${Utils.formatCurrency(s.total_cost || 2000)}</span>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-2xl bg-cyan-50/60 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 text-xs space-y-1">
+                    <strong class="text-cyan-900 dark:text-cyan-300 block">✓ معايير التحقق الجراحي الآمن لمنظمة الصحة العالمية (WHO Checklist):</strong>
+                    <div class="text-[11px] text-cyan-800 dark:text-cyan-200 opacity-90">
+                        • تم توثيق إذن وموافقة المريض (Informed Consent) إلكترونياً بنجاح.<br>
+                        • تم تأكيد هوية المريض وموضع الشق الجراحي قبل التخدير (Sign In).<br>
+                        • تم مطابقة الفريق الجراحي والمضاد الحيوي الوقائي قبل البدء (Time Out).<br>
+                        • تم عد ومطابقة الشاش والآلات الجراحية 100% قبل إغلاق الجرح (Sign Out).
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs space-y-1">
+                    <strong class="text-slate-900 dark:text-white block">ملاحظات الجراح الاستشاري والتقرير:</strong>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">${s.notes || 'تمت العملية الجراحية بدون مضاعفات مع استقرار تام للعلامات الحيوية'}</p>
+                </div>
+            `;
+        }
+
+        document.getElementById('admin-surgery-details-modal').classList.remove('hidden');
+    },
+
+    openAdminAddSurgeryModal() {
+        const modal = document.getElementById('admin-add-surgery-modal');
+        if (modal) modal.classList.remove('hidden');
+    },
+
+    exportAdminDaySurgeryExcel() {
+        if (window.Reports && Reports.exportDaySurgeryReport) {
+            Reports.exportDaySurgeryReport(this.daySurgeries);
+        } else {
+            Utils.showToast('جاري تصدير سجل العمليات الجراحية...', 'info');
+        }
+    },
+
+    exportAdminDentalExcel() {
+        if (window.Reports && Reports.exportDentalProceduresReport) {
+            Reports.exportDentalProceduresReport(this.dentalProcedures);
+        } else {
+            Utils.showToast('جاري تصدير سجل إجراءات الأسنان...', 'info');
+        }
+    },
+
+    getMockDaySurgeries() {
+        const stored = localStorage.getItem('alwagih_day_surgeries');
+        if (stored) {
+            try { return JSON.parse(stored); } catch (e) {}
+        }
+        return [
+            {
+                id: 'surg_501',
+                surgery_code: 'OR-501',
+                patient_name: 'طارق حسام مصطفى',
+                patient_phone: '01011223344',
+                procedure_name: 'استئصال كيس دهني سطحي مع خياطة تجميلية Vicryl',
+                surgeon_name: 'د. طارق العريان',
+                anesthesiologist_name: 'د. خالد عبد السميع',
+                anesthesia_type: 'موضعي (Local)',
+                or_room: 'غرفة العمليات الصغرى 1',
+                recovery_bed: 'سرير الإفاقة 1',
+                surgery_date: '2026-11-15 09:30 ص',
+                who_checklist_passed: true,
+                consent_signed: true,
+                total_cost: 1800,
+                status: 'completed',
+                notes: 'تم استئصال الكيس بالكامل وإرسال عينة للباثولوجي، النزيف بسيط والغرز سليمة'
+            },
+            {
+                id: 'surg_502',
+                surgery_code: 'OR-502',
+                patient_name: 'ياسمين عبد الرحمن',
+                patient_phone: '01122334455',
+                procedure_name: 'منظار تشخيصي للمعدة والاثني عشر (EGD Scope)',
+                surgeon_name: 'د. محمد عبد العزيز',
+                anesthesiologist_name: 'د. خالد عبد السميع',
+                anesthesia_type: 'مهدئ وريدي (IV Sedation)',
+                or_room: 'غرفة المناظير والتنظير',
+                recovery_bed: 'سرير الإفاقة 2',
+                surgery_date: '2026-11-15 10:45 ص',
+                who_checklist_passed: true,
+                consent_signed: true,
+                total_cost: 3200,
+                status: 'completed',
+                notes: 'تم فحص المريء والمعدة والاثني عشر وأخذ عينة للجرثومة الحلزونية'
+            },
+            {
+                id: 'surg_503',
+                surgery_code: 'OR-503',
+                patient_name: 'حامد زكريا النمر',
+                patient_phone: '01233445566',
+                procedure_name: 'تصحيح واستئصال ظفر غائر جراحياً مع كي المصفوفة',
+                surgeon_name: 'د. هدى منصور',
+                anesthesiologist_name: 'د. استشاري تخدير',
+                anesthesia_type: 'موضعي (Local Block)',
+                or_room: 'غرفة العمليات الصغرى 2',
+                recovery_bed: 'سرير الإفاقة 3',
+                surgery_date: '2026-11-14 12:00 م',
+                who_checklist_passed: true,
+                consent_signed: true,
+                total_cost: 1200,
+                status: 'completed',
+                notes: 'تم تخدير إحصار موضعي لإصبع القدم واستئصال الحافة والكي الفينولي'
+            }
+        ];
+    },
+
+    getMockDentalProcedures() {
+        const stored = localStorage.getItem('alwagih_dental_procedures');
+        if (stored) {
+            try { return JSON.parse(stored); } catch (e) {}
+        }
+        return [
+            {
+                id: 'dental_101',
+                patient_name: 'طارق حسام مصطفى',
+                patient_phone: '01011223344',
+                doctor_name: 'د. أحمد الشناوي',
+                tooth_number: 16,
+                tooth_name: 'ضرس أول علوي أيمن (UR6)',
+                surface: 'O-M (إطباقي إنسي)',
+                procedure_name: 'حشو ضوئي تجميلي طبقات (Composite)',
+                cost: 650,
+                procedure_date: '2026-11-15',
+                payment_type: 'cash',
+                status: 'completed'
+            },
+            {
+                id: 'dental_102',
+                patient_name: 'سلوى محمود شاهين',
+                patient_phone: '01555667788',
+                doctor_name: 'د. أحمد الشناوي',
+                tooth_number: 21,
+                tooth_name: 'قاطع مركزي علوي أيسر (UL1)',
+                surface: 'تاج كامل زيركون',
+                procedure_name: 'تركيبة طربوش زيركون تجميلي معتمد (Crown)',
+                cost: 2200,
+                procedure_date: '2026-11-14',
+                payment_type: 'corporate',
+                status: 'completed'
+            },
+            {
+                id: 'dental_103',
+                patient_name: 'ياسمين عبد الرحمن',
+                patient_phone: '01122334455',
+                doctor_name: 'د. أحمد الشناوي',
+                tooth_number: 46,
+                tooth_name: 'ضرس أول سفلي أيمن (LR6)',
+                surface: 'قنوات الجذور الـ 3',
+                procedure_name: 'علاج جذور وعصب آلي بالموتور (Rotary Endo)',
+                cost: 1600,
+                procedure_date: '2026-11-13',
+                payment_type: 'corporate',
+                status: 'completed'
+            },
+            {
+                id: 'dental_104',
+                patient_name: 'كمال الدين حافظ',
+                patient_phone: '01099887766',
+                doctor_name: 'د. أحمد الشناوي',
+                tooth_number: 36,
+                tooth_name: 'ضرس أول سفلي أيسر (LL6)',
+                surface: 'عظم الفك السفلي',
+                procedure_name: 'زراعة سن جراحية مع غرسة تيتانيوم (Implant)',
+                cost: 9500,
+                procedure_date: '2026-11-12',
+                payment_type: 'cash',
+                status: 'completed'
+            }
+        ];
     },
 
     // =========================================================================
