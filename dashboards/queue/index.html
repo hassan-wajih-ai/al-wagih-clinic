@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شاشة الانتظار والنداء الآلي الذكي | مجمع الوجيه الطبي</title>
+    <!-- Tailwind CSS with dark mode class -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        tvbrand: {
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            900: '#0c4a6e'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        @keyframes pulse-border {
+            0%, 100% { border-color: rgba(16, 185, 129, 0.9); box-shadow: 0 0 25px rgba(16, 185, 129, 0.4); }
+            50% { border-color: rgba(56, 189, 248, 0.9); box-shadow: 0 0 35px rgba(56, 189, 248, 0.6); }
+        }
+        .active-calling-card {
+            animation: pulse-border 2.5s infinite ease-in-out;
+        }
+        .ticker-wrap {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .ticker-move {
+            display: inline-block;
+            white-space: nowrap;
+            padding-right: 100%;
+            animation: ticker 30s linear infinite;
+        }
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden font-sans select-none">
+
+    <!-- Top Header / TV Brand Bar -->
+    <header class="bg-slate-900/90 border-b border-slate-800 px-6 py-4 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Clinic Logo & Brand -->
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-sky-600 text-white flex items-center justify-center font-black text-2xl shadow-lg shadow-sky-600/30 animate-pulse">
+                    و
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-black text-white tracking-wide">
+                        مجمع الوجيه الطبي التخصصي
+                    </h1>
+                    <p class="text-xs text-sky-400 font-medium">
+                        نظام شاشات الانتظار والنداء الصوتي الذكي (Smart TV Queue Display)
+                    </p>
+                </div>
+            </div>
+
+            <!-- TV Controls & Live Clock -->
+            <div class="flex items-center gap-4">
+                <!-- Clock -->
+                <div class="text-left font-mono bg-slate-800/80 px-4 py-2 rounded-2xl border border-slate-700">
+                    <div class="text-xl sm:text-2xl font-black text-emerald-400" id="live-clock">12:00:00 م</div>
+                    <div class="text-[11px] text-slate-400 text-right" id="live-date">الأحد، 15 نوفمبر 2026</div>
+                </div>
+
+                <!-- Fullscreen & Sound Toggle -->
+                <button onclick="QueueApp.toggleFullscreen()" class="btn-press p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition" title="شاشة كاملة / Fullscreen">
+                    <span class="text-lg">⛶</span>
+                </button>
+                <button onclick="QueueApp.toggleMute()" id="mute-toggle-btn" class="btn-press p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 transition" title="النداء الصوتي مفعل">
+                    <span class="text-lg" id="mute-icon">🔊</span>
+                </button>
+                <a href="../admin/index.html" class="btn-press hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white shadow-md transition">
+                    <span>🏥 لوحة الإدارة</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main TV Queue Stage -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left: Now Serving Hero Banner (Col 8) -->
+        <div class="lg:col-span-8 space-y-6">
+            
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    <h2 class="text-xl font-black text-white">الآن في غرف الكشف (Now Serving)</h2>
+                </div>
+                <span class="text-xs font-bold text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
+                    تحديث نداء آلي فوري
+                </span>
+            </div>
+
+            <!-- Active Called Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="now-serving-container">
+                <!-- Dynamically populated via queue.js -->
+            </div>
+
+            <!-- Quick TV Simulation / Control Panel -->
+            <div class="p-4 rounded-3xl bg-slate-900/60 border border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="text-slate-400">تحكم شاشة الصالة:</span>
+                    <button onclick="QueueApp.callNextRandom()" class="btn-press px-3.5 py-1.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm flex items-center gap-1.5">
+                        <span>🔊</span>
+                        <span>نداء صوتي للحالة التالية</span>
+                    </button>
+                    <button onclick="QueueApp.playChime()" class="btn-press px-3 py-1.5 rounded-xl font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">
+                        🔔 رنين الجرس فقط
+                    </button>
+                </div>
+                <div class="flex items-center gap-2 text-slate-400">
+                    <span>مستوى صوت النداء:</span>
+                    <input type="range" id="voice-volume" min="0" max="1" step="0.1" value="1" onchange="QueueApp.setVolume(this.value)" class="w-20 accent-emerald-500">
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right: Upcoming in Queue & Mobile QR (Col 4) -->
+        <div class="lg:col-span-4 space-y-5">
+            
+            <!-- Upcoming Waiting Patients -->
+            <div class="bg-slate-900/80 rounded-3xl border border-slate-800 p-5 shadow-xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-black text-white flex items-center gap-2">
+                        <span>⏳</span>
+                        <span>قادمون في قائمة الانتظار</span>
+                    </h3>
+                    <span class="text-xs font-bold text-amber-400 px-2.5 py-0.5 rounded-full bg-amber-950/60 border border-amber-900/40" id="waiting-count">
+                        0 بالانتظار
+                    </span>
+                </div>
+
+                <div class="space-y-2.5 max-h-[380px] overflow-y-auto pr-1" id="upcoming-queue-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Mobile Live Tracking QR Banner -->
+            <div class="bg-gradient-to-br from-sky-950/60 to-slate-900 rounded-3xl border border-sky-900/40 p-5 text-center space-y-3">
+                <div class="flex items-center justify-center gap-2 text-sky-400 font-bold text-xs">
+                    <span>📱</span>
+                    <span>تابع دورك مباشرة من هاتفك</span>
+                </div>
+                <div class="mx-auto w-24 h-24 bg-white rounded-2xl p-2 shadow-inner flex items-center justify-center">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://hassan-wajih-ai.github.io/al-wagih-clinic/dashboards/patient/index.html" alt="QR Code" class="w-full h-full object-contain">
+                </div>
+                <p class="text-[11px] text-slate-400 leading-tight">
+                    امسح الكود بكاميرا هاتفك لمتابعة عدد الحالات المتبقية والتنبيه بالاهتزاز عند اقتراب دورك.
+                </p>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Bottom Animated News Ticker -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-2.5 px-4 text-xs font-medium z-40">
+        <div class="flex items-center gap-3 max-w-7xl mx-auto">
+            <span class="px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-bold text-[10px] shrink-0 flex items-center gap-1 shadow-sm">
+                <span>تنويه</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+            </span>
+            <div class="ticker-wrap text-slate-300">
+                <div class="ticker-move">
+                    🏥 أهلاً بكم في مجمع الوجيه الطبي التخصصي • يُرجى الالتزام بالجلوس في صالة الانتظار والتوجه لرقم الغرفة فور سماع النداء الصوتي لتذكرتكم • مواعيد العمل الرسمية: يومياً من 8 صباحاً حتى 11 مساءً • لحجز موعد أو استفسار عاجل: اتصل بنا على 19999 • طوارئ الأطفال والباطنة تعمل على مدار 24 ساعة.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../../js/config.js"></script>
+    <script src="../../js/utils.js"></script>
+    <script src="../../js/auth.js"></script>
+    <script src="queue.js"></script>
+</body>
+</html>
