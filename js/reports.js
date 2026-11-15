@@ -949,6 +949,73 @@ const Reports = {
         } catch (err) {
             Utils.showToast('تعذر تصدير تقرير الزيارات والإجراءات: ' + err.message, 'error');
         }
+    },
+
+    /**
+     * 19. تصدير سجل ونتائج التحاليل الطبية (Lab Information System - LIS Report)
+     */
+    exportLabTestsReport(filterInfo, labOrders) {
+        try {
+            const orders = labOrders || [];
+            const rows = orders.map((o, idx) => ({
+                'م': idx + 1,
+                'رقم العينة (Sample ID)': o.sample_id,
+                'اسم المريض': o.patient_name,
+                'الهاتف': o.patient_phone || '—',
+                'السن / النوع': `${o.patient_age || 30} سنة / ${o.patient_gender === 'female' ? 'أنثى' : 'ذكر'}`,
+                'اسم الفحص المخبري': o.test_name,
+                'نوع ولون الأنبوبة': o.tube_type,
+                'الطبيب المعالج المحول': o.doctor_name,
+                'تاريخ الطلب والسحب': o.sample_date,
+                'التكلفة الإجمالية (ج.م)': Number(o.cost || 0),
+                'طريقة المحاسبة': o.payment_type === 'corporate' ? `تعاقد (${o.contract_name || 'تأمين'})` : 'سداد نقدي (Cash)',
+                'حالة العينة والفحص': o.status_label || (o.status === 'verified' ? 'معتمدة ومكتملة' : (o.status === 'in_progress' ? 'قيد التحليل' : 'بانتظار السحب')),
+                'المؤشر السريري': o.flag === 'panic' ? 'حرج جداً (Panic)' : (o.flag === 'high' ? 'مرتفع High' : (o.flag === 'low' ? 'منخفض Low' : 'طبيعي Normal')),
+                'طبيب التحاليل المعتمد': o.verified_by || 'د. هاني عثمان (استشاري باثولوجيا إكلينيكية)'
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`تقرير_سجل_التحاليل_الطبية_LIS_${dateStr}.xlsx`, [
+                { name: 'سجل فحوصات المعمل', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد عينات مسجلة' }] }
+            ]);
+            Utils.showToast('تم تصدير تقرير التحاليل الطبية بنجاح 📗', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير تقرير التحاليل الطبية: ' + err.message, 'error');
+        }
+    },
+
+    /**
+     * 20. تصدير سجل دراسات وتقارير الأشعة التشخيصية (Radiology Information System - RIS Report)
+     */
+    exportRadiologyReport(filterInfo, radStudies) {
+        try {
+            const studies = radStudies || [];
+            const rows = studies.map((s, idx) => ({
+                'م': idx + 1,
+                'رقم الفحص (Study ID)': s.study_id,
+                'اسم المريض': s.patient_name,
+                'الهاتف': s.patient_phone || '—',
+                'السن / النوع': `${s.patient_age || 35} سنة / ${s.patient_gender === 'female' ? 'أنثى' : 'ذكر'}`,
+                'نوع الجهاز (Modality)': s.modality,
+                'الفحص والعضو المطلوب': s.exam_name,
+                'الصبغة': s.contrast ? 'مع صبغة (Contrast)' : 'بدون صبغة (Plain)',
+                'تاريخ الفحص والتصوير': s.study_date,
+                'الطبيب المعالج المحول': s.doctor_name,
+                'تكلفة الفحص (ج.م)': Number(s.cost || 0),
+                'طريقة المحاسبة': s.payment_type === 'corporate' ? `تعاقد (${s.contract_name || 'تأمين'})` : 'سداد نقدي (Cash)',
+                'حالة الفحص والتقرير': s.status_label || (s.status === 'signed' ? 'معتمد وموقع' : (s.status === 'drafting' ? 'قيد كتابة التقرير' : 'مجدول')),
+                'الانطباع والتشخيص (Impression)': s.impression || 'لم يُكتب التقرير بعد',
+                'استشاري الأشعة الموقع': s.radiologist_name || 'د. مروان البدري (استشاري أشعة تشخيصية)'
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`تقرير_سجل_الأشعة_التشخيصية_RIS_${dateStr}.xlsx`, [
+                { name: 'سجل دراسات الأشعة', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد دراسات مسجلة' }] }
+            ]);
+            Utils.showToast('تم تصدير تقرير فحوصات الأشعة بنجاح 📗', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير تقرير الأشعة: ' + err.message, 'error');
+        }
     }
 };
 
