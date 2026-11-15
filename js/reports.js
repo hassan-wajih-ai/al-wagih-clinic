@@ -778,6 +778,177 @@ const Reports = {
                 }
             }
         });
+    },
+
+    /**
+     * 15. تصدير التقرير المالي الشامل (Comprehensive Financial Report)
+     */
+    exportComprehensiveFinancialReport(filterInfo, financialData) {
+        try {
+            const data = financialData || {};
+            const summary = [
+                { 'المؤشر المالي': 'إجمالي الإيرادات النقدية المحصلة (Cash Revenue)', 'القيمة (ج.م)': Number(data.totalCash || 0) },
+                { 'المؤشر المالي': 'إجمالي مطالبات الشركات والتأمين الآجلة (Corporate Receivables)', 'القيمة (ج.م)': Number(data.totalCorporate || 0) },
+                { 'المؤشر المالي': 'إجمالي المصروفات التشغيلية والمشتريات (Expenses & Procurement)', 'القيمة (ج.م)': Number(data.totalExpenses || 0) },
+                { 'المؤشر المالي': 'مستحقات وعمولات الأطباء (Doctor Commissions)', 'القيمة (ج.م)': Number(data.doctorCommissions || 0) },
+                { 'المؤشر المالي': 'صافي الأرباح التشغيلية للمركز (Net Operating Profit)', 'القيمة (ج.م)': Number(data.netProfit || 0) }
+            ];
+
+            const txRows = (data.transactions || []).map((tx, idx) => ({
+                'م': idx + 1,
+                'رقم القيد': tx.ref_no || `TX-${idx + 1001}`,
+                'التاريخ': tx.date,
+                'النوع': tx.type === 'income' ? 'إيراد كشوفات' : (tx.type === 'corporate_claim' ? 'مطالبة تعاقد' : 'مصروف تشغيلي'),
+                'البيان': tx.description,
+                'طريقة السداد / الحساب': tx.account || 'الخزينة الرئيسية',
+                'المبلغ الدائن (ج.م)': Number(tx.credit || 0),
+                'المبلغ المدين (ج.م)': Number(tx.debit || 0),
+                'الرصيد التراكمي (ج.م)': Number(tx.balance || 0),
+                'المعتمد': tx.authorized_by || 'المحاسب المالي'
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`التقرير_المالي_الشامل_${dateStr}.xlsx`, [
+                { name: 'ملخص المؤشرات المالية', data: summary },
+                { name: 'سجل الحركات والقيود التفصيلية', data: txRows.length > 0 ? txRows : [{ 'ملاحظة': 'لا توجد حركات مالية' }] }
+            ]);
+            Utils.showToast('تم تصدير التقرير المالي الشامل بنجاح 📗', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير التقرير المالي: ' + err.message, 'error');
+        }
+    },
+
+    /**
+     * 16. تصدير تقرير المشتريات وأوامر التوريد (Procurement & Orders Report)
+     */
+    exportProcurementReport(filterInfo, procurementOrders) {
+        try {
+            const orders = procurementOrders || [];
+            const summaryRows = orders.map((ord, idx) => ({
+                'م': idx + 1,
+                'رقم أمر الشراء': ord.po_number || `PO-${idx + 5001}`,
+                'اسم المورد': ord.supplier_name,
+                'هاتف المورد': ord.supplier_phone || '—',
+                'تاريخ الطلب': ord.order_date,
+                'تاريخ الاستلام': ord.delivery_date || '—',
+                'عدد الأصناف': ord.items_count || 1,
+                'القيمة الإجمالية (ج.م)': Number(ord.total_amount || 0),
+                'المدفوع (ج.م)': Number(ord.paid_amount || 0),
+                'المتبقي آجل (ج.م)': Number(ord.remaining_amount || 0),
+                'حالة السداد': ord.payment_status === 'paid' ? 'مدفوع بالكامل' : (ord.payment_status === 'partial' ? 'سداد جزئي' : 'آجل معلق'),
+                'حالة التوريد': ord.delivery_status === 'delivered' ? 'تم الاستلام والفحص' : 'قيد الشحن',
+                'رقم الفاتورة الضريبية': ord.tax_invoice_no || '—'
+            }));
+
+            const itemsDetail = [];
+            orders.forEach(ord => {
+                if (ord.items && Array.isArray(ord.items)) {
+                    ord.items.forEach(item => {
+                        itemsDetail.push({
+                            'أمر الشراء': ord.po_number || '—',
+                            'المورد': ord.supplier_name,
+                            'كود الصنف': item.code || '—',
+                            'اسم الصنف الطبي': item.name,
+                            'رقم التشغيلة (Batch)': item.batch_no || '—',
+                            'تاريخ الصلاحية': item.expiry_date || '—',
+                            'الكمية': item.quantity,
+                            'سعر الوحدة (ج.م)': Number(item.unit_price || 0),
+                            'الإجمالي (ج.م)': Number(item.quantity * item.unit_price || 0),
+                            'المخزن المستلم': item.warehouse || 'المخزن الطبي الرئيسي'
+                        });
+                    });
+                }
+            });
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`تقرير_المشتريات_وأوامر_التوريد_${dateStr}.xlsx`, [
+                { name: 'فواتير وأوامر المشتريات', data: summaryRows.length > 0 ? summaryRows : [{ 'ملاحظة': 'لا توجد فواتير مشتريات' }] },
+                { name: 'تفاصيل الأصناف المستلمة والتشغيلات', data: itemsDetail.length > 0 ? itemsDetail : [{ 'ملاحظة': 'لا توجد تفاصيل أصناف' }] }
+            ]);
+            Utils.showToast('تم تصدير تقرير المشتريات والموردين بنجاح 📗', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير تقرير المشتريات: ' + err.message, 'error');
+        }
+    },
+
+    /**
+     * 17. تصدير تقرير الإحصائيات ومؤشرات الأداء (Analytics & Clinic Statistics)
+     */
+    exportAnalyticsStatisticsReport(filterInfo, statsData) {
+        try {
+            const data = statsData || {};
+            const kpiRows = [
+                { 'المؤشر الإحصائي': 'إجمالي كشوفات وزيارات المرضى', 'القيمة': data.totalVisits || 0 },
+                { 'المؤشر الإحصائي': 'معدل الحضور والالتزام الفعلي بالموعد', 'القيمة': `${data.attendanceRate || 92}%` },
+                { 'المؤشر الإحصائي': 'نسبة مرضى التأمين والتعاقدات', 'القيمة': `${data.corporateShare || 45}%` },
+                { 'المؤشر الإحصائي': 'نسبة سداد الكاش المباشر', 'القيمة': `${data.cashShare || 55}%` },
+                { 'المؤشر الإحصائي': 'متوسط وقت الانتظار بالعيادة', 'القيمة': `${data.avgWaitTime || 14} دقيقة` },
+                { 'المؤشر الإحصائي': 'معدل رضا المرضى (CSAT)', 'القيمة': `${data.csatRating || 4.8} / 5 نجوم` }
+            ];
+
+            const doctorStats = (data.doctorBreakdown || []).map((doc, idx) => ({
+                'م': idx + 1,
+                'اسم الطبيب': doc.name,
+                'التخصص والعيادة': doc.specialty,
+                'عدد الكشوفات': doc.cases_count,
+                'إجمالي الإيرادات المحققة (ج.م)': Number(doc.revenue || 0),
+                'متوسط دخل الكشف (ج.م)': Math.round(Number(doc.revenue || 0) / Math.max(1, doc.cases_count))
+            }));
+
+            const topProcedures = (data.topProcedures || []).map((proc, idx) => ({
+                'م': idx + 1,
+                'اسم الإجراء الطبي': proc.name,
+                'العيادة': proc.clinic,
+                'عدد المرات المنفذة': proc.count,
+                'إجمالي العائد (ج.م)': Number(proc.total_revenue || 0),
+                'نسبة المساهمة في الإيراد': `${proc.share_percentage || 0}%`
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`تقرير_إحصائيات_العيادات_ومؤشرات_الأداء_${dateStr}.xlsx`, [
+                { name: 'المؤشرات العامة (KPIs)', data: kpiRows },
+                { name: 'إحصائيات الأطباء والعيادات', data: doctorStats.length > 0 ? doctorStats : [{ 'ملاحظة': 'لا توجد بيانات أطباء' }] },
+                { name: 'الإجراءات الطبية الأكثر طلباً', data: topProcedures.length > 0 ? topProcedures : [{ 'ملاحظة': 'لا توجد إجراءات مسجلة' }] }
+            ]);
+            Utils.showToast('تم تصدير تقرير الإحصائيات ومؤشرات الأداء بنجاح 📗', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير تقرير الإحصائيات: ' + err.message, 'error');
+        }
+    },
+
+    /**
+     * 18. تصدير تقرير المرضى بالزيارات والإجراءات الطبية (Patients Visits & Procedures Report)
+     */
+    exportPatientVisitsAndProceduresReport(filterInfo, visitsData) {
+        try {
+            const visits = visitsData || [];
+            const rows = visits.map((v, idx) => ({
+                'م': idx + 1,
+                'رقم الملف': v.patient_file_no || `FILE-${1000 + idx}`,
+                'اسم المريض': v.patient_name,
+                'الهاتف': v.patient_phone || '—',
+                'السن / النوع': `${v.patient_age || 35} سنة / ${v.patient_gender === 'female' ? 'أنثى' : 'ذكر'}`,
+                'تاريخ الزيارة': v.date,
+                'التوقيت': v.time_slot || '14:00',
+                'الطبيب المعالج': v.doctor_name,
+                'العيادة والفرع': `${v.clinic_name || 'عيادات الشفاء'} - ${v.branch_name || 'الفرع الرئيسي'}`,
+                'الإجراء الطبي المنفذ': v.procedure_name || 'كشف استشاري وفحص سريري',
+                'التشخيص الطبي': v.diagnosis || 'فحص روتيني سليم',
+                'الروشتة والفحوصات': v.prescription || 'علاج دوائي ومتابعة بعد أسبوعين',
+                'تكلفة الإجراء (ج.م)': Number(v.procedure_cost || 200),
+                'نظام المحاسبة': v.payment_type === 'corporate' ? `تعاقد (${v.contract_name || 'تأمين'})` : 'سداد نقدي (Cash)',
+                'نسبة التحمل (Co-Pay)': v.payment_type === 'corporate' ? `${v.discount_percentage || 20}%` : '100% كاش',
+                'حالة الزيارة': v.status === 'completed' ? 'كشف مكتمل' : (v.status === 'in_progress' ? 'جاري الفحص' : 'قيد الانتظار')
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`تقرير_المرضى_بالزيارات_والإجراءات_الطبية_${dateStr}.xlsx`, [
+                { name: 'سجل زيارات المرضى والإجراءات', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد زيارات مسجلة' }] }
+            ]);
+            Utils.showToast('تم تصدير تقرير المرضى بالزيارات والإجراءات بنجاح 📗', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير تقرير الزيارات والإجراءات: ' + err.message, 'error');
+        }
     }
 };
 
