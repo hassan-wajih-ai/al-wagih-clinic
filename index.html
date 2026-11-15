@@ -123,28 +123,31 @@
                     <h4 class="text-xs font-bold text-slate-300 mb-2.5 flex items-center justify-between" data-i18n="demo_roles_title">
                         <span>⚡ أدوار الدخول السريع (تجربة النظام بضغطة زر):</span>
                     </h4>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
-                        <button type="button" onclick="Auth.quickLogin('superadmin')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        <button type="button" onclick="Auth.quickLogin('superadmin')" class="btn-press p-2.5 bg-slate-800/90 hover:bg-brand-600 text-white rounded-xl border border-slate-700 hover:border-brand-500 transition font-bold flex items-center justify-center gap-1.5 shadow-sm">
                             <span>👑</span> <span data-i18n="role_superadmin">المدير العام</span>
                         </button>
-                        <button type="button" onclick="Auth.quickLogin('accountant')" class="btn-press p-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/30">
-                            <span>💼</span> <span data-i18n="role_accountant">المحاسب المالي</span>
-                        </button>
-                        <button type="button" onclick="Auth.quickLogin('admin')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5">
+                        <button type="button" onclick="Auth.quickLogin('admin')" class="btn-press p-2.5 bg-slate-800/90 hover:bg-brand-600 text-white rounded-xl border border-slate-700 hover:border-brand-500 transition font-bold flex items-center justify-center gap-1.5 shadow-sm">
                             <span>🏥</span> <span data-i18n="role_admin">مدير العيادة</span>
                         </button>
-                        <button type="button" onclick="Auth.quickLogin('pharmacist')" class="btn-press p-2 bg-teal-700 hover:bg-teal-600 text-white rounded-xl transition font-bold flex items-center justify-center gap-1.5 shadow-md shadow-teal-700/30">
-                            <span>💊</span> <span data-i18n="role_pharmacist">الصيدلي</span>
+                        <button type="button" onclick="Auth.quickLogin('accountant')" class="btn-press p-2.5 bg-slate-800/90 hover:bg-emerald-600 text-white rounded-xl border border-slate-700 hover:border-emerald-500 transition font-bold flex items-center justify-center gap-1.5 shadow-sm">
+                            <span>💼</span> <span data-i18n="role_accountant">المحاسب المالي</span>
                         </button>
-                        <button type="button" onclick="Auth.quickLogin('receptionist')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5">
-                            <span>📋</span> <span data-i18n="role_receptionist">الاستقبال</span>
-                        </button>
-                        <button type="button" onclick="Auth.quickLogin('doctor')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5">
+                        <button type="button" onclick="Auth.quickLogin('doctor')" class="btn-press p-2.5 bg-slate-800/90 hover:bg-purple-600 text-white rounded-xl border border-slate-700 hover:border-purple-500 transition font-bold flex items-center justify-center gap-1.5 shadow-sm">
                             <span>🩺</span> <span data-i18n="role_doctor">الطبيب</span>
                         </button>
-                        <button type="button" onclick="Auth.quickLogin('patient')" class="btn-press p-2 bg-slate-800 hover:bg-brand-600 text-white rounded-xl border border-slate-700 transition font-medium flex items-center justify-center gap-1.5 col-span-2 sm:col-span-1">
+                        <button type="button" onclick="Auth.quickLogin('pharmacist')" class="btn-press p-2.5 bg-teal-800/90 hover:bg-teal-600 text-white rounded-xl border border-teal-600/60 hover:border-teal-400 transition font-bold flex items-center justify-center gap-1.5 shadow-sm shadow-teal-900/30">
+                            <span>💊</span> <span data-i18n="role_pharmacist">الصيدلي</span>
+                        </button>
+                        <button type="button" onclick="Auth.quickLogin('receptionist')" class="btn-press p-2.5 bg-slate-800/90 hover:bg-sky-600 text-white rounded-xl border border-slate-700 hover:border-sky-500 transition font-bold flex items-center justify-center gap-1.5 shadow-sm">
+                            <span>📋</span> <span data-i18n="role_receptionist">الاستقبال</span>
+                        </button>
+                        <button type="button" onclick="Auth.quickLogin('patient')" class="btn-press p-2.5 bg-slate-800/90 hover:bg-amber-600 text-white rounded-xl border border-slate-700 hover:border-amber-500 transition font-bold flex items-center justify-center gap-1.5 shadow-sm">
                             <span>👤</span> <span data-i18n="role_patient">المريض</span>
                         </button>
+                        <a href="dashboards/queue/index.html" target="_blank" class="btn-press p-2.5 bg-slate-800/90 hover:bg-cyan-600 text-white rounded-xl border border-slate-700 hover:border-cyan-500 transition font-bold flex items-center justify-center gap-1.5 shadow-sm">
+                            <span>📺</span> <span data-i18n="role_queue">شاشة الانتظار</span>
+                        </a>
                     </div>
                 </div>
             </div>
