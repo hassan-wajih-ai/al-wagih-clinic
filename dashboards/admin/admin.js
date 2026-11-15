@@ -36,6 +36,19 @@ const ClinicAdminApp = {
 
         await this.loadAllEnterpriseData();
         this.bindEvents();
+
+        window.addEventListener('alwagih_language_changed', () => {
+            this.renderCRM();
+            this.renderCallCenter();
+            this.renderHelpDesk();
+            this.renderAttendance();
+            this.renderPenalties();
+            this.renderRoster();
+            this.renderSuppliers();
+            this.renderInventory();
+            this.renderContracts();
+            this.updateKPIs();
+        });
     },
 
     async loadAllEnterpriseData() {
