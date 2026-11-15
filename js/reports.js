@@ -1180,6 +1180,88 @@ const Reports = {
         } catch (err) {
             Utils.showToast('تعذر تصدير تقرير العمليات: ' + err.message, 'error');
         }
+    },
+
+    /**
+     * 26. تصدير تقرير الفروع المجمعة والتحويلات الطبية (Multi-Branch Performance & Referrals Report)
+     */
+    exportMultiBranchReport(branchesList, transfersList) {
+        try {
+            const branches = branchesList || [];
+            const transfers = transfersList || [];
+
+            const branchRows = branches.map((b, idx) => ({
+                'م': idx + 1,
+                'كود الفرع': b.code || b.id,
+                'اسم الفرع': b.name,
+                'العنوان والنطاق': b.address || 'القاهرة',
+                'المدير المسؤول': b.manager || 'د. مدير الفرع',
+                'عدد العيادات المجهزة': Number(b.clinics_count || 10),
+                'عدد الأطباء المناوبين': Number(b.doctors_count || 20),
+                'الإيراد الشهري المحقق (ج.م)': Number(b.monthly_revenue || 0),
+                'نسبة الإشغال التشغيلي %': `${b.occupancy_rate || 80}%`,
+                'الحالة التشغيلية': b.status === 'active' ? 'نشط ويعمل بكامل الطاقة' : 'صيانة وتحديث'
+            }));
+
+            const transferRows = transfers.map((t, idx) => ({
+                'م': idx + 1,
+                'كود التحويل': t.id || `TR-${idx + 101}`,
+                'اسم المريض': t.patient_name,
+                'من فرع': t.from_branch,
+                'إلى فرع': t.to_branch,
+                'الإجراء / التخصص المطلوب': t.reason,
+                'الطبيب المعالج': t.doctor_name,
+                'تاريخ التحويل': t.date,
+                'حالة التحويل': t.status === 'completed' ? 'تم الفحص واستقبال المريض' : (t.status === 'in_progress' ? 'قيد الإجراء' : 'محول جديد')
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`تقرير_الفروع_المتعددة_والتحويلات_${dateStr}.xlsx`, [
+                { name: 'مقارنة أداء الفروع', data: branchRows.length > 0 ? branchRows : [{ 'ملاحظة': 'لا توجد فروع مسجلة' }] },
+                { name: 'حركة التحويلات بين الفروع', data: transferRows.length > 0 ? transferRows : [{ 'ملاحظة': 'لا توجد تحويلات مسجلة' }] }
+            ]);
+            Utils.showToast('تم تصدير تقرير الفروع والتحويلات الطبية بنجاح 🏢', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير تقرير الفروع: ' + err.message, 'error');
+        }
+    },
+
+    /**
+     * 27. تصدير تقرير باقات الفحص الطبي الشامل والعروض (Comprehensive Medical Packages Report)
+     */
+    exportMedicalPackagesReport(packagesList) {
+        try {
+            const packages = packagesList || [];
+            const pkgRows = packages.map((p, idx) => {
+                const regPrice = Number(p.regular_price || 0);
+                const pkgPrice = Number(p.package_price || 0);
+                const savingsVal = regPrice - pkgPrice;
+                const servicesText = Array.isArray(p.services) ? p.services.join(' + ') : (p.services || '—');
+
+                return {
+                    'م': idx + 1,
+                    'كود الباقة': p.code || `PKG-${idx + 1}`,
+                    'اسم الباقة الطبية': p.name,
+                    'التصنيف الطبي': p.category || 'فحص وقائي',
+                    'الفحوصات والخدمات المشمولة': servicesText,
+                    'السعر الأصلي المنفصل (ج.م)': regPrice,
+                    'سعر الباقة بالعرض (ج.م)': pkgPrice,
+                    'قيمة التوفير المالي (ج.م)': savingsVal,
+                    'نسبة التوفير %': `${p.savings_percentage || 30}%`,
+                    'إجمالي الحجوزات المنفذة': Number(p.bookings_count || 0),
+                    'إجمالي مبيعات الباقة (ج.م)': Number((p.bookings_count || 0) * pkgPrice),
+                    'الحالة': p.status === 'active' ? 'متاحة للحجز' : 'غير نشطة'
+                };
+            });
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`تقرير_باقات_الفحص_الشامل_${dateStr}.xlsx`, [
+                { name: 'باقات الفحص الطبي والعروض', data: pkgRows.length > 0 ? pkgRows : [{ 'ملاحظة': 'لا توجد باقات مسجلة' }] }
+            ]);
+            Utils.showToast('تم تصدير تقرير باقات الفحص الطبي الشامل بنجاح 🎁', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير تقرير الباقات: ' + err.message, 'error');
+        }
     }
 };
 
