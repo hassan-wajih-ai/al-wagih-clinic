@@ -58,6 +58,11 @@ const I18N_DICTIONARY = {
         tab_inventory: "📦 المخازن والجرد الدوري للمواد",
         tab_procurement: "🛒 المشتريات والموردين وفواتير الشراء",
         tab_corporate: "🏢 التعاقدات والشركات ونسب الخصم",
+        tab_reports: "📊 مركز التقارير والإحصائيات الشاملة",
+        rep_analytics: "📈 تقرير الإحصائيات ومؤشرات الأداء",
+        rep_financial: "💰 تقرير المالية والإيرادات",
+        rep_procurement: "🛒 تقرير المشتريات وأوامر التوريد",
+        rep_patient_visits: "🩺 تقرير المرضى بالزيارات والإجراءات الطبية",
         tab_audit: "🛡️ الرقابة والتدقيق وحركات النظام",
 
         // نظام الـ CRM والواتساب
@@ -166,6 +171,11 @@ const I18N_DICTIONARY = {
         tab_inventory: "📦 Inventory & Periodic Stocktaking",
         tab_procurement: "🛒 Procurement & Supplier Bills",
         tab_corporate: "🏢 Corporate Contracts & Discounts",
+        tab_reports: "📊 Reports & Analytics Hub",
+        rep_analytics: "📈 Analytics & Clinic Statistics Report",
+        rep_financial: "💰 Financial & Revenue Statement",
+        rep_procurement: "🛒 Procurement & Purchase Orders",
+        rep_patient_visits: "🩺 Patient Visits & Medical Procedures",
         tab_audit: "🛡️ Financial Audit & Security Logs",
 
         // CRM & WhatsApp
