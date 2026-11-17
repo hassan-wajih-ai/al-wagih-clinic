@@ -575,6 +575,23 @@ const DoctorApp = {
     // الصيدلية الإلكترونية وفاحص التداخلات الدوائية (E-Prescription & CDS)
     // =========================================================================
     getPharmacyDrugs() {
+        if (typeof MedicalCatalog !== 'undefined' && Array.isArray(MedicalCatalog.medications) && MedicalCatalog.medications.length) {
+            return MedicalCatalog.medications.map(m => ({
+                id: m.id || m.code,
+                name: m.trade_name_ar ? (m.trade_name + ' (' + m.trade_name_ar + ')') : (m.name || m.trade_name),
+                trade_name: m.trade_name,
+                trade_name_ar: m.trade_name_ar,
+                generic: m.generic_name,
+                strength: m.strength,
+                default_inst: m.default_dosage,
+                price: m.selling_price || m.price || 40,
+                cost: m.cost_price || m.cost || 30,
+                stock: m.stock_quantity || m.stock || 100,
+                category: m.category,
+                category_ar: m.category_ar,
+                form: m.form
+            }));
+        }
         const stored = localStorage.getItem('alwagih_pharmacy_drugs');
         if (stored) {
             try { return JSON.parse(stored); } catch (e) {}
@@ -595,8 +612,25 @@ const DoctorApp = {
         const select = document.getElementById('doc-drug-select');
         if (!select) return;
         const drugs = this.getPharmacyDrugs();
-        select.innerHTML = '<option value="">-- اختر صنفاً من صيدلية العيادة --</option>' +
-            drugs.map(d => `<option value="${d.name}" data-dosage="${d.strength}" data-instructions="${d.default_inst || ''}" data-price="${d.price || 40}">${d.name} (${d.strength})</option>`).join('');
+
+        // تجميع الأصناف حسب المجموعة العلاجية لتسهيل اختيار الطبيب
+        const categories = {};
+        drugs.forEach(d => {
+            const cat = d.category_ar || 'أدوية عامة';
+            if (!categories[cat]) categories[cat] = [];
+            categories[cat].push(d);
+        });
+
+        let html = '<option value="">-- اختر صنفاً من صيدلية العيادة (124+ دواء) --</option>';
+        for (const [catName, list] of Object.entries(categories)) {
+            html += `<optgroup label="💊 ${catName}">`;
+            list.forEach(d => {
+                html += `<option value="${d.name}" data-dosage="${d.strength}" data-instructions="${d.default_inst || ''}" data-price="${d.price || 40}">${d.name} [${d.strength}]</option>`;
+            });
+            html += '</optgroup>';
+        }
+
+        select.innerHTML = html;
     },
 
     onDrugSelectChange() {
