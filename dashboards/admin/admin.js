@@ -4891,6 +4891,30 @@ const ClinicAdminApp = {
     },
 
     getMockPharmacyDrugs() {
+        if (typeof MedicalCatalog !== 'undefined' && Array.isArray(MedicalCatalog.medications) && MedicalCatalog.medications.length) {
+            return MedicalCatalog.medications.map(m => ({
+                id: m.id || m.code,
+                code: m.code,
+                name: m.trade_name_ar ? (m.trade_name + ' (' + m.trade_name_ar + ')') : (m.name || m.trade_name),
+                trade_name: m.trade_name,
+                trade_name_ar: m.trade_name_ar,
+                generic_name: m.generic_name,
+                dosage_form: m.form_ar || m.form,
+                strength: m.strength,
+                default_dosage: m.default_dosage,
+                batch_no: m.batch_no,
+                expiry_date: m.expiry_date,
+                stock_qty: Number(m.stock_quantity || m.stock || 100),
+                reorder_level: Number(m.reorder_level || 20),
+                cost_price: Number(m.cost_price || m.cost || 40),
+                selling_price: Number(m.selling_price || m.price || 50),
+                barcode: m.barcode,
+                category: m.category,
+                category_ar: m.category_ar,
+                pregnancy_category: m.pregnancy_category,
+                requires_prescription: m.requires_prescription
+            }));
+        }
         const stored = localStorage.getItem('alwagih_pharmacy_drugs');
         if (stored) {
             try { return JSON.parse(stored); } catch (e) { }
