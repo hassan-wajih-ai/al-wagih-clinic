@@ -9,6 +9,7 @@ const PatientApp = {
     branches: [],
     doctors: [],
     contracts: [],
+    activePrepFilter: 'all',
 
     async init() {
         const authData = await Auth.protectRoute(['patient', 'admin', 'superadmin']);
@@ -29,6 +30,7 @@ const PatientApp = {
         this.renderLiveQueueTicket();
         this.renderMedicalPackages();
         this.renderMedicalResultsTable();
+        this.renderPatientPrepGuide('all');
         this.renderPatientPrescriptions();
         this.renderPatientProcedures();
         this.bindEvents();
@@ -37,6 +39,7 @@ const PatientApp = {
             this.renderAppointmentsTable();
             this.renderMedicalPackages();
             this.renderMedicalResultsTable();
+            this.renderPatientPrepGuide();
             this.renderPatientPrescriptions();
             this.renderPatientProcedures();
         });
@@ -805,6 +808,129 @@ const PatientApp = {
                 ]
             }
         ];
+    },
+
+    // =========================================================================
+    // دليل التحاليل والأشعة وإرشادات التحضير للمريض (Patient Prep Guide)
+    // =========================================================================
+    renderPatientPrepGuide(customFilter, customQuery) {
+        const grid = document.getElementById('patient-prep-guide-grid');
+        if (!grid) return;
+
+        const filter = customFilter !== undefined ? customFilter : this.activePrepFilter;
+        const query = customQuery !== undefined ? customQuery : (document.getElementById('patient-prep-search-input')?.value || '').toLowerCase().trim();
+
+        const labTests = (window.MedicalCatalog && MedicalCatalog.labTests) ? MedicalCatalog.labTests : [];
+        const radExams = (window.MedicalCatalog && MedicalCatalog.radiologyExams) ? MedicalCatalog.radiologyExams : [];
+
+        let items = [];
+
+        labTests.forEach(t => {
+            const isFasting = (t.fasting_hours && t.fasting_hours > 0);
+            let categoryMatch = true;
+            if (filter === 'fasting') categoryMatch = isFasting;
+            else if (filter === 'non_fasting') categoryMatch = !isFasting;
+            else if (filter === 'contrast' || filter === 'us') categoryMatch = false;
+
+            if (categoryMatch) {
+                items.push({
+                    type: 'lab',
+                    icon: '🧪',
+                    name_ar: t.name_ar,
+                    name_en: t.name_en,
+                    category: t.category,
+                    tube: t.tube_name_ar,
+                    badge: isFasting ? `صيام ${t.fasting_hours} ساعة` : 'بدون صيام',
+                    badgeColor: isFasting ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+                    prep: t.prep_notes_ar || (isFasting ? `يتطلب صيام تام عن الأكل والشرب (عدا الماء) لمدة ${t.fasting_hours} ساعة` : 'يمكن إجراؤه في أي وقت دون شروط صيام خاصة'),
+                    tat: t.tat_hours ? `النتيجة خلال ${t.tat_hours} ساعة` : 'النتيجة نفس اليوم',
+                    cost: t.cost
+                });
+            }
+        });
+
+        radExams.forEach(e => {
+            const hasContrast = e.contrast;
+            const isUS = e.modality === 'Ultrasound';
+            let categoryMatch = true;
+            if (filter === 'contrast') categoryMatch = hasContrast;
+            else if (filter === 'us') categoryMatch = isUS;
+            else if (filter === 'fasting' || filter === 'non_fasting') categoryMatch = false;
+
+            if (categoryMatch) {
+                items.push({
+                    type: 'rad',
+                    icon: '🩻',
+                    name_ar: e.name_ar,
+                    name_en: e.name_en,
+                    category: e.modality,
+                    tube: e.body_region,
+                    badge: hasContrast ? 'بالصبغة (Contrast)' : (isUS ? 'سونار / موجات' : e.modality),
+                    badgeColor: hasContrast ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 font-bold' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300',
+                    prep: e.prep_notes_ar || (hasContrast ? 'فحص وظائف كلى حديث (Creatinine) وصيام 4-6 ساعات' : 'بدون تحضيرات مسبقة خاصة'),
+                    tat: `المدة ${e.duration_min} دقيقة`,
+                    cost: e.cost
+                });
+            }
+        });
+
+        if (query) {
+            items = items.filter(it => 
+                it.name_ar.toLowerCase().includes(query) || 
+                it.name_en.toLowerCase().includes(query) ||
+                (it.prep && it.prep.toLowerCase().includes(query)) ||
+                (it.category && it.category.toLowerCase().includes(query))
+            );
+        }
+
+        if (items.length === 0) {
+            grid.innerHTML = `<div class="col-span-full py-8 text-center text-xs text-slate-400">لا توجد تحاليل أو أشعة مطابقة لمعايير البحث الحالية.</div>`;
+            return;
+        }
+
+        grid.innerHTML = items.slice(0, 18).map(it => `
+            <div class="card-hover p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2.5">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">${it.icon}</span>
+                        <div>
+                            <h4 class="font-bold text-slate-900 dark:text-white text-xs">${it.name_ar}</h4>
+                            <p class="text-[10px] text-slate-400 font-mono">${it.name_en}</p>
+                        </div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${it.badgeColor} shrink-0">${it.badge}</span>
+                </div>
+                <div class="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                    <div class="font-bold text-slate-700 dark:text-slate-200 mb-0.5">📌 إرشادات التحضير:</div>
+                    ${it.prep}
+                </div>
+                <div class="flex items-center justify-between text-[11px] pt-1 border-t border-slate-200/60 dark:border-slate-700/60 text-slate-500">
+                    <span>⏱️ ${it.tat}</span>
+                    <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">${Utils.formatCurrency(it.cost)}</span>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    filterPatientPrep(filter) {
+        this.activePrepFilter = filter;
+        const pills = ['all', 'fasting', 'non_fasting', 'contrast', 'us'];
+        pills.forEach(p => {
+            const btn = document.getElementById(`prep-pill-${p}`);
+            if (btn) {
+                if (p === filter) {
+                    btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition';
+                }
+            }
+        });
+        this.renderPatientPrepGuide(filter);
+    },
+
+    searchPatientPrep() {
+        const query = (document.getElementById('patient-prep-search-input')?.value || '').toLowerCase().trim();
+        this.renderPatientPrepGuide(undefined, query);
     }
 };
 
