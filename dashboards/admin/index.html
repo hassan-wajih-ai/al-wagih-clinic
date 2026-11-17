@@ -27,6 +27,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="../../css/style.css">
     <script src="../../js/i18n.js"></script>
+    <script src="../../js/medical_catalog.js"></script>
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300">
     <!-- Navbar -->
@@ -162,6 +163,10 @@
                     <button id="tab-btn-multibranch" onclick="ClinicAdminApp.switchTab('multibranch')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
                         <span class="text-sm">🏢</span>
                         <span data-i18n="tab_multibranch">الفروع والباقات الطبية</span>
+                    </button>
+                    <button id="tab-btn-procedures" onclick="ClinicAdminApp.switchTab('procedures')" class="px-3.5 py-2 text-xs font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <span class="text-sm">🩺</span>
+                        <span data-i18n="tab_procedures">إجراءات العيادات والخدمات</span>
                     </button>
                 </div>
                 <div class="flex items-center gap-2">
@@ -990,62 +995,157 @@
                 </div>
             </div>
 
-            <!-- Lab Action Bar & Search Filters -->
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
-                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto flex-1">
-                    <div class="relative w-full sm:w-64">
-                        <input type="text" id="lab-search-input" onkeyup="ClinicAdminApp.filterLabOrders()" placeholder="بحث باسم المريض أو رقم العينة..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+            <!-- Lab Sub-views Navigation -->
+            <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+                <button id="lab-subtab-orders" onclick="ClinicAdminApp.switchLabSubTab('orders')" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-cyan-600 text-white shadow-sm transition">
+                    🧪 سجل طلبات وعينات اليوم
+                </button>
+                <button id="lab-subtab-catalog" onclick="ClinicAdminApp.switchLabSubTab('catalog')" class="btn-press px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                    📚 دليل وكتالوج التحاليل الطبية (45+ تحليل LIS)
+                </button>
+                <button id="lab-subtab-partners" onclick="ClinicAdminApp.switchLabSubTab('partners')" class="btn-press px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                    🤝 المعامل الشريكة والتحويلات (B2B Outsource)
+                </button>
+            </div>
+
+            <!-- Sub-View 1: Lab Orders & Samples Worklist -->
+            <div id="lab-view-orders" class="space-y-4">
+                <!-- Lab Action Bar & Search Filters -->
+                <div class="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto flex-1">
+                        <div class="relative w-full sm:w-64">
+                            <input type="text" id="lab-search-input" onkeyup="ClinicAdminApp.filterLabOrders()" placeholder="بحث باسم المريض أو رقم العينة..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                        </div>
+                        <select id="lab-status-filter" onchange="ClinicAdminApp.filterLabOrders()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-medium">
+                            <option value="all">جميع الحالات</option>
+                            <option value="pending">بانتظار السحب (Pending)</option>
+                            <option value="in_progress">قيد التحليل (In Progress)</option>
+                            <option value="verified">معتمدة ومكتملة (Verified)</option>
+                            <option value="panic">حرجة تستدعي التدخل (Panic)</option>
+                        </select>
                     </div>
-                    <select id="lab-status-filter" onchange="ClinicAdminApp.filterLabOrders()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-medium">
-                        <option value="all">جميع الحالات</option>
-                        <option value="pending">بانتظار السحب (Pending)</option>
-                        <option value="in_progress">قيد التحليل (In Progress)</option>
-                        <option value="verified">معتمدة ومكتملة (Verified)</option>
-                        <option value="panic">حرجة تستدعي التدخل (Panic)</option>
-                    </select>
+                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                        <button onclick="ClinicAdminApp.exportLabReportExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex items-center gap-1.5">
+                            <span>📗</span>
+                            <span>تصدير Excel (UTF-8)</span>
+                        </button>
+                        <button onclick="ClinicAdminApp.openNewLabOrderModal()" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-700 text-white shadow-md shadow-cyan-600/25 transition flex items-center gap-1.5">
+                            <span>+</span>
+                            <span data-i18n="btn_new_lab_order">طلب تحليل معملي جديد</span>
+                        </button>
+                    </div>
                 </div>
-                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                    <button onclick="ClinicAdminApp.exportLabReportExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex items-center gap-1.5">
-                        <span>📗</span>
-                        <span>تصدير Excel (UTF-8)</span>
-                    </button>
-                    <button onclick="ClinicAdminApp.openNewLabOrderModal()" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-700 text-white shadow-md shadow-cyan-600/25 transition flex items-center gap-1.5">
-                        <span>+</span>
-                        <span data-i18n="btn_new_lab_order">طلب تحليل معملي جديد</span>
-                    </button>
+
+                <!-- Lab Orders & Samples Table -->
+                <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                                <span>🧪 سجل عينات وفحوصات المختبر الطبي</span>
+                                <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 font-bold" id="lab-table-count">0 عينة</span>
+                            </h3>
+                            <p class="text-[11px] text-slate-400 mt-0.5">تتبع مراحل العينات، طباعة الباركود، إدخال النتائج، والتقارير المعتمدة</p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950/70 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-3 px-3">رقم العينة والباركود</th>
+                                    <th class="py-3 px-3">المريض</th>
+                                    <th class="py-3 px-3">الفحص المطلوب</th>
+                                    <th class="py-3 px-3">نوع الأنبوبة</th>
+                                    <th class="py-3 px-3">الطبيب المعالج</th>
+                                    <th class="py-3 px-3">التاريخ والتكلفة</th>
+                                    <th class="py-3 px-3">الحالة والنتيجة</th>
+                                    <th class="py-3 px-3 text-center">الإجراءات المتكاملة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lab-orders-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated via admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <!-- Lab Orders & Samples Table -->
-            <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
-                            <span>🧪 سجل عينات وفحوصات المختبر الطبي</span>
-                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 font-bold" id="lab-table-count">0 عينة</span>
-                        </h3>
-                        <p class="text-[11px] text-slate-400 mt-0.5">تتبع مراحل العينات، طباعة الباركود، إدخال النتائج، والتقارير المعتمدة</p>
+            <!-- Sub-View 2: Comprehensive LIS Tests Catalog -->
+            <div id="lab-view-catalog" class="hidden space-y-4">
+                <div class="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+                    <div class="flex flex-wrap items-center gap-1.5 w-full md:w-auto flex-1">
+                        <button onclick="ClinicAdminApp.filterLabCatalog('all')" id="lab-cat-pill-all" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-600 text-white transition">الكل (45+ تحليل)</button>
+                        <button onclick="ClinicAdminApp.filterLabCatalog('hematology')" id="lab-cat-pill-hematology" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">🩸 أمراض الدم</button>
+                        <button onclick="ClinicAdminApp.filterLabCatalog('biochemistry')" id="lab-cat-pill-biochemistry" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">🧪 الكيمياء الحيوية</button>
+                        <button onclick="ClinicAdminApp.filterLabCatalog('endocrinology')" id="lab-cat-pill-endocrinology" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">🧬 الهرمونات والغدد</button>
+                        <button onclick="ClinicAdminApp.filterLabCatalog('immunology')" id="lab-cat-pill-immunology" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">🛡️ المناعة والأمصال</button>
+                        <button onclick="ClinicAdminApp.filterLabCatalog('microbiology')" id="lab-cat-pill-microbiology" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">🔬 الميكروبيولوجي والمزارع</button>
+                        <button onclick="ClinicAdminApp.filterLabCatalog('tumor_markers')" id="lab-cat-pill-tumor_markers" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">🎯 دلالات الأورام</button>
+                    </div>
+                    <div class="flex items-center gap-2 w-full md:w-auto">
+                        <input type="text" id="lab-catalog-search-input" onkeyup="ClinicAdminApp.searchLabCatalog()" placeholder="بحث باسم التحليل أو الكود..." class="px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 w-full sm:w-56">
+                        <button onclick="ClinicAdminApp.exportLabCatalogExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition shrink-0 flex items-center gap-1.5">
+                            <span>📗</span>
+                            <span>تصدير الدليل Excel</span>
+                        </button>
                     </div>
                 </div>
 
-                <div class="table-responsive-wrapper">
-                    <table class="w-full text-right text-xs">
-                        <thead>
-                            <tr class="bg-slate-50 dark:bg-slate-950/70 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                                <th class="py-3 px-3">رقم العينة والباركود</th>
-                                <th class="py-3 px-3">المريض</th>
-                                <th class="py-3 px-3">الفحص المطلوب</th>
-                                <th class="py-3 px-3">نوع الأنبوبة</th>
-                                <th class="py-3 px-3">الطبيب المعالج</th>
-                                <th class="py-3 px-3">التاريخ والتكلفة</th>
-                                <th class="py-3 px-3">الحالة والنتيجة</th>
-                                <th class="py-3 px-3 text-center">الإجراءات المتكاملة</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lab-orders-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
-                            <!-- Populated via admin.js -->
-                        </tbody>
-                    </table>
+                <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950/70 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-3 px-3">كود التحليل</th>
+                                    <th class="py-3 px-3">اسم الفحص المخبري</th>
+                                    <th class="py-3 px-3">التصنيف</th>
+                                    <th class="py-3 px-3">نوع الأنبوبة والعينة</th>
+                                    <th class="py-3 px-3">شروط الصيام والتحضير</th>
+                                    <th class="py-3 px-3">وقت النتيجة (TAT)</th>
+                                    <th class="py-3 px-3">السعر (ج.م)</th>
+                                    <th class="py-3 px-3 text-center">البارامترات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lab-catalog-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated via admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub-View 3: Partner Labs (B2B Outsource) -->
+            <div id="lab-view-partners" class="hidden space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="lab-partners-cards">
+                    <!-- Populated via admin.js -->
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                            <span>🤝</span>
+                            <span>سجل العينات المحولة للمعامل الخارجية الشريكة (Outsource Tracker)</span>
+                        </h4>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 font-bold">تسوية B2B شهرية</span>
+                    </div>
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-2.5 px-3">رقم الباركود والمريض</th>
+                                    <th class="py-2.5 px-3">التحليل المطلوب</th>
+                                    <th class="py-2.5 px-3">المعمل الشريك</th>
+                                    <th class="py-2.5 px-3">تكلفة B2B</th>
+                                    <th class="py-2.5 px-3">سعر البيع للمريض</th>
+                                    <th class="py-2.5 px-3">هامش ربح العيادة</th>
+                                    <th class="py-2.5 px-3">الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lab-outsource-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated via admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1091,62 +1191,156 @@
                 </div>
             </div>
 
-            <!-- Radiology Action Bar & Modality Filters -->
-            <div class="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
-                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto flex-1">
-                    <div class="relative w-full sm:w-64">
-                        <input type="text" id="rad-search-input" onkeyup="ClinicAdminApp.filterRadStudies()" placeholder="بحث باسم المريض أو رقم الفحص..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <!-- Radiology Sub-views Navigation -->
+            <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+                <button id="rad-subtab-worklist" onclick="ClinicAdminApp.switchRadSubTab('worklist')" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition">
+                    🩻 جدول ودراسات الأشعة اليومية
+                </button>
+                <button id="rad-subtab-catalog" onclick="ClinicAdminApp.switchRadSubTab('catalog')" class="btn-press px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                    📚 دليل وفحوصات الأشعة الشامل (34+ فحص RIS)
+                </button>
+                <button id="rad-subtab-partners" onclick="ClinicAdminApp.switchRadSubTab('partners')" class="btn-press px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                    🤝 مراكز الأشعة الشريكة (B2B Partner Centers)
+                </button>
+            </div>
+
+            <!-- Sub-View 1: Radiology Worklist -->
+            <div id="rad-view-worklist" class="space-y-4">
+                <!-- Radiology Action Bar & Modality Filters -->
+                <div class="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto flex-1">
+                        <div class="relative w-full sm:w-64">
+                            <input type="text" id="rad-search-input" onkeyup="ClinicAdminApp.filterRadStudies()" placeholder="بحث باسم المريض أو رقم الفحص..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <select id="rad-modality-filter" onchange="ClinicAdminApp.filterRadStudies()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-medium">
+                            <option value="all">جميع الأجهزة (Modalities)</option>
+                            <option value="X-Ray">أشعة عادية (X-Ray)</option>
+                            <option value="MRI">رنين مغناطيسي (MRI)</option>
+                            <option value="CT">أشعة مقطعية (CT)</option>
+                            <option value="Ultrasound">سونار وموجات صوتية (US)</option>
+                        </select>
                     </div>
-                    <select id="rad-modality-filter" onchange="ClinicAdminApp.filterRadStudies()" class="px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-medium">
-                        <option value="all">جميع الأجهزة (Modalities)</option>
-                        <option value="X-Ray">أشعة عادية (X-Ray)</option>
-                        <option value="MRI">رنين مغناطيسي (MRI)</option>
-                        <option value="CT">أشعة مقطعية (CT)</option>
-                        <option value="Ultrasound">سونار وموجات صوتية (US)</option>
-                    </select>
+                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                        <button onclick="ClinicAdminApp.exportRadReportExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex items-center gap-1.5">
+                            <span>📗</span>
+                            <span>تصدير Excel (UTF-8)</span>
+                        </button>
+                        <button onclick="ClinicAdminApp.openNewRadOrderModal()" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/25 transition flex items-center gap-1.5">
+                            <span>+</span>
+                            <span data-i18n="btn_new_rad_order">حجز فحص أشعة جديد</span>
+                        </button>
+                    </div>
                 </div>
-                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                    <button onclick="ClinicAdminApp.exportRadReportExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex items-center gap-1.5">
-                        <span>📗</span>
-                        <span>تصدير Excel (UTF-8)</span>
-                    </button>
-                    <button onclick="ClinicAdminApp.openNewRadOrderModal()" class="btn-press px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/25 transition flex items-center gap-1.5">
-                        <span>+</span>
-                        <span data-i18n="btn_new_rad_order">حجز فحص أشعة جديد</span>
-                    </button>
+
+                <!-- Radiology Worklist Table -->
+                <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                                <span>🩻 جدول فحوصات الأشعة والتصوير التشخيصي (Worklist)</span>
+                                <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 font-bold" id="rad-table-count">0 فحص</span>
+                            </h3>
+                            <p class="text-[11px] text-slate-400 mt-0.5">إدارة الدراسات، استعراض الصور، كتابة التقارير بالقوالب، والاعتماد الطبي</p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950/70 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-3 px-3">رقم الفحص (Study ID)</th>
+                                    <th class="py-3 px-3">المريض</th>
+                                    <th class="py-3 px-3">الجهاز والعضو المطلوب</th>
+                                    <th class="py-3 px-3">الصبغة (Contrast)</th>
+                                    <th class="py-3 px-3">الطبيب المعالج</th>
+                                    <th class="py-3 px-3">التاريخ والتكلفة</th>
+                                    <th class="py-3 px-3">حالة الفحص</th>
+                                    <th class="py-3 px-3 text-center">الإجراءات والصور</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rad-studies-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated via admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <!-- Radiology Worklist Table -->
-            <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 class="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
-                            <span>🩻 جدول فحوصات الأشعة والتصوير التشخيصي (Worklist)</span>
-                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 font-bold" id="rad-table-count">0 فحص</span>
-                        </h3>
-                        <p class="text-[11px] text-slate-400 mt-0.5">إدارة الدراسات، استعراض الصور، كتابة التقارير بالقوالب، والاعتماد الطبي</p>
+            <!-- Sub-View 2: Comprehensive RIS Exams Catalog -->
+            <div id="rad-view-catalog" class="hidden space-y-4">
+                <div class="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+                    <div class="flex flex-wrap items-center gap-1.5 w-full md:w-auto flex-1">
+                        <button onclick="ClinicAdminApp.filterRadCatalog('all')" id="rad-cat-pill-all" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition">الكل (34+ فحص)</button>
+                        <button onclick="ClinicAdminApp.filterRadCatalog('X-Ray')" id="rad-cat-pill-X-Ray" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">🦴 أشعة سينية (X-Ray)</button>
+                        <button onclick="ClinicAdminApp.filterRadCatalog('Ultrasound')" id="rad-cat-pill-Ultrasound" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">📡 سونار ودوبلر</button>
+                        <button onclick="ClinicAdminApp.filterRadCatalog('CT')" id="rad-cat-pill-CT" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">🌀 أشعة مقطعية (CT)</button>
+                        <button onclick="ClinicAdminApp.filterRadCatalog('MRI')" id="rad-cat-pill-MRI" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">🧲 رنين مغناطيسي (MRI)</button>
+                        <button onclick="ClinicAdminApp.filterRadCatalog('Specialized')" id="rad-cat-pill-Specialized" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">✨ بانوراما وماموجرام وDEXA</button>
+                    </div>
+                    <div class="flex items-center gap-2 w-full md:w-auto">
+                        <input type="text" id="rad-catalog-search-input" onkeyup="ClinicAdminApp.searchRadCatalog()" placeholder="بحث باسم الفحص أو العضو..." class="px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-56">
+                        <button onclick="ClinicAdminApp.exportRadCatalogExcel()" class="btn-press px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition shrink-0 flex items-center gap-1.5">
+                            <span>📗</span>
+                            <span>تصدير الدليل Excel</span>
+                        </button>
                     </div>
                 </div>
 
-                <div class="table-responsive-wrapper">
-                    <table class="w-full text-right text-xs">
-                        <thead>
-                            <tr class="bg-slate-50 dark:bg-slate-950/70 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                                <th class="py-3 px-3">رقم الفحص (Study ID)</th>
-                                <th class="py-3 px-3">المريض</th>
-                                <th class="py-3 px-3">الجهاز والعضو المطلوب</th>
-                                <th class="py-3 px-3">الصبغة (Contrast)</th>
-                                <th class="py-3 px-3">الطبيب المعالج</th>
-                                <th class="py-3 px-3">التاريخ والتكلفة</th>
-                                <th class="py-3 px-3">حالة الفحص</th>
-                                <th class="py-3 px-3 text-center">الإجراءات والصور</th>
-                            </tr>
-                        </thead>
-                        <tbody id="rad-studies-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
-                            <!-- Populated via admin.js -->
-                        </tbody>
-                    </table>
+                <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5">
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950/70 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-3 px-3">كود الفحص</th>
+                                    <th class="py-3 px-3">اسم فحص الأشعة</th>
+                                    <th class="py-3 px-3">نوع الجهاز (Modality)</th>
+                                    <th class="py-3 px-3">المنطقة والعضو</th>
+                                    <th class="py-3 px-3">الصبغة (Contrast)</th>
+                                    <th class="py-3 px-3">إرشادات التحضير</th>
+                                    <th class="py-3 px-3">المدة التقديرية</th>
+                                    <th class="py-3 px-3 font-mono">السعر (ج.م)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rad-catalog-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated via admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub-View 3: Partner Radiology Centers (B2B Outsource) -->
+            <div id="rad-view-partners" class="hidden space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="rad-partners-cards">
+                    <!-- Populated via admin.js -->
+                </div>
+
+                <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                            <span>🤝</span>
+                            <span>سجل الحالات المحولة لمراكز الأشعة الخارجية الشريكة (Referral Tracker)</span>
+                        </h4>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 font-bold">تسوية B2B شهرية</span>
+                    </div>
+                    <div class="table-responsive-wrapper">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-2.5 px-3">رقم التحويل والمريض</th>
+                                    <th class="py-2.5 px-3">الفحص المطلوب</th>
+                                    <th class="py-2.5 px-3">المركز الشريك</th>
+                                    <th class="py-2.5 px-3">تكلفة B2B</th>
+                                    <th class="py-2.5 px-3">سعر البيع للمريض</th>
+                                    <th class="py-2.5 px-3">هامش ربح العيادة</th>
+                                    <th class="py-2.5 px-3">الحالة والتقرير</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rad-outsource-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated via admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1766,6 +1960,108 @@
                             </tr>
                         </thead>
                         <tbody id="admin-packages-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Populated via admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 14: Clinic Procedures & Clinical Interventions (إجراءات العيادات التخصصية) -->
+        <div id="tab-content-procedures" class="hidden space-y-6 animate-fade-in">
+            <!-- Header & Action Row -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>🩺</span>
+                        <span>إجراءات العيادات التخصصية والتدخلات الطبية (Clinical Procedures Hub)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">دليل إجراءات غرف الكشف، الأجهزة والمستهلكات، لائحة الرسوم، واحتساب عمولات الأطباء آلياً</p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="ClinicAdminApp.openAdminAddProcedureModal()" class="btn-press px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition flex items-center gap-1.5">
+                        <span>+ إضافة إجراء طبي جديد</span>
+                    </button>
+                    <button onclick="ClinicAdminApp.exportClinicProceduresExcel()" class="btn-press px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5">
+                        <span>📊 تصدير دليل الإجراءات Excel</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4 KPIs Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">الإجراءات المعتمدة</span>
+                        <span class="p-2 rounded-xl bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-300 text-sm">🩺</span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-900 dark:text-white mt-2" id="admin-proc-kpi-count">29 إجراء</div>
+                    <div class="text-xs text-slate-400 mt-1">عبر 7 تخصصات طبية</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">إيرادات الإجراءات الشهرية</span>
+                        <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-300 text-sm">💰</span>
+                    </div>
+                    <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2" id="admin-proc-kpi-rev">48,500 ج.م</div>
+                    <div class="text-xs text-slate-400 mt-1">جلسات، حقن، ورسم قلب</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">عمولات الأطباء المحققة</span>
+                        <span class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-300 text-sm">👨‍⚕️</span>
+                    </div>
+                    <div class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2" id="admin-proc-kpi-comm">16,200 ج.م</div>
+                    <div class="text-xs text-slate-400 mt-1">متوسط نسبة العمولة: 35%</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">أعلى التخصصات إجراءً</span>
+                        <span class="p-2 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-300 text-sm">⚡</span>
+                    </div>
+                    <div class="text-2xl font-black text-purple-600 dark:text-purple-400 mt-2" id="admin-proc-kpi-top">العظام والباطنة</div>
+                    <div class="text-xs text-slate-400 mt-1">حقن المفاصل، ECG، والنيبولايزر</div>
+                </div>
+            </div>
+
+            <!-- Specialty Filter Pills & Search Bar -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-1.5 w-full md:w-auto flex-1">
+                    <button onclick="ClinicAdminApp.filterClinicProcedures('all')" id="proc-pill-all" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition">كافة التخصصات (29)</button>
+                    <button onclick="ClinicAdminApp.filterClinicProcedures('internal')" id="proc-pill-internal" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">الباطنة والصدرية</button>
+                    <button onclick="ClinicAdminApp.filterClinicProcedures('cardio')" id="proc-pill-cardio" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">أمراض القلب</button>
+                    <button onclick="ClinicAdminApp.filterClinicProcedures('ortho')" id="proc-pill-ortho" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">العظام والمفاصل</button>
+                    <button onclick="ClinicAdminApp.filterClinicProcedures('ent')" id="proc-pill-ent" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">الأنف والأذن</button>
+                    <button onclick="ClinicAdminApp.filterClinicProcedures('ophth')" id="proc-pill-ophth" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">طب العيون</button>
+                    <button onclick="ClinicAdminApp.filterClinicProcedures('obgyn')" id="proc-pill-obgyn" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">النساء والتوليد</button>
+                    <button onclick="ClinicAdminApp.filterClinicProcedures('derma')" id="proc-pill-derma" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">الجلدية والجراحة</button>
+                </div>
+                <div class="w-full sm:w-64">
+                    <input type="text" id="admin-proc-search-input" onkeyup="ClinicAdminApp.searchClinicProcedures()" placeholder="بحث باسم الإجراء أو الكود..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <!-- Clinic Procedures Table -->
+            <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                <div class="table-responsive-wrapper">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-950/70 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                <th class="py-3 px-3">كود الإجراء</th>
+                                <th class="py-3 px-3">اسم الإجراء والتدخل</th>
+                                <th class="py-3 px-3">العيادة والتخصص</th>
+                                <th class="py-3 px-3">الأجهزة والمعدات</th>
+                                <th class="py-3 px-3">المستهلكات المطلوبة</th>
+                                <th class="py-3 px-3">المدة</th>
+                                <th class="py-3 px-3">عمولة الطبيب</th>
+                                <th class="py-3 px-3 font-mono">سعر الإجراء</th>
+                                <th class="py-3 px-3 text-center">توزيع الإيراد</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-procedures-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
                             <!-- Populated via admin.js -->
                         </tbody>
                     </table>
@@ -3208,6 +3504,92 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal: Add Clinic Procedure -->
+    <div id="admin-add-procedure-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">🩺</span>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">إضافة إجراء أو تدخل طبي جديد بالعيادة</h4>
+                </div>
+                <button onclick="document.getElementById('admin-add-procedure-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+
+            <form id="admin-add-procedure-form" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم الإجراء أو التدخل الطبي</label>
+                    <input type="text" id="admin-proc-name" required placeholder="مثال: رسم قلب مجهود / حقن مفصل الركبة / غسيل أذن" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">العيادة / التخصص الطبي</label>
+                        <select id="admin-proc-specialty" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                            <option value="internal">العيادة الباطنية والصدرية</option>
+                            <option value="cardio">أمراض القلب والأوعية</option>
+                            <option value="ortho">جراحة العظام والمفاصل</option>
+                            <option value="ent">الأنف والأذن والحنجرة</option>
+                            <option value="ophth">طب وجراحة العيون</option>
+                            <option value="obgyn">النساء والتوليد</option>
+                            <option value="derma">الجلدية والجراحة الصغرى</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">مدة الإجراء التقريبية</label>
+                        <input type="text" id="admin-proc-duration" required value="15 دقيقة" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">تكلفة الإجراء (ج.م)</label>
+                        <input type="number" id="admin-proc-fee" required value="250" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">نسبة عمولة الطبيب (%)</label>
+                        <input type="number" id="admin-proc-commission" required value="35" min="0" max="100" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-mono">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الأجهزة والمعدات المستخدمة</label>
+                    <input type="text" id="admin-proc-equipment" required placeholder="جهاز تخطيط / منظار صلب / سرنجة معقمة" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">المستهلكات الطبية المطلوبة</label>
+                    <input type="text" id="admin-proc-consumables" required placeholder="شاش معقم، بتادين، بنج موضعي، إلكترودات" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="document.getElementById('admin-add-procedure-modal').classList.add('hidden')" class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">إلغاء</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md transition-all">
+                        💾 حفظ واعتماد الإجراء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: View Lab Test Details & Parameters -->
+    <div id="admin-lab-details-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-cyan-600 text-white flex items-center justify-center font-bold">🧪</span>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm" id="admin-lab-details-title">تفاصيل الفحص المخبري</h4>
+                </div>
+                <button onclick="document.getElementById('admin-lab-details-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <div id="admin-lab-details-content" class="space-y-3">
+                <!-- Populated via admin.js -->
+            </div>
+            <div class="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="document.getElementById('admin-lab-details-modal').classList.add('hidden')" class="px-5 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-xl transition">إغلاق</button>
+            </div>
         </div>
     </div>
     <script src="../../js/config.js"></script>
