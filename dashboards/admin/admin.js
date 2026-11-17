@@ -28,6 +28,13 @@ const ClinicAdminApp = {
     labOrders: [],
     radiologyStudies: [],
     labCatalog: [],
+    clinicProcedures: [],
+    diagnosticCenters: [],
+    activeLabSubTab: 'orders',
+    activeRadSubTab: 'worklist',
+    selectedLabCategory: 'all',
+    selectedRadModality: 'all',
+    selectedProcSpecialty: 'all',
     radiologyTemplates: {},
     queueRooms: [],
     waitingTickets: [],
@@ -116,6 +123,8 @@ const ClinicAdminApp = {
         this.branches = this.getMockBranches();
         this.branchTransfers = this.getMockBranchTransfers();
         this.medicalPackages = this.getMockMedicalPackages();
+        this.clinicProcedures = window.MedicalCatalog ? [...MedicalCatalog.clinicProcedures] : [];
+        this.diagnosticCenters = window.MedicalCatalog ? [...MedicalCatalog.diagnosticCenters] : [];
 
         this.renderCRM();
         this.renderCallCenter();
@@ -130,7 +139,12 @@ const ClinicAdminApp = {
         this.renderContracts();
         this.renderReportsHub();
         this.renderLabOrders();
+        this.renderLabCatalog();
+        this.renderLabPartners();
         this.renderRadiologyStudies();
+        this.renderRadCatalog();
+        this.renderRadPartners();
+        this.renderClinicProcedures();
         this.renderQueueBoard();
         this.renderDoctorCommissions();
         this.renderAdminPharmacy();
@@ -143,7 +157,7 @@ const ClinicAdminApp = {
 
     switchTab(tabId) {
         this.activeTab = tabId;
-        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports', 'lab', 'radiology', 'queue', 'commissions', 'pharmacy', 'surgery', 'multibranch'];
+        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports', 'lab', 'radiology', 'queue', 'commissions', 'pharmacy', 'surgery', 'multibranch', 'procedures'];
         tabs.forEach(t => {
             const el = document.getElementById(`tab-content-${t}`);
             const btn = document.getElementById(`tab-btn-${t}`);
@@ -172,6 +186,8 @@ const ClinicAdminApp = {
             this.renderAdminSurgerySuite();
         } else if (tabId === 'multibranch') {
             this.renderAdminMultiBranch();
+        } else if (tabId === 'procedures') {
+            this.renderClinicProcedures();
         }
     },
 
@@ -1426,6 +1442,42 @@ const ClinicAdminApp = {
                 this.updateKPIs();
             };
         }
+
+        // إضافة إجراء طبي بالعيادة
+        const procForm = document.getElementById('admin-add-procedure-form');
+        const procModal = document.getElementById('admin-add-procedure-modal');
+        if (procForm && procModal) {
+            procForm.onsubmit = (e) => {
+                e.preventDefault();
+                const name = document.getElementById('admin-proc-name').value.trim();
+                const specialty = document.getElementById('admin-proc-specialty').value;
+                const duration = document.getElementById('admin-proc-duration').value.trim();
+                const fee = parseFloat(document.getElementById('admin-proc-fee').value) || 250;
+                const commRate = parseFloat(document.getElementById('admin-proc-commission').value) || 35;
+                const equipment = document.getElementById('admin-proc-equipment').value.trim();
+                const consumables = document.getElementById('admin-proc-consumables').value.trim();
+
+                const newProc = {
+                    id: 'proc_' + Date.now(),
+                    code: 'PR-' + Math.floor(100 + Math.random() * 900),
+                    name_ar: name,
+                    name_en: name,
+                    specialty: specialty,
+                    equipment: equipment,
+                    consumables: consumables,
+                    duration_min: parseInt(duration) || 15,
+                    doctor_commission_rate: commRate,
+                    fee: fee,
+                    consumable_cost: Math.round(fee * 0.15)
+                };
+
+                this.clinicProcedures.unshift(newProc);
+                Utils.showToast(`تم حفظ واعتماد الإجراء الطبي (${name}) بنجاح 🩺`, 'success');
+                procModal.classList.add('hidden');
+                procForm.reset();
+                this.renderClinicProcedures();
+            };
+        }
     },
 
     getMockCRMPatients() {
@@ -2009,12 +2061,14 @@ const ClinicAdminApp = {
         const select = document.getElementById('lab-order-test-select');
         if (!select) return;
 
-        select.innerHTML = this.labCatalog.map(item => `
-            <option value="${item.key}" data-tube="${item.tube}" data-cost="${item.cost}">${item.name} (${Utils.formatCurrency(item.cost)})</option>
+        const allTests = (window.MedicalCatalog && MedicalCatalog.labTests) ? MedicalCatalog.labTests : this.labCatalog;
+
+        select.innerHTML = allTests.map(item => `
+            <option value="${item.key || item.id}" data-tube="${item.tube_name_ar || item.tube}" data-cost="${item.cost}">${item.name_ar || item.name} (${Utils.formatCurrency(item.cost)})</option>
         `).join('');
 
-        if (this.labCatalog.length > 0) {
-            this.onLabTestSelected(this.labCatalog[0].key);
+        if (allTests.length > 0) {
+            this.onLabTestSelected(allTests[0].key || allTests[0].id);
         }
 
         const contractSelect = document.getElementById('lab-order-contract-select');
@@ -2026,12 +2080,13 @@ const ClinicAdminApp = {
     },
 
     onLabTestSelected(testKey) {
-        const item = this.labCatalog.find(c => c.key === testKey);
+        const allTests = (window.MedicalCatalog && MedicalCatalog.labTests) ? MedicalCatalog.labTests : this.labCatalog;
+        const item = allTests.find(c => c.key === testKey || c.id === testKey);
         if (!item) return;
 
         const tubeInput = document.getElementById('lab-order-tube-type');
         const costInput = document.getElementById('lab-order-cost-input');
-        if (tubeInput) tubeInput.value = item.tube;
+        if (tubeInput) tubeInput.value = item.tube_name_ar || item.tube;
         if (costInput) costInput.value = item.cost;
     },
 
@@ -2187,6 +2242,280 @@ const ClinicAdminApp = {
         }
     },
 
+    switchLabSubTab(subTab) {
+        this.activeLabSubTab = subTab;
+        const subviews = ['orders', 'catalog', 'partners'];
+        subviews.forEach(s => {
+            const el = document.getElementById(`lab-view-${s}`);
+            const btn = document.getElementById(`lab-subtab-${s}`);
+            if (el) el.classList.toggle('hidden', s !== subTab);
+            if (btn) {
+                if (s === subTab) {
+                    btn.className = 'btn-press px-4 py-2 rounded-xl text-xs font-bold bg-cyan-600 text-white shadow-sm transition';
+                } else {
+                    btn.className = 'btn-press px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition';
+                }
+            }
+        });
+        if (subTab === 'catalog') {
+            this.renderLabCatalog();
+        } else if (subTab === 'partners') {
+            this.renderLabPartners();
+        } else {
+            this.renderLabOrders();
+        }
+    },
+
+    renderLabCatalog(customList) {
+        const tbody = document.getElementById('lab-catalog-table-body');
+        if (!tbody) return;
+
+        const allTests = (window.MedicalCatalog && MedicalCatalog.labTests) ? MedicalCatalog.labTests : this.labCatalog;
+        const list = customList || allTests.filter(t => {
+            if (this.selectedLabCategory === 'all') return true;
+            return t.category === this.selectedLabCategory;
+        });
+
+        if (!list || list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-xs text-slate-400">لا توجد تحاليل مطابقة للبحث أو التصنيف المحدد.</td></tr>`;
+            return;
+        }
+
+        const categoryBadges = {
+            hematology: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">🩸 أمراض الدم</span>',
+            biochemistry: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300">🧪 كيمياء حيوية</span>',
+            endocrinology: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">🧬 هرمونات وغدد</span>',
+            immunology: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">🛡️ مناعة وأمصال</span>',
+            microbiology: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">🔬 ميكروبيولوجي</span>',
+            tumor_markers: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">🎯 دلالات أورام</span>'
+        };
+
+        const tubeColorClasses = {
+            purple: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-200 dark:border-purple-800',
+            yellow: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800',
+            red: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800',
+            blue: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border border-sky-200 dark:border-sky-800',
+            green: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800',
+            grey: 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-700',
+            sterile_cup: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border border-teal-200 dark:border-teal-800',
+            swab: 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300 border border-orange-200 dark:border-orange-800'
+        };
+
+        tbody.innerHTML = list.map(test => {
+            const tubeClass = tubeColorClasses[test.tube_color] || 'bg-slate-100 text-slate-700';
+            const catBadge = categoryBadges[test.category] || `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">${test.category}</span>`;
+            const paramCount = (test.default_parameters && test.default_parameters.length) || 1;
+            const prepNotes = test.prep_notes_ar || (test.fasting_hours ? `صيام ${test.fasting_hours} ساعة` : 'بدون صيام');
+
+            return `
+                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
+                    <td class="py-3 px-3">
+                        <span class="font-mono font-bold text-cyan-700 dark:text-cyan-400 text-xs">${test.key ? test.key.toUpperCase() : test.id}</span>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="font-bold text-slate-900 dark:text-white">${test.name_ar}</div>
+                        <div class="text-[11px] text-slate-400 font-mono">${test.name_en}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        ${catBadge}
+                    </td>
+                    <td class="py-3 px-3">
+                        <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${tubeClass}">${test.tube_name_ar}</span>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="text-xs text-slate-700 dark:text-slate-300">${prepNotes}</div>
+                    </td>
+                    <td class="py-3 px-3 font-mono text-slate-600 dark:text-slate-400 text-xs">
+                        ⏱️ ${test.tat_hours ? test.tat_hours + ' ساعة' : 'خلال اليوم'}
+                    </td>
+                    <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400 text-xs">
+                        ${Utils.formatCurrency(test.cost)}
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                        <button onclick="ClinicAdminApp.openLabDetailsModal('${test.key || test.id}')" class="btn-press px-2.5 py-1 rounded-lg bg-cyan-50 dark:bg-cyan-950 text-cyan-600 dark:text-cyan-400 font-bold text-[11px] hover:bg-cyan-100 transition">
+                            📋 ${paramCount} بارامتر
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    filterLabCatalog(category) {
+        this.selectedLabCategory = category;
+        const cats = ['all', 'hematology', 'biochemistry', 'endocrinology', 'immunology', 'microbiology', 'tumor_markers'];
+        cats.forEach(c => {
+            const btn = document.getElementById(`lab-cat-pill-${c}`);
+            if (btn) {
+                if (c === category) {
+                    btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-600 text-white transition';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition';
+                }
+            }
+        });
+        this.renderLabCatalog();
+    },
+
+    searchLabCatalog() {
+        const query = (document.getElementById('lab-catalog-search-input')?.value || '').toLowerCase().trim();
+        const allTests = (window.MedicalCatalog && MedicalCatalog.labTests) ? MedicalCatalog.labTests : this.labCatalog;
+
+        const filtered = allTests.filter(t => {
+            const matchCategory = this.selectedLabCategory === 'all' || t.category === this.selectedLabCategory;
+            const matchQuery = !query || 
+                t.name_ar.toLowerCase().includes(query) || 
+                t.name_en.toLowerCase().includes(query) || 
+                (t.key && t.key.toLowerCase().includes(query)) ||
+                (t.tube_name_ar && t.tube_name_ar.toLowerCase().includes(query));
+            return matchCategory && matchQuery;
+        });
+
+        this.renderLabCatalog(filtered);
+    },
+
+    openLabDetailsModal(testKey) {
+        const allTests = (window.MedicalCatalog && MedicalCatalog.labTests) ? MedicalCatalog.labTests : this.labCatalog;
+        const test = allTests.find(t => (t.key === testKey || t.id === testKey));
+        if (!test) return;
+
+        const modal = document.getElementById('admin-lab-details-modal');
+        const title = document.getElementById('admin-lab-details-title');
+        const content = document.getElementById('admin-lab-details-content');
+        if (!modal || !content) return;
+
+        title.textContent = `${test.name_ar} (${test.name_en})`;
+
+        const paramsHtml = (test.default_parameters && test.default_parameters.length > 0) ? `
+            <div class="mt-3">
+                <h5 class="text-xs font-bold text-slate-800 dark:text-slate-200 mb-2">البارامترات والنسب الطبيعية (Reference Ranges):</h5>
+                <div class="table-responsive-wrapper border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                    <table class="w-full text-right text-[11px]">
+                        <thead class="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                            <tr>
+                                <th class="py-1.5 px-2.5">المعيار</th>
+                                <th class="py-1.5 px-2.5">الوحدة</th>
+                                <th class="py-1.5 px-2.5">المعدل الطبيعي</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            ${test.default_parameters.map(p => `
+                                <tr>
+                                    <td class="py-1 px-2.5 font-bold">${p.name}</td>
+                                    <td class="py-1 px-2.5 font-mono text-slate-400">${p.unit || '—'}</td>
+                                    <td class="py-1 px-2.5 font-mono text-emerald-600 dark:text-emerald-400">${p.ref || '—'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        ` : '<p class="text-xs text-slate-400">فحص مخبري مباشر بدون معايير فرعية متعددة.</p>';
+
+        content.innerHTML = `
+            <div class="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl text-xs">
+                <div>
+                    <span class="text-slate-400">التصنيف الطبي:</span>
+                    <div class="font-bold text-slate-900 dark:text-white mt-0.5">${test.category}</div>
+                </div>
+                <div>
+                    <span class="text-slate-400">نوع الأنبوبة والعينة:</span>
+                    <div class="font-bold text-slate-900 dark:text-white mt-0.5">${test.tube_name_ar} (${test.tube_name_en})</div>
+                </div>
+                <div>
+                    <span class="text-slate-400">شروط التحضير والصيام:</span>
+                    <div class="font-bold text-slate-900 dark:text-white mt-0.5">${test.prep_notes_ar || (test.fasting_hours ? 'صيام ' + test.fasting_hours + ' ساعة' : 'لا يشترط صيام')}</div>
+                </div>
+                <div>
+                    <span class="text-slate-400">زمن ظهور النتيجة:</span>
+                    <div class="font-bold text-slate-900 dark:text-white mt-0.5">${test.tat_hours ? test.tat_hours + ' ساعة' : 'نفس اليوم'}</div>
+                </div>
+                <div>
+                    <span class="text-slate-400">سعر الفحص للجمهور:</span>
+                    <div class="font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 font-mono">${Utils.formatCurrency(test.cost)}</div>
+                </div>
+                <div>
+                    <span class="text-slate-400">تكلفة التعاقد الخارجي (B2B):</span>
+                    <div class="font-bold text-cyan-600 dark:text-cyan-400 mt-0.5 font-mono">${Utils.formatCurrency(test.out_source_cost || test.cost * 0.65)}</div>
+                </div>
+            </div>
+            ${paramsHtml}
+        `;
+
+        modal.classList.remove('hidden');
+    },
+
+    exportLabCatalogExcel() {
+        const tests = (window.MedicalCatalog && MedicalCatalog.labTests) ? MedicalCatalog.labTests : this.labCatalog;
+        if (window.Reports && Reports.exportLabCatalogReport) {
+            Reports.exportLabCatalogReport(tests);
+        } else {
+            Utils.showToast('جاري تصدير دليل التحاليل...', 'info');
+        }
+    },
+
+    renderLabPartners() {
+        const cardsEl = document.getElementById('lab-partners-cards');
+        const tableBody = document.getElementById('lab-outsource-table-body');
+        const centers = (window.MedicalCatalog ? MedicalCatalog.diagnosticCenters : []).filter(c => c.type === 'lab' || c.type === 'integrated');
+
+        if (cardsEl && centers.length > 0) {
+            cardsEl.innerHTML = centers.map(c => `
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${c.logo}</span>
+                            <div>
+                                <h4 class="font-bold text-slate-900 dark:text-white text-xs">${c.name_ar}</h4>
+                                <p class="text-[10px] text-slate-400 font-mono">${c.name_en}</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.is_inhouse ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'}">
+                            ${c.is_inhouse ? 'معمل داخلي' : 'شريك خارجي B2B'}
+                        </span>
+                    </div>
+                    <div class="text-xs text-slate-600 dark:text-slate-400 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span>نسبة الخصم B2B:</span>
+                            <span class="font-mono font-bold text-emerald-600">${c.discount_rate}%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>الهاتف:</span>
+                            <span class="font-mono text-slate-700 dark:text-slate-300">${c.phone}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>الاعتماد:</span>
+                            <span class="text-[11px] font-semibold text-slate-800 dark:text-slate-200">${c.accredited ? 'معتمد دولياً (CAP / ISO)' : 'معتمد'}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        if (tableBody) {
+            const mockOutsources = [
+                { id: 'OUT-LAB-101', patient: 'أحمد محمود رضوان', test: 'تحليل جينات تجلط الدم (Factor V Leiden)', partner: 'معمل المختبر Al Mokhtabar', b2b_cost: 950, patient_price: 1350, margin: 400, status: 'جاري السحب والتحويل' },
+                { id: 'OUT-LAB-102', patient: 'سارة خالد المنشاوي', test: 'فصل كهربائي للهيموجلوبين (Hb Electrophoresis)', partner: 'معمل البرج Al Borg', b2b_cost: 280, patient_price: 450, margin: 170, status: 'تم استلام النتيجة' },
+                { id: 'OUT-LAB-103', patient: 'محمود عبد العزيز', test: 'الأجسام المضادة للغدة الدرقية (Anti-TPO & Anti-TG)', partner: 'معمل المختبر Al Mokhtabar', b2b_cost: 320, patient_price: 520, margin: 200, status: 'معتمدة ومسلمة' }
+            ];
+
+            tableBody.innerHTML = mockOutsources.map(row => `
+                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
+                    <td class="py-2.5 px-3">
+                        <div class="font-mono font-bold text-cyan-600 text-xs">${row.id}</div>
+                        <div class="font-semibold text-slate-800 dark:text-slate-200 text-xs">${row.patient}</div>
+                    </td>
+                    <td class="py-2.5 px-3 font-semibold text-slate-800 dark:text-slate-200 text-xs">${row.test}</td>
+                    <td class="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-300">${row.partner}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-slate-700 dark:text-slate-300 text-xs">${Utils.formatCurrency(row.b2b_cost)}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400 text-xs">${Utils.formatCurrency(row.patient_price)}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-cyan-600 dark:text-cyan-400 text-xs">+${Utils.formatCurrency(row.margin)}</td>
+                    <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300">${row.status}</span></td>
+                </tr>
+            `).join('');
+        }
+    },
+
     // =========================================================================
     // موديول الأشعة التشخيصية (RIS - Radiology Information System)
     // =========================================================================
@@ -2296,35 +2625,44 @@ const ClinicAdminApp = {
         const costInput = document.getElementById('rad-order-cost-input');
         if (!examSelect) return;
 
-        const modalityExams = {
-            'X-Ray': [
-                { name: 'أشعة سينية على الصدر (Chest X-Ray PA)', cost: 250 },
-                { name: 'أشعة عادية على مفصل الركبة (Knee AP & Lateral)', cost: 280 },
-                { name: 'أشعة على الفقرات القطنية والعجزية (Lumbosacral AP & Lat)', cost: 320 },
-                { name: 'أشعة على الجيوب الأنفية (PNS Water’s view)', cost: 220 }
-            ],
-            'MRI': [
-                { name: 'رنين مغناطيسي على الفقرات القطنية (Lumbar MRI)', cost: 1200 },
-                { name: 'رنين مغناطيسي على المخ (Brain MRI)', cost: 1400 },
-                { name: 'رنين مغناطيسي على مفصل الركبة (Knee MRI)', cost: 1200 },
-                { name: 'رنين مغناطيسي على الكتف (Shoulder MRI)', cost: 1250 }
-            ],
-            'CT': [
-                { name: 'أشعة مقطعية على المخ (Brain CT)', cost: 850 },
-                { name: 'أشعة مقطعية على الصدر (Chest CT High Resolution)', cost: 1100 },
-                { name: 'أشعة مقطعية ثلاثية المراحل على البطن والحوض (Triphasic CT Abdomen)', cost: 1600 }
-            ],
-            'Ultrasound': [
-                { name: 'سونار على البطن والحوض (Pelvi-Abdominal Ultrasound)', cost: 450 },
-                { name: 'سونار ودوبلر ملون على شرايين الساقين (Lower Limb Arterial Doppler)', cost: 650 },
-                { name: 'سونار على الغدة الدرقية (Thyroid Ultrasound)', cost: 400 }
-            ],
-            'Mammography': [
-                { name: 'أشعة ماموجرام رقمية على الثديين (Bilateral Digital Mammography)', cost: 900 }
-            ]
-        };
+        let list = [];
+        if (window.MedicalCatalog && MedicalCatalog.radiologyExams) {
+            list = MedicalCatalog.radiologyExams
+                .filter(e => e.modality === modality || (modality === 'Mammography' && e.modality === 'Specialized'))
+                .map(e => ({ name: `${e.name_ar} (${e.name_en})`, cost: e.cost }));
+        }
 
-        const list = modalityExams[modality] || modalityExams['X-Ray'];
+        if (list.length === 0) {
+            const modalityExams = {
+                'X-Ray': [
+                    { name: 'أشعة سينية على الصدر (Chest X-Ray PA)', cost: 250 },
+                    { name: 'أشعة عادية على مفصل الركبة (Knee AP & Lateral)', cost: 280 },
+                    { name: 'أشعة على الفقرات القطنية والعجزية (Lumbosacral AP & Lat)', cost: 320 },
+                    { name: 'أشعة على الجيوب الأنفية (PNS Water’s view)', cost: 220 }
+                ],
+                'MRI': [
+                    { name: 'رنين مغناطيسي على الفقرات القطنية (Lumbar MRI)', cost: 1200 },
+                    { name: 'رنين مغناطيسي على المخ (Brain MRI)', cost: 1400 },
+                    { name: 'رنين مغناطيسي على مفصل الركبة (Knee MRI)', cost: 1200 },
+                    { name: 'رنين مغناطيسي على الكتف (Shoulder MRI)', cost: 1250 }
+                ],
+                'CT': [
+                    { name: 'أشعة مقطعية على المخ (Brain CT)', cost: 850 },
+                    { name: 'أشعة مقطعية على الصدر (Chest CT High Resolution)', cost: 1100 },
+                    { name: 'أشعة مقطعية ثلاثية المراحل على البطن والحوض (Triphasic CT Abdomen)', cost: 1600 }
+                ],
+                'Ultrasound': [
+                    { name: 'سونار على البطن والحوض (Pelvi-Abdominal Ultrasound)', cost: 450 },
+                    { name: 'سونار ودوبلر ملون على شرايين الساقين (Lower Limb Arterial Doppler)', cost: 650 },
+                    { name: 'سونار على الغدة الدرقية (Thyroid Ultrasound)', cost: 400 }
+                ],
+                'Mammography': [
+                    { name: 'أشعة ماموجرام رقمية على الثديين (Bilateral Digital Mammography)', cost: 900 }
+                ]
+            };
+            list = modalityExams[modality] || modalityExams['X-Ray'];
+        }
+
         examSelect.innerHTML = list.map(item => `
             <option value="${item.name}" data-cost="${item.cost}">${item.name} (${Utils.formatCurrency(item.cost)})</option>
         `).join('');
@@ -2471,6 +2809,195 @@ const ClinicAdminApp = {
             Reports.exportRadiologyReport({}, this.radiologyStudies);
         } else {
             Utils.showToast('جاري تصدير تقرير الأشعة...', 'info');
+        }
+    },
+
+    switchRadSubTab(subTab) {
+        this.activeRadSubTab = subTab;
+        const subviews = ['worklist', 'catalog', 'partners'];
+        subviews.forEach(s => {
+            const el = document.getElementById(`rad-view-${s}`);
+            const btn = document.getElementById(`rad-subtab-${s}`);
+            if (el) el.classList.toggle('hidden', s !== subTab);
+            if (btn) {
+                if (s === subTab) {
+                    btn.className = 'btn-press px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition';
+                } else {
+                    btn.className = 'btn-press px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition';
+                }
+            }
+        });
+        if (subTab === 'catalog') {
+            this.renderRadCatalog();
+        } else if (subTab === 'partners') {
+            this.renderRadPartners();
+        } else {
+            this.renderRadiologyStudies();
+        }
+    },
+
+    renderRadCatalog(customList) {
+        const tbody = document.getElementById('rad-catalog-table-body');
+        if (!tbody) return;
+
+        const allExams = (window.MedicalCatalog && MedicalCatalog.radiologyExams) ? MedicalCatalog.radiologyExams : [];
+        const list = customList || allExams.filter(e => {
+            if (this.selectedRadModality === 'all') return true;
+            return e.modality === this.selectedRadModality;
+        });
+
+        if (!list || list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-xs text-slate-400">لا توجد فحوصات أشعة مطابقة للبحث أو الجهاز المحدد.</td></tr>`;
+            return;
+        }
+
+        const modBadges = {
+            'X-Ray': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">🦴 أشعة سينية</span>',
+            'Ultrasound': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300">📡 سونار ودوبلر</span>',
+            'CT': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">🌀 مقطعية CT</span>',
+            'MRI': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">🧲 رنين MRI</span>',
+            'Specialized': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">✨ متخصصة</span>'
+        };
+
+        tbody.innerHTML = list.map(exam => {
+            const modBadge = modBadges[exam.modality] || `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100">${exam.modality}</span>`;
+            const contrastBadge = exam.contrast 
+                ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">بالصبغة (Contrast)</span>'
+                : '<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">بدون صبغة (Plain)</span>';
+
+            return `
+                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
+                    <td class="py-3 px-3">
+                        <span class="font-mono font-bold text-indigo-700 dark:text-indigo-400 text-xs">${exam.key ? exam.key.toUpperCase() : exam.id}</span>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="font-bold text-slate-900 dark:text-white">${exam.name_ar}</div>
+                        <div class="text-[11px] text-slate-400 font-mono">${exam.name_en}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        ${modBadge}
+                    </td>
+                    <td class="py-3 px-3 text-xs text-slate-700 dark:text-slate-300">
+                        ${exam.body_region || 'عام'}
+                    </td>
+                    <td class="py-3 px-3">
+                        ${contrastBadge}
+                    </td>
+                    <td class="py-3 px-3 text-xs text-slate-600 dark:text-slate-400">
+                        ${exam.prep_notes_ar || (exam.fasting_hours ? 'صيام ' + exam.fasting_hours + ' ساعات' : 'بدون تحضير')}
+                    </td>
+                    <td class="py-3 px-3 font-mono text-slate-600 dark:text-slate-400 text-xs">
+                        ⏱️ ${exam.duration_min ? exam.duration_min + ' دقيقة' : '15 دقيقة'}
+                    </td>
+                    <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400 text-xs">
+                        ${Utils.formatCurrency(exam.cost)}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    filterRadCatalog(modality) {
+        this.selectedRadModality = modality;
+        const mods = ['all', 'X-Ray', 'Ultrasound', 'CT', 'MRI', 'Specialized'];
+        mods.forEach(m => {
+            const btn = document.getElementById(`rad-cat-pill-${m}`);
+            if (btn) {
+                if (m === modality) {
+                    btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition';
+                }
+            }
+        });
+        this.renderRadCatalog();
+    },
+
+    searchRadCatalog() {
+        const query = (document.getElementById('rad-catalog-search-input')?.value || '').toLowerCase().trim();
+        const allExams = (window.MedicalCatalog && MedicalCatalog.radiologyExams) ? MedicalCatalog.radiologyExams : [];
+
+        const filtered = allExams.filter(e => {
+            const matchModality = this.selectedRadModality === 'all' || e.modality === this.selectedRadModality;
+            const matchQuery = !query || 
+                e.name_ar.toLowerCase().includes(query) || 
+                e.name_en.toLowerCase().includes(query) || 
+                (e.key && e.key.toLowerCase().includes(query)) ||
+                (e.body_region && e.body_region.toLowerCase().includes(query));
+            return matchModality && matchQuery;
+        });
+
+        this.renderRadCatalog(filtered);
+    },
+
+    exportRadCatalogExcel() {
+        const exams = (window.MedicalCatalog && MedicalCatalog.radiologyExams) ? MedicalCatalog.radiologyExams : [];
+        if (window.Reports && Reports.exportRadiologyCatalogReport) {
+            Reports.exportRadiologyCatalogReport(exams);
+        } else {
+            Utils.showToast('جاري تصدير دليل الأشعة...', 'info');
+        }
+    },
+
+    renderRadPartners() {
+        const cardsEl = document.getElementById('rad-partners-cards');
+        const tableBody = document.getElementById('rad-outsource-table-body');
+        const centers = (window.MedicalCatalog ? MedicalCatalog.diagnosticCenters : []).filter(c => c.type === 'radiology' || c.type === 'integrated');
+
+        if (cardsEl && centers.length > 0) {
+            cardsEl.innerHTML = centers.map(c => `
+                <div class="card-hover bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${c.logo}</span>
+                            <div>
+                                <h4 class="font-bold text-slate-900 dark:text-white text-xs">${c.name_ar}</h4>
+                                <p class="text-[10px] text-slate-400 font-mono">${c.name_en}</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.is_inhouse ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'}">
+                            ${c.is_inhouse ? 'مركز داخلي' : 'شريك خارجي B2B'}
+                        </span>
+                    </div>
+                    <div class="text-xs text-slate-600 dark:text-slate-400 space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span>نسبة الخصم B2B:</span>
+                            <span class="font-mono font-bold text-emerald-600">${c.discount_rate}%</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>الهاتف:</span>
+                            <span class="font-mono text-slate-700 dark:text-slate-300">${c.phone}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>الأجهزة المتاحة:</span>
+                            <span class="text-[11px] font-semibold text-slate-800 dark:text-slate-200">${c.modalities_offered ? c.modalities_offered.join(' • ') : 'MRI, CT'}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        if (tableBody) {
+            const mockOutsources = [
+                { id: 'OUT-RAD-201', patient: 'ياسر كمال الصاوي', exam: 'رنين مغناطيسي 3 تسلا على المخ والرقبة (Brain & C-Spine)', partner: 'كايرو سكان Cairo Scan', b2b_cost: 1750, patient_price: 2400, margin: 650, status: 'تم إجراء الفحص واستلام CD' },
+                { id: 'OUT-RAD-202', patient: 'منى فؤاد الشريف', exam: 'أشعة مقطعية شرايين القلب التاجية (Coronary CT Angio)', partner: 'ألفا سكان Alfa Scan', b2b_cost: 2100, patient_price: 2900, margin: 800, status: 'بانتظار التقرير الطبي' },
+                { id: 'OUT-RAD-203', patient: 'خالد مصطفى العوضي', exam: 'أشعة عادية على العمود الفقري كامل (Full Spine X-Ray)', partner: 'كايرو سكان Cairo Scan', b2b_cost: 380, patient_price: 550, margin: 170, status: 'مكتمل ومعتمد' }
+            ];
+
+            tableBody.innerHTML = mockOutsources.map(row => `
+                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
+                    <td class="py-2.5 px-3">
+                        <div class="font-mono font-bold text-indigo-600 text-xs">${row.id}</div>
+                        <div class="font-semibold text-slate-800 dark:text-slate-200 text-xs">${row.patient}</div>
+                    </td>
+                    <td class="py-2.5 px-3 font-semibold text-slate-800 dark:text-slate-200 text-xs">${row.exam}</td>
+                    <td class="py-2.5 px-3 text-xs text-slate-600 dark:text-slate-300">${row.partner}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-slate-700 dark:text-slate-300 text-xs">${Utils.formatCurrency(row.b2b_cost)}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400 text-xs">${Utils.formatCurrency(row.patient_price)}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-indigo-600 dark:text-indigo-400 text-xs">+${Utils.formatCurrency(row.margin)}</td>
+                    <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300">${row.status}</span></td>
+                </tr>
+            `).join('');
         }
     },
 
@@ -3432,6 +3959,146 @@ const ClinicAdminApp = {
             Reports.exportMedicalPackagesReport(this.medicalPackages);
         } else {
             Utils.showToast('جاري تصدير تقرير باقات الفحص الطبي الشامل...', 'info');
+        }
+    },
+
+    // =========================================================================
+    // موديول إجراءات العيادات التخصصية (Clinical Procedures Hub)
+    // =========================================================================
+    renderClinicProcedures(customList) {
+        const tbody = document.getElementById('admin-procedures-table-body');
+        if (!tbody) return;
+
+        const allProcs = (this.clinicProcedures && this.clinicProcedures.length > 0)
+            ? this.clinicProcedures
+            : ((window.MedicalCatalog && MedicalCatalog.clinicProcedures) ? MedicalCatalog.clinicProcedures : []);
+
+        const list = customList || allProcs.filter(p => {
+            if (this.selectedProcSpecialty === 'all') return true;
+            return p.specialty === this.selectedProcSpecialty;
+        });
+
+        if (!list || list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-xs text-slate-400">لا توجد إجراءات طبية مطابقة للبحث أو التخصص المحدد.</td></tr>`;
+            return;
+        }
+
+        const specBadges = {
+            internal: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">باطنة وصدرية</span>',
+            cardio: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">أمراض القلب</span>',
+            ortho: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">عظام ومفاصل</span>',
+            ent: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">أنف وأذن</span>',
+            ophth: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300">طب العيون</span>',
+            obgyn: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-pink-100 text-pink-800 dark:bg-pink-950 dark:text-pink-300">نساء وتوليد</span>',
+            derma: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">جلدية وجراحة صغرى</span>'
+        };
+
+        // Update KPIs
+        const totalCount = allProcs.length;
+        const totalRev = allProcs.reduce((acc, p) => acc + (p.fee || 0), 0);
+        const avgComm = Math.round(allProcs.reduce((acc, p) => acc + (p.doctor_commission_rate || 35), 0) / (totalCount || 1));
+
+        const kpiCount = document.getElementById('admin-proc-kpi-count');
+        const kpiRev = document.getElementById('admin-proc-kpi-rev');
+        const kpiComm = document.getElementById('admin-proc-kpi-comm');
+        if (kpiCount) kpiCount.textContent = `${totalCount} إجراء`;
+        if (kpiRev) kpiRev.textContent = `${Utils.formatCurrency(totalRev * 4)}`; // projected monthly
+        if (kpiComm) kpiComm.textContent = `متوسط ${avgComm}%`;
+
+        tbody.innerHTML = list.map(proc => {
+            const specBadge = specBadges[proc.specialty] || `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100">${proc.specialty}</span>`;
+            const docCommissionVal = Math.round(proc.fee * (proc.doctor_commission_rate / 100));
+            const clinicShareVal = proc.fee - docCommissionVal;
+
+            return `
+                <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
+                    <td class="py-3 px-3">
+                        <span class="font-mono font-bold text-indigo-700 dark:text-indigo-400 text-xs">${proc.code || proc.id}</span>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="font-bold text-slate-900 dark:text-white">${proc.name_ar}</div>
+                        <div class="text-[11px] text-slate-400 font-mono">${proc.name_en}</div>
+                    </td>
+                    <td class="py-3 px-3">
+                        ${specBadge}
+                    </td>
+                    <td class="py-3 px-3 text-xs text-slate-700 dark:text-slate-300">
+                        ${proc.equipment || 'أدوات غرفة الكشف'}
+                    </td>
+                    <td class="py-3 px-3 text-xs text-slate-600 dark:text-slate-400">
+                        ${proc.consumables || 'مستهلكات معقمة'}
+                    </td>
+                    <td class="py-3 px-3 font-mono text-slate-600 dark:text-slate-400 text-xs">
+                        ⏱️ ${proc.duration_min ? proc.duration_min + ' دقيقة' : '15 دقيقة'}
+                    </td>
+                    <td class="py-3 px-3 font-mono text-xs">
+                        <span class="font-bold text-amber-600 dark:text-amber-400">${proc.doctor_commission_rate}%</span>
+                        <div class="text-[10px] text-slate-400">(${Utils.formatCurrency(docCommissionVal)})</div>
+                    </td>
+                    <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400 text-xs">
+                        ${Utils.formatCurrency(proc.fee)}
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="flex items-center gap-1.5 justify-center">
+                            <span class="text-[10px] font-bold text-slate-600 dark:text-slate-300">عيادة ${Utils.formatCurrency(clinicShareVal)}</span>
+                            <span class="text-[10px] text-slate-400">/</span>
+                            <span class="text-[10px] font-bold text-amber-600 dark:text-amber-400">طبيب ${Utils.formatCurrency(docCommissionVal)}</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    filterClinicProcedures(specialty) {
+        this.selectedProcSpecialty = specialty;
+        const specs = ['all', 'internal', 'cardio', 'ortho', 'ent', 'ophth', 'obgyn', 'derma'];
+        specs.forEach(s => {
+            const btn = document.getElementById(`proc-pill-${s}`);
+            if (btn) {
+                if (s === specialty) {
+                    btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition';
+                }
+            }
+        });
+        this.renderClinicProcedures();
+    },
+
+    searchClinicProcedures() {
+        const query = (document.getElementById('admin-proc-search-input')?.value || '').toLowerCase().trim();
+        const allProcs = (this.clinicProcedures && this.clinicProcedures.length > 0)
+            ? this.clinicProcedures
+            : ((window.MedicalCatalog && MedicalCatalog.clinicProcedures) ? MedicalCatalog.clinicProcedures : []);
+
+        const filtered = allProcs.filter(p => {
+            const matchSpec = this.selectedProcSpecialty === 'all' || p.specialty === this.selectedProcSpecialty;
+            const matchQuery = !query || 
+                p.name_ar.toLowerCase().includes(query) || 
+                p.name_en.toLowerCase().includes(query) || 
+                (p.code && p.code.toLowerCase().includes(query)) ||
+                (p.equipment && p.equipment.toLowerCase().includes(query));
+            return matchSpec && matchQuery;
+        });
+
+        this.renderClinicProcedures(filtered);
+    },
+
+    openAdminAddProcedureModal() {
+        const modal = document.getElementById('admin-add-procedure-modal');
+        if (modal) modal.classList.remove('hidden');
+    },
+
+    exportClinicProceduresExcel() {
+        const allProcs = (this.clinicProcedures && this.clinicProcedures.length > 0)
+            ? this.clinicProcedures
+            : ((window.MedicalCatalog && MedicalCatalog.clinicProcedures) ? MedicalCatalog.clinicProcedures : []);
+
+        if (window.Reports && Reports.exportClinicProceduresReport) {
+            Reports.exportClinicProceduresReport(allProcs);
+        } else {
+            Utils.showToast('جاري تصدير دليل الإجراءات...', 'info');
         }
     },
 
