@@ -1057,22 +1057,23 @@ const Reports = {
      */
     exportPharmacyInventoryReport(filterInfo, drugsData) {
         try {
-            const list = drugsData || [];
+            const list = (drugsData && drugsData.length > 0) ? drugsData : (window.MedicalCatalog ? window.MedicalCatalog.medications : []);
             const rows = list.map((drug, idx) => ({
                 'م': idx + 1,
-                'الاسم التجاري للدواء': drug.name,
+                'الاسم التجاري للدواء': drug.name || (drug.trade_name_ar ? (drug.trade_name + ' (' + drug.trade_name_ar + ')') : drug.trade_name),
                 'الاسم العلمي (Generic)': drug.generic_name || '—',
-                'الشكل الصيدلاني': drug.dosage_form || 'أقراص',
+                'المجموعة العلاجية': drug.category_ar || drug.category || 'عام',
+                'الشكل الصيدلاني': drug.dosage_form || drug.form_ar || drug.form || 'أقراص',
                 'التركيز والعيار': drug.strength || '500 mg',
                 'رقم التشغيلة (Batch)': drug.batch_no || 'BATCH-2026',
-                'تاريخ الصلاحية (Expiry)': drug.expiry_date,
-                'الرصيد المتاح بالمخزن': Number(drug.stock_qty || 0),
+                'تاريخ الصلاحية (Expiry)': drug.expiry_date || '—',
+                'الرصيد المتاح بالمخزن': Number(drug.stock_qty !== undefined ? drug.stock_qty : (drug.stock_quantity || drug.stock || 0)),
                 'حد إعادة الطلب الأدنى': Number(drug.reorder_level || 10),
-                'سعر التكلفة (ج.م)': Number(drug.cost_price || 0),
-                'سعر البيع للجمهور (ج.م)': Number(drug.selling_price || 0),
-                'إجمالي قيمة المخزون البيعية (ج.م)': Number((drug.stock_qty || 0) * (drug.selling_price || 0)),
+                'سعر التكلفة (ج.م)': Number(drug.cost_price !== undefined ? drug.cost_price : (drug.cost || 0)),
+                'سعر البيع للجمهور (ج.م)': Number(drug.selling_price !== undefined ? drug.selling_price : (drug.price || 0)),
+                'إجمالي قيمة المخزون البيعية (ج.م)': Number((drug.stock_qty !== undefined ? drug.stock_qty : (drug.stock_quantity || drug.stock || 0)) * (drug.selling_price !== undefined ? drug.selling_price : (drug.price || 0))),
                 'حالة الصلاحية': drug.expiry_status === 'expired' ? 'منتهي الصلاحية ⚠️' : (drug.expiry_status === 'expiring_soon' ? 'ينتهي قريباً (أقل من 90 يوم)' : 'ساري وصالح'),
-                'حالة الرصيد': (drug.stock_qty <= drug.reorder_level) ? 'رصيد حرج (أوشك على النفاد)' : 'رصيد كافي'
+                'حالة الرصيد': ((drug.stock_qty || drug.stock_quantity || 0) <= (drug.reorder_level || 10)) ? 'رصيد حرج (أوشك على النفاد)' : 'رصيد كافي'
             }));
 
             const dateStr = new Date().toISOString().split('T')[0];
@@ -1377,6 +1378,43 @@ const Reports = {
             Utils.showToast('تم تصدير دليل مراكز الأشعة والمعامل بنجاح 🏢', 'success');
         } catch (err) {
             Utils.showToast('تعذر تصدير تقرير المراكز: ' + err.message, 'error');
+        }
+    },
+
+    /**
+     * 32. تصدير دليل الأدوية والصيدلية الدوائية الشامل (Pharmacy Formulary & Medications Directory Report)
+     */
+    exportMedicationsCatalogReport(catalogList) {
+        try {
+            const list = catalogList || (window.MedicalCatalog ? window.MedicalCatalog.medications : []);
+            const rows = list.map((item, idx) => ({
+                'م': idx + 1,
+                'كود الصنف': item.code || `MED-${idx + 1}`,
+                'الاسم التجاري': item.trade_name_ar ? (item.trade_name + ' (' + item.trade_name_ar + ')') : (item.name || item.trade_name),
+                'الاسم العلمي والمادة الفعالة': item.generic_name || '—',
+                'المجموعة العلاجية': item.category_ar || item.category || 'عام',
+                'الشكل الصيدلاني': item.form_ar || item.form || 'أقراص',
+                'التركيز والعيار': item.strength || '—',
+                'الجرعة الافتراضية الموصى بها': item.default_dosage || 'حسب إرشادات الطبيب',
+                'سعر الجمهور (ج.م)': Number(item.selling_price || item.price || 0),
+                'سعر التكلفة (ج.م)': Number(item.cost_price || item.cost || 0),
+                'هامش الربح (ج.م)': Number((item.selling_price || item.price || 0) - (item.cost_price || item.cost || 0)),
+                'الرصيد المتاح بالمخزن': Number(item.stock_quantity || item.stock || item.stock_qty || 0),
+                'حد إعادة الطلب': Number(item.reorder_level || 20),
+                'رقم التشغيلة (Batch)': item.batch_no || '—',
+                'تاريخ انتهاء الصلاحية': item.expiry_date || '—',
+                'الباركود الدولي (Barcode)': item.barcode || '—',
+                'أمان الحمل (FDA)': item.pregnancy_category || '—',
+                'يتطلب روشتة طبية': item.requires_prescription ? 'نعم (Rx)' : 'لا (OTC)'
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`دليل_الأدوية_والمستحضرات_الدوائية_${dateStr}.xlsx`, [
+                { name: 'قائمة الأدوية الشاملة', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد أدوية مسجلة' }] }
+            ]);
+            Utils.showToast('تم تصدير الدليل الدوائي الشامل بنجاح 📗', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير دليل الأدوية: ' + err.message, 'error');
         }
     }
 };
