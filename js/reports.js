@@ -1262,6 +1262,122 @@ const Reports = {
         } catch (err) {
             Utils.showToast('تعذر تصدير تقرير الباقات: ' + err.message, 'error');
         }
+    },
+
+    /**
+     * 28. تصدير دليل وكتالوج التحاليل الطبية الشامل (LIS Tests Directory Report)
+     */
+    exportLabCatalogReport(catalogList) {
+        try {
+            const list = catalogList || (window.MedicalCatalog ? window.MedicalCatalog.labTests : []);
+            const rows = list.map((item, idx) => ({
+                'م': idx + 1,
+                'كود التحليل': item.code || `LAB-${idx + 1}`,
+                'اسم الفحص المخبري': item.name,
+                'التصنيف الطبي': item.category_name || item.category,
+                'نوع الأنبوبة والعينة': item.tube,
+                'تعليمات وشروط التحضير': item.prep,
+                'وقت خروج النتيجة (TAT)': item.tat,
+                'سعر الفحص (ج.م)': Number(item.cost || 0),
+                'عدد البارامترات المقاسة': item.parameters ? item.parameters.length : 1
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`دليل_التحاليل_الطبية_الشامل_${dateStr}.xlsx`, [
+                { name: 'كتالوج التحاليل الطبية (LIS)', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد تحاليل' }] }
+            ]);
+            Utils.showToast('تم تصدير دليل التحاليل الطبية الشامل بنجاح 🧪', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير دليل التحاليل: ' + err.message, 'error');
+        }
+    },
+
+    /**
+     * 29. تصدير دليل فحوصات الأشعة والتصوير الطبي (RIS Imaging Directory Report)
+     */
+    exportRadiologyCatalogReport(catalogList) {
+        try {
+            const list = catalogList || (window.MedicalCatalog ? window.MedicalCatalog.radiologyExams : []);
+            const rows = list.map((item, idx) => ({
+                'م': idx + 1,
+                'كود الفحص': item.code || `RAD-${idx + 1}`,
+                'اسم فحص الأشعة': item.name,
+                'نوع الجهاز (Modality)': item.modality,
+                'العضو / المنطقة المستهدفة': item.body_part,
+                'احتياج الصبغة (Contrast)': item.contrast ? 'نعم (IV Contrast)' : 'بدون صبغة (Plain)',
+                'تعليمات وإرشادات التحضير': item.prep,
+                'مدة الفحص التقديرية': item.duration,
+                'سعر الفحص (ج.م)': Number(item.cost || 0)
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`دليل_فحوصات_الأشعة_التشخيصية_${dateStr}.xlsx`, [
+                { name: 'كتالوج فحوصات الأشعة (RIS)', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد فحوصات' }] }
+            ]);
+            Utils.showToast('تم تصدير دليل فحوصات الأشعة بنجاح 🩻', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير دليل الأشعة: ' + err.message, 'error');
+        }
+    },
+
+    /**
+     * 30. تصدير دليل وقائمة إجراءات العيادات التخصصية (Clinic Procedures Directory Report)
+     */
+    exportClinicProceduresReport(proceduresList) {
+        try {
+            const list = proceduresList || (window.MedicalCatalog ? window.MedicalCatalog.clinicProcedures : []);
+            const rows = list.map((item, idx) => ({
+                'م': idx + 1,
+                'كود الإجراء': item.code || `PROC-${idx + 1}`,
+                'اسم التدخل / الإجراء الطبي': item.name,
+                'العيادة / التخصص الطبي': item.specialty_name || item.specialty,
+                'الأجهزة والمعدات المستخدمة': item.equipment,
+                'المستهلكات الطبية المطلوبة': item.consumables,
+                'زمن الإجراء': item.duration,
+                'نسبة عمولة الطبيب %': `${item.doctor_commission_rate || 30}%`,
+                'تكلفة الإجراء (ج.م)': Number(item.fee || 0),
+                'صافي حصة الطبيب (ج.م)': Number((item.fee || 0) * (item.doctor_commission_rate || 30) / 100),
+                'صافي حصة المركز (ج.م)': Number((item.fee || 0) * (100 - (item.doctor_commission_rate || 30)) / 100)
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`دليل_إجراءات_العيادات_التخصصية_${dateStr}.xlsx`, [
+                { name: 'إجراءات العيادات التخصصية', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد إجراءات' }] }
+            ]);
+            Utils.showToast('تم تصدير دليل إجراءات العيادات بنجاح 🩺', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير إجراءات العيادات: ' + err.message, 'error');
+        }
+    },
+
+    /**
+     * 31. تصدير سجل مراكز الأشعة والمعامل الشريكة (Diagnostic Centers & Partners Report)
+     */
+    exportDiagnosticCentersReport(centersList) {
+        try {
+            const list = centersList || (window.MedicalCatalog ? window.MedicalCatalog.diagnosticCenters : []);
+            const rows = list.map((item, idx) => ({
+                'م': idx + 1,
+                'اسم المركز / المعمل': item.name,
+                'التصنيف والنوع': item.type_label || item.type,
+                'المقر والنطاق': item.location,
+                'المسؤول الطبي / التنسيق': item.lead_specialist,
+                'أبرز الأجهزة والمواصفات': item.equipment_highlights,
+                'مواعيد وساعات العمل': item.operating_hours,
+                'متوسط زمن صدور النتائج': item.avg_tat,
+                'نسبة الخصم التجاري B2B %': item.b2b_discount ? `${item.b2b_discount}%` : 'داخلي (100%)',
+                'الطاقة الاستيعابية اليومية': item.daily_capacity,
+                'الحالة': item.status === 'active' ? 'نشط ويعمل' : 'معطل'
+            }));
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            this.downloadExcel(`دليل_مراكز_الأشعة_والمعامل_${dateStr}.xlsx`, [
+                { name: 'مراكز الأشعة والمعامل الشريكة', data: rows.length > 0 ? rows : [{ 'ملاحظة': 'لا توجد مراكز' }] }
+            ]);
+            Utils.showToast('تم تصدير دليل مراكز الأشعة والمعامل بنجاح 🏢', 'success');
+        } catch (err) {
+            Utils.showToast('تعذر تصدير تقرير المراكز: ' + err.message, 'error');
+        }
     }
 };
 
