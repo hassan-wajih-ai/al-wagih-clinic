@@ -23,6 +23,9 @@ const DoctorApp = {
         document.getElementById('doctor-title').textContent = `عيادة: ${this.currentDoctor.full_name || 'الكشف الطبي'}`;
 
         this.populateDrugSelect();
+        this.populateDocLabCatalog();
+        this.populateDocRadCatalog();
+        this.populateDocProcedures();
         this.initDentalOdontogram();
         await this.loadDoctorWaitingList();
         this.bindEvents();
@@ -224,6 +227,54 @@ const DoctorApp = {
         ];
     },
 
+    populateDocLabCatalog(selectedCat) {
+        const select = document.getElementById('doc-lab-test-select');
+        if (!select) return;
+
+        const allTests = (window.MedicalCatalog && MedicalCatalog.labTests) ? MedicalCatalog.labTests : [];
+        const cat = selectedCat || (document.getElementById('doc-lab-cat-select')?.value || 'all');
+        const list = allTests.filter(t => cat === 'all' || t.category === cat);
+
+        if (list.length === 0) {
+            select.innerHTML = '<option value="">لا توجد فحوصات في هذا التصنيف</option>';
+            return;
+        }
+
+        select.innerHTML = list.map(t => `
+            <option value="${t.key || t.id}" data-tube="${t.tube_name_ar}" data-cost="${t.cost}" data-fasting="${t.fasting_hours || 0}" data-prep="${t.prep_notes_ar || ''}">
+                ${t.name_ar} - ${t.name_en} (${Utils.formatCurrency(t.cost)})
+            </option>
+        `).join('');
+
+        this.onDocLabTestChanged();
+    },
+
+    onDocLabCategoryChanged() {
+        const cat = document.getElementById('doc-lab-cat-select')?.value || 'all';
+        this.populateDocLabCatalog(cat);
+    },
+
+    onDocLabTestChanged() {
+        const select = document.getElementById('doc-lab-test-select');
+        if (!select || select.selectedIndex === -1) return;
+
+        const opt = select.options[select.selectedIndex];
+        if (!opt) return;
+
+        const tube = opt.getAttribute('data-tube') || 'أنبوبة فحص';
+        const cost = opt.getAttribute('data-cost') || '250';
+        const fasting = opt.getAttribute('data-fasting') || '0';
+        const prep = opt.getAttribute('data-prep') || '';
+
+        const tubeEl = document.getElementById('doc-lab-tube-preview');
+        const prepEl = document.getElementById('doc-lab-prep-preview');
+        const costEl = document.getElementById('doc-lab-cost-preview');
+
+        if (tubeEl) tubeEl.textContent = tube;
+        if (prepEl) prepEl.textContent = prep ? prep : (parseInt(fasting) > 0 ? `صيام ${fasting} ساعة` : 'بدون صيام');
+        if (costEl) costEl.textContent = `${Utils.formatCurrency(parseFloat(cost))}`;
+    },
+
     openOrderLabModal() {
         if (!this.activeAppointment) {
             Utils.showToast('يرجى استدعاء مريض أولاً من قائمة الانتظار', 'warning');
@@ -231,6 +282,7 @@ const DoctorApp = {
         }
         const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
         document.getElementById('doc-lab-patient-name').value = patientName;
+        this.populateDocLabCatalog('all');
         document.getElementById('doctor-lab-modal').classList.remove('hidden');
     },
 
@@ -238,7 +290,7 @@ const DoctorApp = {
         if (!this.activeAppointment) return;
         const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
         const testSelect = document.getElementById('doc-lab-test-select');
-        const testName = testSelect.options[testSelect.selectedIndex].text;
+        const testName = testSelect.options[testSelect.selectedIndex]?.text || 'تحليل طبي';
         const notes = document.getElementById('doc-lab-notes').value.trim();
 
         const currentRx = document.getElementById('prescription-input').value;
@@ -248,6 +300,56 @@ const DoctorApp = {
         document.getElementById('doctor-lab-modal').classList.add('hidden');
     },
 
+    populateDocRadCatalog(selectedMod) {
+        const select = document.getElementById('doc-rad-exam-select');
+        if (!select) return;
+
+        const allExams = (window.MedicalCatalog && MedicalCatalog.radiologyExams) ? MedicalCatalog.radiologyExams : [];
+        const mod = selectedMod || (document.getElementById('doc-rad-mod-select')?.value || 'all');
+        const list = allExams.filter(e => mod === 'all' || e.modality === mod);
+
+        if (list.length === 0) {
+            select.innerHTML = '<option value="">لا توجد فحوصات في هذا الجهاز</option>';
+            return;
+        }
+
+        select.innerHTML = list.map(e => `
+            <option value="${e.key || e.id}" data-contrast="${e.contrast ? '1' : '0'}" data-cost="${e.cost}" data-duration="${e.duration_min}" data-prep="${e.prep_notes_ar || ''}">
+                [${e.modality}] ${e.name_ar} - ${e.name_en} (${Utils.formatCurrency(e.cost)})
+            </option>
+        `).join('');
+
+        this.onDocRadExamChanged();
+    },
+
+    onDocRadModalityChanged() {
+        const mod = document.getElementById('doc-rad-mod-select')?.value || 'all';
+        this.populateDocRadCatalog(mod);
+    },
+
+    onDocRadExamChanged() {
+        const select = document.getElementById('doc-rad-exam-select');
+        if (!select || select.selectedIndex === -1) return;
+
+        const opt = select.options[select.selectedIndex];
+        if (!opt) return;
+
+        const hasContrast = opt.getAttribute('data-contrast') === '1';
+        const cost = opt.getAttribute('data-cost') || '250';
+        const prep = opt.getAttribute('data-prep') || '';
+
+        const contrastEl = document.getElementById('doc-rad-contrast-preview');
+        const prepEl = document.getElementById('doc-rad-prep-preview');
+        const costEl = document.getElementById('doc-rad-cost-preview');
+
+        if (contrastEl) {
+            contrastEl.textContent = hasContrast ? '⚠️ بالصبغة (Contrast)' : 'بدون صبغة (Plain)';
+            contrastEl.className = hasContrast ? 'font-black text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-300';
+        }
+        if (prepEl) prepEl.textContent = prep || (hasContrast ? 'فحص وظائف كلى وصيام 4-6 ساعات' : 'بدون تحضير خاص');
+        if (costEl) costEl.textContent = `${Utils.formatCurrency(parseFloat(cost))}`;
+    },
+
     openOrderRadModal() {
         if (!this.activeAppointment) {
             Utils.showToast('يرجى استدعاء مريض أولاً من قائمة الانتظار', 'warning');
@@ -255,6 +357,7 @@ const DoctorApp = {
         }
         const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
         document.getElementById('doc-rad-patient-name').value = patientName;
+        this.populateDocRadCatalog('all');
         document.getElementById('doctor-rad-modal').classList.remove('hidden');
     },
 
@@ -262,7 +365,7 @@ const DoctorApp = {
         if (!this.activeAppointment) return;
         const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
         const examSelect = document.getElementById('doc-rad-exam-select');
-        const examName = examSelect.options[examSelect.selectedIndex].text;
+        const examName = examSelect.options[examSelect.selectedIndex]?.text || 'فحص أشعة';
         const notes = document.getElementById('doc-rad-notes').value.trim();
 
         const currentRx = document.getElementById('prescription-input').value;
@@ -270,6 +373,83 @@ const DoctorApp = {
 
         Utils.showToast(`تم إرسال طلب الأشعة (${examName}) لقسم الأشعة وتوثيقه بالروشتة 🩻`, 'success');
         document.getElementById('doctor-rad-modal').classList.add('hidden');
+    },
+
+    // Clinic Procedures in Doctor Dashboard
+    populateDocProcedures(selectedSpecialty) {
+        const select = document.getElementById('doc-proc-select');
+        if (!select) return;
+
+        const allProcs = (window.MedicalCatalog && MedicalCatalog.clinicProcedures) ? MedicalCatalog.clinicProcedures : [];
+        const spec = selectedSpecialty || (document.getElementById('doc-proc-specialty-select')?.value || 'all');
+        const list = allProcs.filter(p => spec === 'all' || p.specialty === spec);
+
+        if (list.length === 0) {
+            select.innerHTML = '<option value="">لا توجد إجراءات في هذا التخصص</option>';
+            return;
+        }
+
+        select.innerHTML = list.map(p => `
+            <option value="${p.id}" data-fee="${p.fee}" data-comm="${p.doctor_commission_rate}" data-duration="${p.duration_min}" data-room="${p.room || 'غرفة كشف'}">
+                ${p.name_ar} - ${p.name_en} (${Utils.formatCurrency(p.fee)})
+            </option>
+        `).join('');
+
+        this.onDocProcSelected();
+    },
+
+    onDocProcSpecialtyChanged() {
+        const spec = document.getElementById('doc-proc-specialty-select')?.value || 'all';
+        this.populateDocProcedures(spec);
+    },
+
+    onDocProcSelected() {
+        const select = document.getElementById('doc-proc-select');
+        if (!select || select.selectedIndex === -1) return;
+
+        const opt = select.options[select.selectedIndex];
+        if (!opt) return;
+
+        const fee = parseFloat(opt.getAttribute('data-fee') || '250');
+        const commRate = parseFloat(opt.getAttribute('data-comm') || '35');
+        const duration = opt.getAttribute('data-duration') || '15';
+        const room = opt.getAttribute('data-room') || 'غرفة كشف تخصصية';
+
+        const commVal = Math.round(fee * (commRate / 100));
+
+        const feeEl = document.getElementById('doc-proc-fee-preview');
+        const commEl = document.getElementById('doc-proc-commission-preview');
+        const durEl = document.getElementById('doc-proc-duration-preview');
+        const roomEl = document.getElementById('doc-proc-room-preview');
+
+        if (feeEl) feeEl.textContent = `${Utils.formatCurrency(fee)}`;
+        if (commEl) commEl.textContent = `${commRate}% (${Utils.formatCurrency(commVal)})`;
+        if (durEl) durEl.textContent = `المدة: ${duration} دقيقة`;
+        if (roomEl) roomEl.textContent = room;
+    },
+
+    openOrderProcedureModal() {
+        if (!this.activeAppointment) {
+            Utils.showToast('يرجى استدعاء مريض أولاً من قائمة الانتظار', 'warning');
+            return;
+        }
+        const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
+        document.getElementById('doc-proc-patient-name').value = patientName;
+        this.populateDocProcedures('all');
+        document.getElementById('doctor-procedure-modal').classList.remove('hidden');
+    },
+
+    submitOrderProcedure() {
+        if (!this.activeAppointment) return;
+        const select = document.getElementById('doc-proc-select');
+        const procName = select.options[select.selectedIndex]?.text || 'إجراء طبي';
+        const notes = document.getElementById('doc-proc-notes').value.trim();
+
+        const currentRx = document.getElementById('prescription-input').value;
+        document.getElementById('prescription-input').value = (currentRx ? currentRx + '\n' : '') + `[إجراء طبي مُنجز بالعيادة]: ${procName} ${notes ? '(' + notes + ')' : ''}`;
+
+        Utils.showToast(`تم توثيق الإجراء الطبي (${procName}) واحتساب عمولة الطبيب بنجاح 🩺`, 'success');
+        document.getElementById('doctor-procedure-modal').classList.add('hidden');
     },
 
     openPatientHistoryResultsModal() {
