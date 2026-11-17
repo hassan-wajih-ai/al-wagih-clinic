@@ -268,6 +268,36 @@
             </div>
         </div>
 
+        <!-- Diagnostic Preparation Guide Card (دليل التحاليل والأشعة وشروط الصيام والتحضير) -->
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 sm:p-7 transition-colors space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>📋 دليل التحاليل والأشعة وشروط الصيام والتحضير للمريض</span>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 font-bold">دليل إرشادي معتمد</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">تعرف على شروط صيام كل تحليل، احترازات صبغة الأشعة، ومواعيد استلام النتائج لضمان دقة فحوصاتك</p>
+                </div>
+                <div class="relative w-full sm:w-64">
+                    <input type="text" id="patient-prep-search-input" onkeyup="PatientApp.searchPatientPrep()" placeholder="ابحث باسم التحليل أو الأشعة (سكر، رنين، سونار)..." class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <!-- Prep Quick Filters -->
+            <div class="flex flex-wrap items-center gap-1.5">
+                <button type="button" onclick="PatientApp.filterPatientPrep('all')" id="prep-pill-all" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition">الكل</button>
+                <button type="button" onclick="PatientApp.filterPatientPrep('fasting')" id="prep-pill-fasting" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">⏳ تحاليل تتطلب صيام</button>
+                <button type="button" onclick="PatientApp.filterPatientPrep('non_fasting')" id="prep-pill-non_fasting" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">🩸 تحاليل بدون صيام</button>
+                <button type="button" onclick="PatientApp.filterPatientPrep('contrast')" id="prep-pill-contrast" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">⚠️ أشعة بالصبغة</button>
+                <button type="button" onclick="PatientApp.filterPatientPrep('us')" id="prep-pill-us" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">📡 سونار وموجات صوتية</button>
+            </div>
+
+            <!-- Grid of Patient Guide Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="patient-prep-guide-grid">
+                <!-- Populated via patient.js -->
+            </div>
+        </div>
+
         <!-- My E-Prescriptions Wallet Card (محفظة الروشتات وصرف الأدوية بالباركود) -->
         <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 sm:p-7 transition-colors">
             <div class="flex items-center justify-between mb-4">
@@ -406,6 +436,7 @@
     <script src="../../js/config.js"></script>
     <script src="../../js/utils.js"></script>
     <script src="../../js/auth.js"></script>
+    <script src="../../js/medical_catalog.js"></script>
     <script src="patient.js"></script>
 </body>
 </html>
