@@ -24,6 +24,30 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="../../css/style.css">
     <script src="../../js/i18n.js"></script>
+    <style>
+        @media print {
+            body * {
+                visibility: hidden !important;
+            }
+            #print-area, #print-area * {
+                visibility: visible !important;
+            }
+            #print-area {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                color: black !important;
+                font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300">
     <!-- Navbar -->
@@ -101,22 +125,30 @@
 
             <!-- Clinical Diagnostic Requests Bar (LIS & RIS) -->
             <div class="flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-purple-50/40 dark:bg-slate-900 border border-purple-100 dark:border-slate-800">
-                <span class="text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">طلب فحوصات سريعة:</span>
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">فحوصات وخدمات العيادة:</span>
                 <button type="button" onclick="DoctorApp.openOrderLabModal()" class="btn-press px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-700 text-white shadow-sm flex items-center gap-1.5">
                     <span>🔬</span>
-                    <span>طلب تحاليل طبية</span>
+                    <span>طلب تحاليل طبية (200 فحص)</span>
                 </button>
                 <button type="button" onclick="DoctorApp.openOrderRadModal()" class="btn-press px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm flex items-center gap-1.5">
                     <span>🩻</span>
-                    <span>طلب فحص أشعة</span>
+                    <span>طلب أشعة (170 فحص صبغة/عادي)</span>
                 </button>
                 <button type="button" onclick="DoctorApp.openOrderProcedureModal()" class="btn-press px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-sm flex items-center gap-1.5">
                     <span>🩺</span>
-                    <span>تسجيل إجراء بالعيادة</span>
+                    <span>إجراءات العيادات (82 إجراء)</span>
+                </button>
+                <button type="button" onclick="DoctorApp.openSamplingHubModal()" class="btn-press px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-sm flex items-center gap-1.5">
+                    <span>🩸</span>
+                    <span>سحب العينات وباركود الأنابيب</span>
+                </button>
+                <button type="button" onclick="DoctorApp.openPrintPrescriptionModal()" class="btn-press px-3 py-1.5 rounded-xl text-xs font-bold bg-purple-700 hover:bg-purple-800 text-white shadow-sm flex items-center gap-1.5">
+                    <span>🖨️</span>
+                    <span>طباعة الروشتة (A4 / حراري)</span>
                 </button>
                 <button type="button" onclick="DoctorApp.openPatientHistoryResultsModal()" class="btn-press px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 text-white shadow-sm flex items-center gap-1.5">
                     <span>📑</span>
-                    <span>استعراض نتائج المريض السابقة</span>
+                    <span>نتائج الفحوصات السابقة</span>
                 </button>
             </div>
 
@@ -205,12 +237,18 @@
                             <textarea id="prescription-input" rows="3" placeholder="تظهر هنا الأدوية المختارة أو يمكنك كتابة تعليمات إضافية يدوياً..." class="w-full p-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono"></textarea>
                         </div>
 
-                        <div class="flex items-center justify-between text-xs pt-1">
+                        <div class="flex flex-wrap items-center justify-between gap-2 text-xs pt-1">
                             <label class="flex items-center gap-2 cursor-pointer">
                                 <input type="checkbox" id="doc-auto-send-pharmacy" checked class="w-4 h-4 rounded text-purple-600 focus:ring-purple-500">
                                 <span class="text-slate-700 dark:text-slate-300 font-bold">إرسال الروشتة إلكترونياً لصيدلية المجمع فوراً للصرف</span>
                             </label>
-                            <span id="doc-rx-total-badge" class="font-mono text-purple-700 dark:text-purple-300 font-bold"></span>
+                            <div class="flex items-center gap-3">
+                                <span id="doc-rx-total-badge" class="font-mono text-purple-700 dark:text-purple-300 font-bold"></span>
+                                <button type="button" onclick="DoctorApp.openPrintPrescriptionModal()" class="px-3 py-1 rounded-xl bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/40 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 text-xs font-bold transition flex items-center gap-1">
+                                    <span>🖨️</span>
+                                    <span>معاينة وطباعة الروشتة</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -219,7 +257,11 @@
                         <input type="text" id="notes-input" placeholder="ملاحظات للمتابعة في الزيارة القادمة..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
                     </div>
 
-                    <div class="flex items-center justify-end gap-3 pt-2">
+                    <div class="flex flex-wrap items-center justify-end gap-2.5 pt-2">
+                        <button type="button" onclick="DoctorApp.saveAndPrintPrescription()" class="px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                            <span>🖨️</span>
+                            <span>إتمام الكشف وطباعة الروشتة</span>
+                        </button>
                         <button type="submit" class="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md shadow-purple-500/20 transition flex items-center gap-1.5">
                             <span>✓</span>
                             <span>إتمام الكشف وإصدار الروشتة الإلكترونية</span>
@@ -493,13 +535,15 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">تصنيف الفحص المخبري</label>
                     <select id="doc-lab-cat-select" onchange="DoctorApp.onDocLabCategoryChanged()" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-bold">
-                        <option value="all">كافة التصنيفات (45+ تحليل)</option>
-                        <option value="hematology">🩸 أمراض الدم (Hematology)</option>
-                        <option value="biochemistry">🧪 الكيمياء الحيوية (Biochemistry)</option>
-                        <option value="endocrinology">🧬 الهرمونات والغدد (Endocrinology)</option>
-                        <option value="immunology">🛡️ المناعة والأمصال (Immunology)</option>
-                        <option value="microbiology">🔬 الميكروبيولوجي والمزارع (Microbiology)</option>
-                        <option value="tumor_markers">🎯 دلالات الأورام (Tumor Markers)</option>
+                        <option value="all">كافة التصنيفات (200 فحص مخبري شامل)</option>
+                        <option value="hematology">🩸 أمراض الدم والتجلط (Hematology & Coagulation)</option>
+                        <option value="biochemistry">🧪 الكيمياء الحيوية والتمثيل الغذائي (Biochemistry)</option>
+                        <option value="endocrinology">🧬 الهرمونات والغدد والفيتامينات (Endocrinology)</option>
+                        <option value="immunology">🛡️ المناعة والأمصال والفيروسات (Immunology & Virology)</option>
+                        <option value="microbiology">🔬 الميكروبيولوجي والمزارع وسوائل الجسم (Microbiology)</option>
+                        <option value="tumor_markers">🎯 دلالات الأورام والمسح المبكر (Tumor Markers)</option>
+                        <option value="toxicology">💊 السموم ومراقبة الأدوية العلاجية (Toxicology & TDM)</option>
+                        <option value="genetics_molecular">🧬 الجينات الجزيئية والوراثة المتقدمة (Molecular Genetics & NGS)</option>
                     </select>
                 </div>
                 <div>
@@ -543,13 +587,35 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">نوع الجهاز (Modality)</label>
                     <select id="doc-rad-mod-select" onchange="DoctorApp.onDocRadModalityChanged()" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-bold">
-                        <option value="all">كافة الأجهزة (34+ فحص)</option>
-                        <option value="X-Ray">🦴 أشعة سينية (X-Ray)</option>
-                        <option value="Ultrasound">📡 سونار ودوبلر (Ultrasound)</option>
-                        <option value="CT">🌀 أشعة مقطعية (CT Scan)</option>
-                        <option value="MRI">🧲 رنين مغناطيسي (MRI)</option>
-                        <option value="Specialized">✨ ماموجرام وديكسا وبانوراما (Specialized)</option>
+                        <option value="all">كافة الأجهزة (170 فحص أشعة وطب نووي)</option>
+                        <option value="CT">🌀 أشعة مقطعية متعددة المقاطع (CT Scan - 44 فحص)</option>
+                        <option value="MRI">🧲 رنين مغناطيسي عالي الدقة (MRI - 44 فحص)</option>
+                        <option value="X-Ray">🦴 أشعة سينية رقمية (Digital X-Ray - 34 فحص)</option>
+                        <option value="Fluoroscopy">📽️ أشعة ديناميكية بالصبغة (Fluoroscopy - 12 فحص)</option>
+                        <option value="Ultrasound">📡 سونار ودوبلر وإيلاستوجرافي (Ultrasound & Doppler - 22 فحص)</option>
+                        <option value="Nuclear Medicine">☢️ الطب النووي والمسح الذري (SPECT/CT - 7 فحوصات)</option>
+                        <option value="PET-CT">🔬 المسح البوزيتروني المقطعي للأورام (PET-CT - 3 فحوصات)</option>
+                        <option value="Mammography">🎀 ماموجرام ثلاثي الأبعاد و CESM للثدي</option>
+                        <option value="DEXA">📊 قياس كثافة وهشاشة العظام (DEXA)</option>
+                        <option value="Dental X-Ray">🦷 أشعة أسنان بانورامية ومخروطية CBCT</option>
                     </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">تصفية نوع الفحص بالصبغة</label>
+                    <div class="flex items-center gap-4 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800">
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700 dark:text-slate-300">
+                            <input type="radio" name="doc-rad-contrast-opt" value="all" checked onchange="DoctorApp.onDocRadContrastFilterChanged('all')" class="text-indigo-600 focus:ring-indigo-500">
+                            <span>الكل</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                            <input type="radio" name="doc-rad-contrast-opt" value="plain" onchange="DoctorApp.onDocRadContrastFilterChanged('plain')" class="text-emerald-600 focus:ring-emerald-500">
+                            <span>بدون صبغة (Plain)</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-rose-600 dark:text-rose-400">
+                            <input type="radio" name="doc-rad-contrast-opt" value="contrast" onchange="DoctorApp.onDocRadContrastFilterChanged('contrast')" class="text-rose-600 focus:ring-rose-500">
+                            <span>⚠️ بالصبغة (Contrast)</span>
+                        </label>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">اختر الفحص المطلوب</label>
@@ -592,14 +658,19 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">تخصص الإجراء</label>
                     <select id="doc-proc-specialty-select" onchange="DoctorApp.onDocProcSpecialtyChanged()" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-bold">
-                        <option value="all">كافة التخصصات (29 إجراء)</option>
-                        <option value="internal">باطنة وصدرية</option>
-                        <option value="cardio">أمراض القلب</option>
-                        <option value="ortho">جراحة العظام والمفاصل</option>
-                        <option value="ent">أنف وأذن وحنجرة</option>
-                        <option value="ophth">طب وجراحة العيون</option>
-                        <option value="obgyn">نساء وتوليد</option>
-                        <option value="derma">جلدية وجراحة صغرى</option>
+                        <option value="all">كافة التخصصات (82 إجراء عبر 12 تخصصاً)</option>
+                        <option value="internal">🩺 الباطنة والجهاز الهضمي والمناظير (8 إجراءات)</option>
+                        <option value="pediatric">👶 طب الأطفال وحديثي الولادة (6 إجراءات)</option>
+                        <option value="cardiology">❤️ أمراض القلب والأوعية الدموية (5 إجراءات)</option>
+                        <option value="dental">🦷 طب وجراحة الفم والأسنان (9 إجراءات)</option>
+                        <option value="orthopedic">🦴 جراحة العظام والمفاصل والعمود الفقري (7 إجراءات)</option>
+                        <option value="obgyn">🌸 أمراض النساء والتوليد (7 إجراءات)</option>
+                        <option value="ent">👂 الأنف والأذن والحنجرة (6 إجراءات)</option>
+                        <option value="ophthalmology">👁️ طب وجراحة العيون (7 إجراءات)</option>
+                        <option value="dermatology">✨ الأمراض الجلدية والتجميل والليزر (9 إجراءات)</option>
+                        <option value="surgery">🩹 الجراحة العامة والمسالك البولية (7 إجراءات)</option>
+                        <option value="neurology">🧠 المخ والأعصاب والفسيولوجيا العصبية (6 إجراءات)</option>
+                        <option value="pulmonology">🫁 الأمراض الصدرية والحساسية والمناعة (5 إجراءات)</option>
                     </select>
                 </div>
                 <div>
@@ -855,6 +926,118 @@
             </div>
         </div>
     </div>
+
+    <!-- 1. نافذة معاينة وطباعة الروشتة الطبية الرسمية (Prescription Print Modal) -->
+    <div id="doctor-prescription-print-modal" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 my-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-600 text-base">🖨️</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm">طباعة الروشتة الطبية الرسمية</h4>
+                        <p class="text-[11px] text-slate-500">معاينة الروشتة بنموذج A4 الطبي أو الإيصال الحراري الفوري 80mm</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold">
+                        <button type="button" id="rx-format-btn-a4" onclick="DoctorApp.switchRxPrintFormat('a4')" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 shadow-sm transition">نموذج A4 رسمي</button>
+                        <button type="button" id="rx-format-btn-thermal" onclick="DoctorApp.switchRxPrintFormat('thermal')" class="px-3 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 transition">إيصال حراري 80mm</button>
+                    </div>
+                    <button type="button" onclick="DoctorApp.closePrintPrescriptionModal()" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 text-sm flex items-center justify-center transition">✕</button>
+                </div>
+            </div>
+
+            <!-- حاوية المعاينة المباشرة للروشتة -->
+            <div id="rx-live-preview-box" class="max-h-[65vh] overflow-y-auto p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
+                <!-- يُملأ ديناميكياً بواسطة doctor.js -->
+            </div>
+
+            <!-- أزرار الإجراءات والطباعة -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div class="text-[11px] text-slate-500 flex items-center gap-2">
+                    <span>💡 تدعم الطباعة كافة طابعات الليزر وطابعات الفواتير الحرارية ESC/POS</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="DoctorApp.closePrintPrescriptionModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">إغلاق</button>
+                    <button type="button" onclick="DoctorApp.printCurrentPrescription()" class="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black shadow-lg shadow-purple-600/30 transition flex items-center gap-2">
+                        <span>🖨️</span>
+                        <span>طباعة الآن (Print)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. نافذة مركز سحب العينات وباركود الأنابيب (Specimen Sampling & Tube Barcode Hub Modal) -->
+    <div id="doctor-sampling-hub-modal" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 my-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="p-2 rounded-xl bg-rose-100 dark:bg-rose-950 text-rose-600 text-base">🩸</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm">مركز سحب العينات وإدارة الأنابيب المعملية</h4>
+                        <p class="text-[11px] text-slate-500">إدارة سحب عينات الدم وسوائل الجسم للمريض وطباعة لاصق باركود الأنابيب المعياري</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('doctor-sampling-hub-modal').classList.add('hidden')" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 text-sm flex items-center justify-center transition">✕</button>
+            </div>
+
+            <!-- معلومات المريض الحالي -->
+            <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div>
+                    <span class="text-slate-400 block text-[10px]">المريض:</span>
+                    <span id="sampling-patient-name" class="font-bold text-slate-900 dark:text-white">طاهر حسام مصطفى</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-[10px]">الطبيب الطالب:</span>
+                    <span id="sampling-doctor-name" class="font-bold text-purple-600">د. استشاري الكشف</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-[10px]">التاريخ والوقت:</span>
+                    <span id="sampling-timestamp" class="font-mono text-slate-600 dark:text-slate-300">2026-11-19 01:45 م</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-[10px]">إجمالي التحاليل:</span>
+                    <span id="sampling-tests-count-badge" class="font-bold px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 text-[11px]">3 فحوصات</span>
+                </div>
+            </div>
+
+            <!-- قائمة الفحوصات والأنابيب المطلوبة للسحب -->
+            <div class="space-y-2">
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">قائمة الأنابيب وسحب العينات المطلوبة:</label>
+                <div id="sampling-orders-list-container" class="space-y-2 max-h-[45vh] overflow-y-auto pr-1">
+                    <!-- يملأ ديناميكياً بواسطة DoctorApp.renderSamplingOrders() -->
+                </div>
+            </div>
+
+            <!-- دليل ألوان الأنابيب السريع -->
+            <div class="p-3 bg-purple-50/40 dark:bg-slate-950/60 rounded-xl border border-purple-100 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 flex flex-wrap items-center gap-3">
+                <span class="font-bold text-slate-900 dark:text-white">دليل الأنابيب:</span>
+                <span>🟣 EDTA (صورة دم / سكر تراكمي / جينات)</span>
+                <span>🟡 سيروم جل (كيمياء وهرمونات ودلالات)</span>
+                <span>🔵 صوديوم سيترات (سيولة PT/INR)</span>
+                <span>🟢 هيبارين (غازات دم وكيمياء عاجلة)</span>
+            </div>
+
+            <!-- أزرار الإجراءات -->
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="DoctorApp.printLabRequisitionSlip()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition flex items-center gap-1.5">
+                    <span>🖨️</span>
+                    <span>طباعة إذن تحويل المختبر الرسمي</span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="document.getElementById('doctor-sampling-hub-modal').classList.add('hidden')" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition">إغلاق</button>
+                    <button type="button" onclick="DoctorApp.collectAllSamplesForActivePatient()" class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-600/20 transition flex items-center gap-1.5">
+                        <span>🩸</span>
+                        <span>تأكيد سحب كافة العينات دفعة واحدة</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الحاوية المخصصة للطباعة النظيفة المعزولة (@media print) -->
+    <div id="print-area"></div>
 
     <script src="../../js/config.js"></script>
     <script src="../../js/utils.js"></script>
