@@ -1,12 +1,12 @@
 /**
- * الموسوعة والكتالوج الطبي الشامل لمجمع الواجح الطبي
- * Al Wagih Clinic Master Medical, Diagnostic & Pharmaceutical Catalog
+ * الموسوعة والكتالوج الطبي التشخيصي والدوائي الشامل لمجمع الواجح الطبي
+ * Al Wagih Clinic Master Medical, Diagnostic & Pharmaceutical Catalog v3.0
  *
  * يشمل بدقة وتفصيل سريري وافي:
- * 1. جميع الفحوصات والتحاليل الطبية المخبرية (140 فحص معملي شامل عبر 7 أقسام تخصصية)
- * 2. جميع فحوصات الأشعة التشخيصية (120 فحص أشعة: مقطعية CT، رنين مغناطيسي MRI، أشعة سينية X-Ray، فلوروسكوبي، سونار ودوبلر، ماموجرام، وديكسا)
- * 3. قائمة الأدوية والصيدلية الدوائية الرسمية (124 دواء تجاري وعلمي عبر 10 مجموعات علاجية مع الجرعات والباركود والأرصدة)
- * 4. دليل إجراءات العيادات التخصصية (29 إجراء جراحي وعيادي عبر 8 تخصصات)
+ * 1. جميع الفحوصات والتحاليل الطبية المخبرية (200 فحص معملي شامل عبر 8 أقسام تخصصية بما فيها الجينات والـ NGS والميكروأري)
+ * 2. جميع فحوصات الأشعة والتصوير التشخيصي والطب النووي (170 فحص أشعة مع تحديد الصبغة بدقة عبر 11 نمط تصوير)
+ * 3. قائمة الأدوية والصيدلية الدوائية الرسمية (124 دواء تجاري وعلمي مع الجرعات والباركود والتشغيلات)
+ * 4. دليل إجراءات وتدخلات العيادات التخصصية (82 إجراء جراحي وعيادي عبر جميع الـ 12 تخصصاً طبياً)
  * 5. شبكة مراكز الأشعة والمعامل المرجعية الشريكة (6 مراكز معتمدة مع نسب الخصم ومدة التسليم)
  */
 
@@ -19,20 +19,23 @@ const MedicalCatalog = {
         "immunology": { id: "immunology", name: "المناعة والأمصال والأجسام المضادة", name_en: "Immunology & Serology", icon: "🛡️", color: "sky" },
         "microbiology": { id: "microbiology", name: "الميكروبيولوجي ومزارع البكتيريا والسوائل", name_en: "Microbiology & Cultures", icon: "🔬", color: "teal" },
         "tumor_markers": { id: "tumor_markers", name: "دلالات الأورام والمسح المبكر", name_en: "Tumor Markers", icon: "🎯", color: "rose" },
-        "toxicology": { id: "toxicology", name: "السموم ومراقبة الأدوية العلاجية (TDM)", name_en: "Toxicology & Drug Monitoring", icon: "💊", color: "indigo" }
+        "toxicology": { id: "toxicology", name: "السموم ومراقبة الأدوية العلاجية (TDM)", name_en: "Toxicology & Drug Monitoring", icon: "💊", color: "indigo" },
+        "genetics_molecular": { id: "genetics_molecular", name: "الجينات الجزيئية والوراثة المتقدمة (NGS / PCR)", name_en: "Molecular Genetics & NGS", icon: "🧬", color: "violet" }
     },
 
-    // أجهزة وأنماط الأشعة التشخيصية
+    // أجهزة وأنماط الأشعة التشخيصية والطب النووي
     radiologyModalities: {
         "CT": { id: "CT", name: "الأشعة المقطعية متعددة المقاطع (MSCT)", name_en: "Computed Tomography (CT)", icon: "🌀", color: "amber" },
         "MRI": { id: "MRI", name: "الرنين المغناطيسي عالي الدقة (MRI 1.5T/3T)", name_en: "Magnetic Resonance Imaging (MRI)", icon: "🧲", color: "purple" },
         "X-Ray": { id: "X-Ray", name: "الأشعة السينية الرقمية والفحص الفلوري", name_en: "Digital X-Ray & Fluoroscopy", icon: "🦴", color: "indigo" },
         "Fluoroscopy": { id: "Fluoroscopy", name: "الأشعة الديناميكية بالصبغة (الفلوروسكوبي)", name_en: "Fluoroscopy & Contrast Studies", icon: "📽️", color: "blue" },
-        "Ultrasound": { id: "Ultrasound", name: "الموجات فوق الصوتية والدوبلر الملون", name_en: "Ultrasound & Color Doppler", icon: "📡", color: "teal" },
-        "Mammography": { id: "Mammography", name: "الماموجرام ثلاثي الأبعاد لصحة الثدي", name_en: "3D Digital Mammography", icon: "🎀", color: "pink" },
+        "Ultrasound": { id: "Ultrasound", name: "الموجات فوق الصوتية والدوبلر الملون والإيلاستوجرافي", name_en: "Ultrasound, Doppler & Elastography", icon: "📡", color: "teal" },
+        "Nuclear Medicine": { id: "Nuclear Medicine", name: "الطب النووي والمسح الذري المقطعي (SPECT/CT)", name_en: "Nuclear Medicine & Scintigraphy", icon: "☢️", color: "orange" },
+        "PET-CT": { id: "PET-CT", name: "المسح البوزيتروني المقطعي للأورام (PET-CT)", name_en: "Positron Emission Tomography (PET-CT)", icon: "🔬", color: "red" },
+        "Mammography": { id: "Mammography", name: "الماموجرام ثلاثي الأبعاد وصحة الثدي", name_en: "3D Digital Mammography & CESM", icon: "🎀", color: "pink" },
         "DEXA": { id: "DEXA", name: "قياس كثافة وهشاشة العظام (DEXA)", name_en: "DEXA Bone Densitometry", icon: "📊", color: "rose" },
-        "Dental X-Ray": { id: "Dental X-Ray", name: "أشعة الأسنان البانورامية والسيفالومترية", name_en: "Dental Panoramic & Ceph X-Ray", icon: "🦷", color: "cyan" },
-        "Specialized": { id: "Specialized", name: "الأشعة التخصصية والتشخيص المتقدم", name_en: "Specialized Imaging", icon: "✨", color: "rose" }
+        "Dental X-Ray": { id: "Dental X-Ray", name: "أشعة الأسنان البانورامية والمخروطية CBCT", name_en: "Dental OPG & Cone Beam CT", icon: "🦷", color: "cyan" },
+        "Specialized": { id: "Specialized", name: "الفحوصات التخصصية والتشخيص المتقدم", name_en: "Specialized Advanced Imaging", icon: "✨", color: "emerald" }
     },
 
     // المجموعات العلاجية للأدوية
@@ -47,6 +50,22 @@ const MedicalCatalog = {
         "musculoskeletal": { id: "musculoskeletal", name: "أدوية العظام والمفاصل وباسطات العضلات وهشاشة العظام", name_en: "Musculoskeletal & Bone", icon: "🦴", color: "indigo" },
         "vitamins": { id: "vitamins", name: "الفيتامينات والمعادن والمكملات الغذائية وعلاج الأنيميا", name_en: "Vitamins & Nutrition", icon: "🥗", color: "green" },
         "dermatology": { id: "dermatology", name: "أدوية الجلدية والمراهم الموضعية والحروق والجروح", name_en: "Dermatology & Topical", icon: "🧴", color: "orange" }
+    },
+
+    // التخصصات الطبية للعيادات
+    clinicSpecialties: {
+        "internal": { id: "internal", name: "الباطنة والجهاز الهضمي والمناظير", icon: "🩺", color: "blue" },
+        "pediatric": { id: "pediatric", name: "طب الأطفال وحديثي الولادة", icon: "👶", color: "amber" },
+        "cardiology": { id: "cardiology", name: "أمراض القلب والأوعية الدموية", icon: "❤️", color: "red" },
+        "dental": { id: "dental", name: "طب وجراحة الفم والأسنان", icon: "🦷", color: "cyan" },
+        "orthopedic": { id: "orthopedic", name: "جراحة العظام والمفاصل والعمود الفقري", icon: "🦴", color: "indigo" },
+        "obgyn": { id: "obgyn", name: "أمراض النساء والتوليد", icon: "🌸", color: "pink" },
+        "ent": { id: "ent", name: "الأنف والأذن والحنجرة", icon: "👂", color: "purple" },
+        "ophthalmology": { id: "ophthalmology", name: "طب وجراحة العيون", icon: "👁️", color: "teal" },
+        "dermatology": { id: "dermatology", name: "الأمراض الجلدية والتجميل والليزر", icon: "✨", color: "rose" },
+        "surgery": { id: "surgery", name: "الجراحة العامة والمسالك البولية", icon: "🩹", color: "emerald" },
+        "neurology": { id: "neurology", name: "المخ والأعصاب والفسيولوجيا العصبية", icon: "🧠", color: "violet" },
+        "pulmonology": { id: "pulmonology", name: "الأمراض الصدرية والحساسية والمناعة", icon: "🫁", color: "sky" }
     },
 
     // 1. كتالوج التحاليل الطبية المخبرية الشاملة
@@ -7533,10 +7552,3000 @@ const MedicalCatalog = {
             }
         ],
         "category_ar": "السموم ومراقبة الأدوية العلاجية"
+    },
+    {
+        "key": "brca1_brca2_ngs",
+        "code": "GEN-001",
+        "name": "فحص طفرات جينات سرطان الثدي والمبيض الوراثي (BRCA1 & BRCA2 NGS)",
+        "name_ar": "فحص تسلسل جينات BRCA1 و BRCA2 بالجيل الثاني (NGS)",
+        "name_en": "BRCA1 & BRCA2 Full Gene Sequencing & Deletion/Duplication (NGS)",
+        "category": "genetics_molecular",
+        "category_name": "الجينات الجزيئية والوراثة المتقدمة",
+        "category_ar": "الجينات الجزيئية والوراثة المتقدمة",
+        "tube": "أنبوبة موف EDTA معقمة خاصة 🟣",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة موف EDTA خالية من التثبيط",
+        "tube_name_en": "EDTA Whole Blood DNA Tube",
+        "prep": "لا يشترط الصيام. توقيع إقرار الموافقة الوراثية وتاريخ العائلة الطبي.",
+        "prep_notes_ar": "فحص الحمض النووي بالجيل الثاني NGS لكشف الطفرات المسببة لأورام الثدي والمبيض.",
+        "prep_notes_en": "Genetic consent required. NGS detects germline SNVs, Indels, and CNVs.",
+        "fasting_hours": 0,
+        "tat": "14-21 يوم عمل",
+        "tat_hours": 336,
+        "cost": 4200,
+        "price": 4200,
+        "out_source_cost": 3100,
+        "parameters": [
+            {
+                "name": "BRCA1 Pathogenic Variants",
+                "unit": "status",
+                "ref": "Negative / No pathogenic variant detected"
+            },
+            {
+                "name": "BRCA2 Pathogenic Variants",
+                "unit": "status",
+                "ref": "Negative / No pathogenic variant detected"
+            },
+            {
+                "name": "Copy Number Variations (CNV)",
+                "unit": "status",
+                "ref": "Normal diploid copy number"
+            }
+        ],
+        "id": "brca1_brca2_ngs",
+        "default_parameters": [
+            {
+                "name": "BRCA1 Pathogenic Variants",
+                "unit": "status",
+                "ref": "Negative / No pathogenic variant detected"
+            },
+            {
+                "name": "BRCA2 Pathogenic Variants",
+                "unit": "status",
+                "ref": "Negative / No pathogenic variant detected"
+            },
+            {
+                "name": "Copy Number Variations (CNV)",
+                "unit": "status",
+                "ref": "Normal diploid copy number"
+            }
+        ]
+    },
+    {
+        "key": "liquid_biopsy_ctdna",
+        "code": "GEN-002",
+        "name": "الخزعة السائلة للحمض النووي للأورام بالدم (Liquid Biopsy ctDNA)",
+        "name_ar": "فحص الخزعة السائلة للحمض النووي الورمي الدوار (ctDNA)",
+        "name_en": "Circulating Tumor DNA (ctDNA) Liquid Biopsy Comprehensive Panel",
+        "category": "genetics_molecular",
+        "category_name": "الجينات الجزيئية والوراثة المتقدمة",
+        "category_ar": "الجينات الجزيئية والوراثة المتقدمة",
+        "tube": "أنبوبة Streck Cell-Free DNA متخصصة 🟡🟤",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة تثبيت الحمض النووي الحر Streck BCT",
+        "tube_name_en": "Streck Cell-Free DNA BCT Tube",
+        "prep": "لا يشترط الصيام. السحب المباشر في أنبوبة BCT مع قلب الأنبوبة 10 مرات فوراً.",
+        "prep_notes_ar": "كشف طفرات الأورام المقاومة للعلاج ومتابعة الاستجابة الدوائية والانتكاس المبكر دون جراحة.",
+        "prep_notes_en": "Detects resistance mutations and minimal residual disease non-invasively.",
+        "fasting_hours": 0,
+        "tat": "10-14 يوم عمل",
+        "tat_hours": 240,
+        "cost": 6500,
+        "price": 6500,
+        "out_source_cost": 4800,
+        "parameters": [
+            {
+                "name": "ctDNA Fraction (%)",
+                "unit": "%",
+                "ref": "< 0.1% (Undetectable)"
+            },
+            {
+                "name": "Actionable Somatic Mutations",
+                "unit": "panel",
+                "ref": "No clinically actionable variants detected"
+            }
+        ],
+        "id": "liquid_biopsy_ctdna",
+        "default_parameters": [
+            {
+                "name": "ctDNA Fraction (%)",
+                "unit": "%",
+                "ref": "< 0.1% (Undetectable)"
+            },
+            {
+                "name": "Actionable Somatic Mutations",
+                "unit": "panel",
+                "ref": "No clinically actionable variants detected"
+            }
+        ]
+    },
+    {
+        "key": "egfr_mutation_pcr",
+        "code": "GEN-003",
+        "name": "فحص طفرات مستقبل عامل نمو البشرة لسرطان الرئة (EGFR Mutations PCR)",
+        "name_ar": "تحليل طفرات جين EGFR لسرطان الرئة وتحديد العلاج الموجه",
+        "name_en": "EGFR Gene Mutation Analysis (Exons 18, 19, 20, 21 Real-Time PCR)",
+        "category": "genetics_molecular",
+        "category_name": "الجينات الجزيئية والوراثة المتقدمة",
+        "category_ar": "الجينات الجزيئية والوراثة المتقدمة",
+        "tube": "شريحة نسيج برافين FFPE أو أنبوبة ctDNA دم 🟣🔬",
+        "tube_color": "purple",
+        "tube_name_ar": "بلوك شمعي FFPE أو أنبوبة Streck",
+        "tube_name_en": "FFPE Tissue Block or Plasma ctDNA",
+        "prep": "إحضار العينة النسيجية أو سحب عينة دم وريدية مخصصة.",
+        "prep_notes_ar": "ضروري لتحديد استجابة مرضى سرطان الرئة لمثبطات التيروزين كينيز (TKI: Osimertinib).",
+        "prep_notes_en": "Guides EGFR TKI therapy (Exon 19 del, L858R, T790M resistance mutation).",
+        "fasting_hours": 0,
+        "tat": "5-7 أيام",
+        "tat_hours": 120,
+        "cost": 2800,
+        "price": 2800,
+        "out_source_cost": 1900,
+        "parameters": [
+            {
+                "name": "Exon 19 Deletion",
+                "unit": "qual",
+                "ref": "Wild Type (Negative)"
+            },
+            {
+                "name": "Exon 21 L858R Mutation",
+                "unit": "qual",
+                "ref": "Wild Type (Negative)"
+            },
+            {
+                "name": "Exon 20 T790M Resistance Mutation",
+                "unit": "qual",
+                "ref": "Wild Type (Negative)"
+            }
+        ],
+        "id": "egfr_mutation_pcr",
+        "default_parameters": [
+            {
+                "name": "Exon 19 Deletion",
+                "unit": "qual",
+                "ref": "Wild Type (Negative)"
+            },
+            {
+                "name": "Exon 21 L858R Mutation",
+                "unit": "qual",
+                "ref": "Wild Type (Negative)"
+            },
+            {
+                "name": "Exon 20 T790M Resistance Mutation",
+                "unit": "qual",
+                "ref": "Wild Type (Negative)"
+            }
+        ]
+    },
+    {
+        "key": "kras_nras_braf_panel",
+        "code": "GEN-004",
+        "name": "لوحة طفرات أورام القولون والميلانوما (KRAS / NRAS / BRAF Panel)",
+        "name_ar": "تحليل طفرات KRAS و NRAS و BRAF لأورام القولون والمستقيم",
+        "name_en": "Expanded RAS & BRAF Mutation Analysis (Codons 12, 13, 59, 61, 117, 146)",
+        "category": "genetics_molecular",
+        "category_name": "الجينات الجزيئية والوراثة المتقدمة",
+        "category_ar": "الجينات الجزيئية والوراثة المتقدمة",
+        "tube": "بلوك برافين FFPE أو دم كامل 🔬🟣",
+        "tube_color": "purple",
+        "tube_name_ar": "شريحة نسيجية أو أنبوبة EDTA",
+        "tube_name_en": "FFPE Block / EDTA Blood",
+        "prep": "فحص وراثي لتحديد أهلية المريض لتلقي الأجسام المضادة الموجهة (Cetuximab / Panitumumab).",
+        "prep_notes_ar": "يشترط وجود الورم خالي من طفرات RAS لتلقي أدوية Anti-EGFR.",
+        "prep_notes_en": "Mandatory prior to Anti-EGFR therapy in metastatic colorectal cancer.",
+        "fasting_hours": 0,
+        "tat": "7 أيام",
+        "tat_hours": 168,
+        "cost": 3200,
+        "price": 3200,
+        "out_source_cost": 2200,
+        "parameters": [
+            {
+                "name": "KRAS Exons 2, 3, 4",
+                "unit": "qual",
+                "ref": "Wild Type (No mutation)"
+            },
+            {
+                "name": "NRAS Exons 2, 3, 4",
+                "unit": "qual",
+                "ref": "Wild Type (No mutation)"
+            },
+            {
+                "name": "BRAF V600E Mutation",
+                "unit": "qual",
+                "ref": "Wild Type (No mutation)"
+            }
+        ],
+        "id": "kras_nras_braf_panel",
+        "default_parameters": [
+            {
+                "name": "KRAS Exons 2, 3, 4",
+                "unit": "qual",
+                "ref": "Wild Type (No mutation)"
+            },
+            {
+                "name": "NRAS Exons 2, 3, 4",
+                "unit": "qual",
+                "ref": "Wild Type (No mutation)"
+            },
+            {
+                "name": "BRAF V600E Mutation",
+                "unit": "qual",
+                "ref": "Wild Type (No mutation)"
+            }
+        ]
+    },
+    {
+        "key": "bcr_abl1_quantitative_pcr",
+        "code": "GEN-005",
+        "name": "فحص جين اللوكيميا فيلادلفيا الكمي (BCR-ABL1 Quantitative RT-PCR)",
+        "name_ar": "التحليل الكمي لجين BCR-ABL1 على المقياس الدولي (IS%)",
+        "name_en": "BCR-ABL1 Major & Minor Fusion Transcripts by Real-Time Quantitative PCR (IS)",
+        "category": "genetics_molecular",
+        "category_name": "الجينات الجزيئية والوراثة المتقدمة",
+        "category_ar": "الجينات الجزيئية والوراثة المتقدمة",
+        "tube": "أنبوبة موف EDTA حديثة السحب 🟣",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة EDTA معقمة ترسل خلال 24 ساعة",
+        "tube_name_en": "EDTA Whole Blood Tube (Fresh)",
+        "prep": "لا يشترط الصيام. إرسال فوري للمعمل خلال 24 ساعة في درجة حرارة باردة.",
+        "prep_notes_ar": "المعيار الذهبي لمتابعة الاستجابة الجزيئية العميقة (MR4 / MR4.5) لمرضى سرطان الدم النقوي المزمن CML.",
+        "prep_notes_en": "Monitors Major Molecular Response (MMR) according to International Scale (IS).",
+        "fasting_hours": 0,
+        "tat": "5 أيام",
+        "tat_hours": 120,
+        "cost": 1650,
+        "price": 1650,
+        "out_source_cost": 1100,
+        "parameters": [
+            {
+                "name": "BCR-ABL1 / ABL1 Ratio (IS %)",
+                "unit": "% IS",
+                "ref": "< 0.1% (Major Molecular Response MMR)"
+            },
+            {
+                "name": "Log Reduction",
+                "unit": "log",
+                "ref": "> 3.0 Log reduction from baseline"
+            }
+        ],
+        "id": "bcr_abl1_quantitative_pcr",
+        "default_parameters": [
+            {
+                "name": "BCR-ABL1 / ABL1 Ratio (IS %)",
+                "unit": "% IS",
+                "ref": "< 0.1% (Major Molecular Response MMR)"
+            },
+            {
+                "name": "Log Reduction",
+                "unit": "log",
+                "ref": "> 3.0 Log reduction from baseline"
+            }
+        ]
+    },
+    {
+        "key": "jak2_v617f_mutation",
+        "code": "GEN-006",
+        "name": "طفرة جين جاك-2 لزيادة كرات الدم والحمرة (JAK2 V617F Mutation)",
+        "name_ar": "تحليل طفرة JAK2 V617F لزيادة كرات الدم الحمراء والصفائح",
+        "name_en": "JAK2 V617F Allele-Specific Quantitative Real-Time PCR",
+        "category": "genetics_molecular",
+        "category_name": "الجينات الجزيئية والوراثة المتقدمة",
+        "category_ar": "الجينات الجزيئية والوراثة المتقدمة",
+        "tube": "أنبوبة موف EDTA 🟣",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة EDTA دم كامل",
+        "tube_name_en": "EDTA Tube",
+        "prep": "لا يشترط الصيام. فحص حاسم لتشخيص متلازمات تكاثر نخاع العظم (Polycythemia Vera & Essential Thrombocythemia).",
+        "prep_notes_ar": "إيجابي في > 95% من مرضى الحمرة الحقيقية (Polycythemia Vera).",
+        "prep_notes_en": "Diagnostic for myeloproliferative neoplasms (PV, ET, Primary Myelofibrosis).",
+        "fasting_hours": 0,
+        "tat": "3-5 أيام",
+        "tat_hours": 96,
+        "cost": 950,
+        "price": 950,
+        "out_source_cost": 620,
+        "parameters": [
+            {
+                "name": "JAK2 V617F Mutation Status",
+                "unit": "qual",
+                "ref": "Negative (Wild Type)"
+            },
+            {
+                "name": "Allele Burden Ratio (%)",
+                "unit": "%",
+                "ref": "0.0% (Undetectable)"
+            }
+        ],
+        "id": "jak2_v617f_mutation",
+        "default_parameters": [
+            {
+                "name": "JAK2 V617F Mutation Status",
+                "unit": "qual",
+                "ref": "Negative (Wild Type)"
+            },
+            {
+                "name": "Allele Burden Ratio (%)",
+                "unit": "%",
+                "ref": "0.0% (Undetectable)"
+            }
+        ]
+    },
+    {
+        "key": "hlab27_flow_pcr",
+        "code": "GEN-007",
+        "name": "مستضد التوافق النسيجي لمرض بهجت وتصلب الفقار (HLA-B27 PCR / Flow)",
+        "name_ar": "تحليل الجين المناعي HLA-B27 بالفلوسيتومتري أو الـ PCR",
+        "name_en": "Human Leukocyte Antigen B27 (HLA-B27) Typing by Flow Cytometry & PCR",
+        "category": "genetics_molecular",
+        "category_name": "الجينات الجزيئية والوراثة المتقدمة",
+        "category_ar": "الجينات الجزيئية والوراثة المتقدمة",
+        "tube": "أنبوبة موف EDTA أو أنبوبة خضراء هيبارين 🟣🟢",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة EDTA طازجة",
+        "tube_name_en": "EDTA Whole Blood Tube",
+        "prep": "لا يشترط الصيام. الربط الإكلينيكي مع آلام الظهر الالتهابية والتهاب قزحية العين.",
+        "prep_notes_ar": "يرتبط ارتباطاً وثيقاً بالتهاب الفقار اللاصق Ankylosing Spondylitis ومتلازمة رايتر.",
+        "prep_notes_en": "Associated with seronegative spondyloarthropathies and anterior uveitis.",
+        "fasting_hours": 0,
+        "tat": "24-48 ساعة",
+        "tat_hours": 36,
+        "cost": 450,
+        "price": 450,
+        "out_source_cost": 280,
+        "parameters": [
+            {
+                "name": "HLA-B27 Status",
+                "unit": "status",
+                "ref": "Negative"
+            }
+        ],
+        "id": "hlab27_flow_pcr",
+        "default_parameters": [
+            {
+                "name": "HLA-B27 Status",
+                "unit": "status",
+                "ref": "Negative"
+            }
+        ]
+    },
+    {
+        "key": "karyotyping_chromosomes",
+        "code": "GEN-008",
+        "name": "فحص النمط النووي والكروموسومات الوراثية (Karyotyping Chromosomal Analysis)",
+        "name_ar": "تحليل الكروموسومات والنمط النووي الوراثي (Karyotype)",
+        "name_en": "High-Resolution G-Banded Chromosomal Karyotype (Peripheral Blood)",
+        "category": "genetics_molecular",
+        "category_name": "الجينات الجزيئية والوراثة المتقدمة",
+        "category_ar": "الجينات الجزيئية والوراثة المتقدمة",
+        "tube": "أنبوبة خضراء صوديوم هيبارين معقمة تماماً 🟢",
+        "tube_color": "green",
+        "tube_name_ar": "أنبوبة هيبارين معقمة مخصصة لزراعة الخلايا",
+        "tube_name_en": "Sodium Heparin Sterile Blood Tube",
+        "prep": "سحب العينة تحت تعقيم جراحي كامل لمنع تلوث مزرعة الخلايا الليمفاوية.",
+        "prep_notes_ar": "تشخيص متلازمة داون، تيرنر، كلاينفلتر، وتأخر الإنجاب والإجهاض المتكرر.",
+        "prep_notes_en": "Cultured peripheral blood lymphocytes. Strict aseptic collection.",
+        "fasting_hours": 0,
+        "tat": "10-14 يوم عمل",
+        "tat_hours": 240,
+        "cost": 1200,
+        "price": 1200,
+        "out_source_cost": 800,
+        "parameters": [
+            {
+                "name": "Modal Chromosome Number",
+                "unit": "count",
+                "ref": "46"
+            },
+            {
+                "name": "Chromosomal Constitution",
+                "unit": "desc",
+                "ref": "46,XX (Female) or 46,XY (Male) Normal Banding"
+            }
+        ],
+        "id": "karyotyping_chromosomes",
+        "default_parameters": [
+            {
+                "name": "Modal Chromosome Number",
+                "unit": "count",
+                "ref": "46"
+            },
+            {
+                "name": "Chromosomal Constitution",
+                "unit": "desc",
+                "ref": "46,XX (Female) or 46,XY (Male) Normal Banding"
+            }
+        ]
+    },
+    {
+        "key": "nipt_fetal_cfdna",
+        "code": "GEN-009",
+        "name": "الفحص غير التداخلي لتشوهات الجنين من دم الأم (NIPT / Harmony Scan)",
+        "name_ar": "فحص NIPT للحمض النووي الجنيني الحر بدم الأم (متلازمة داون وتحديد الجنس)",
+        "name_en": "Non-Invasive Prenatal Testing (NIPT) Cell-Free Fetal DNA (Trisomy 21, 18, 13 & Sex)",
+        "category": "genetics_molecular",
+        "category_name": "الجينات الجزيئية والوراثة المتقدمة",
+        "category_ar": "الجينات الجزيئية والوراثة المتقدمة",
+        "tube": "أنبوبتي Streck مخصصتين للـ NIPT 🟡🟤",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبتي Streck Cell-Free DNA مغلقتين",
+        "tube_name_en": "Streck cfDNA Twin Tubes",
+        "prep": "يجرى ابتداءً من الأسبوع العاشر من الحمل (عمر الحمل الموثق بالسونار). لا يشترط الصيام.",
+        "prep_notes_ar": "فحص آمن 100% للأم والجنين بدقة 99.9% لمتلازمة داون (Trisomy 21) وإدواردز وباتاو مع جنس الجنين.",
+        "prep_notes_en": "From 10 weeks gestation. 99.9% detection rate for fetal aneuploidies without amniocentesis risk.",
+        "fasting_hours": 0,
+        "tat": "7-10 أيام",
+        "tat_hours": 192,
+        "cost": 4900,
+        "price": 4900,
+        "out_source_cost": 3600,
+        "parameters": [
+            {
+                "name": "Fetal Fraction (%)",
+                "unit": "%",
+                "ref": "> 4.0% (Sufficient for conclusive result)"
+            },
+            {
+                "name": "Trisomy 21 (Down Syndrome)",
+                "unit": "risk",
+                "ref": "Low Risk (< 1:10,000)"
+            },
+            {
+                "name": "Trisomy 18 (Edwards Syndrome)",
+                "unit": "risk",
+                "ref": "Low Risk (< 1:10,000)"
+            },
+            {
+                "name": "Trisomy 13 (Patau Syndrome)",
+                "unit": "risk",
+                "ref": "Low Risk (< 1:10,000)"
+            },
+            {
+                "name": "Fetal Gender (Optional)",
+                "unit": "result",
+                "ref": "Consistent with Male (XY) or Female (XX)"
+            }
+        ],
+        "id": "nipt_fetal_cfdna",
+        "default_parameters": [
+            {
+                "name": "Fetal Fraction (%)",
+                "unit": "%",
+                "ref": "> 4.0% (Sufficient for conclusive result)"
+            },
+            {
+                "name": "Trisomy 21 (Down Syndrome)",
+                "unit": "risk",
+                "ref": "Low Risk (< 1:10,000)"
+            },
+            {
+                "name": "Trisomy 18 (Edwards Syndrome)",
+                "unit": "risk",
+                "ref": "Low Risk (< 1:10,000)"
+            },
+            {
+                "name": "Trisomy 13 (Patau Syndrome)",
+                "unit": "risk",
+                "ref": "Low Risk (< 1:10,000)"
+            },
+            {
+                "name": "Fetal Gender (Optional)",
+                "unit": "result",
+                "ref": "Consistent with Male (XY) or Female (XX)"
+            }
+        ]
+    },
+    {
+        "key": "chromosomal_microarray_cma",
+        "code": "GEN-010",
+        "name": "المصفوفة الدقيقة للكروموسومات الوراثية (Chromosomal Microarray - CMA)",
+        "name_ar": "فحص المصفوفة الجينية للكروموسومات لكشف الحذف والمضاعفة الدقيقة (CMA)",
+        "name_en": "Chromosomal Microarray Analysis (CMA / Array CGH Oligo-SNP)",
+        "category": "genetics_molecular",
+        "category_name": "الجينات الجزيئية والوراثة المتقدمة",
+        "category_ar": "الجينات الجزيئية والوراثة المتقدمة",
+        "tube": "أنبوبة موف EDTA معقمة 🟣",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة EDTA دم كامل",
+        "tube_name_en": "EDTA Whole Blood Tube",
+        "prep": "لا يشترط الصيام. أدق 100 مرة من فحص الكروموسومات التقليدي.",
+        "prep_notes_ar": "الفحص القياسي الأول لحالات التوحد وتأخر النمو غير المفسر والتشوهات الخلقية المتعددة.",
+        "prep_notes_en": "First-tier test for unexplained developmental delay, autism spectrum and congenital anomalies.",
+        "fasting_hours": 0,
+        "tat": "14-21 يوم عمل",
+        "tat_hours": 336,
+        "cost": 3800,
+        "price": 3800,
+        "out_source_cost": 2800,
+        "parameters": [
+            {
+                "name": "Genomic Imbalances",
+                "unit": "array",
+                "ref": "Normal array / No clinically significant CNVs"
+            }
+        ],
+        "id": "chromosomal_microarray_cma",
+        "default_parameters": [
+            {
+                "name": "Genomic Imbalances",
+                "unit": "array",
+                "ref": "Normal array / No clinically significant CNVs"
+            }
+        ]
+    },
+    {
+        "key": "factor_ii_prothrombin_mutation",
+        "code": "GEN-011",
+        "name": "طفرة جين البروثرومبين للتجلط (Prothrombin G20210A Mutation PCR)",
+        "name_ar": "تحليل طفرة البروثرومبين G20210A لجلطات الأوردة العميقة DVT",
+        "name_en": "Factor II Prothrombin G20210A DNA Mutation by Real-Time PCR",
+        "category": "genetics_molecular",
+        "category_name": "الجينات الجزيئية والوراثة المتقدمة",
+        "category_ar": "الجينات الجزيئية والوراثة المتقدمة",
+        "tube": "أنبوبة موف EDTA 🟣",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة EDTA",
+        "tube_name_en": "EDTA Tube",
+        "prep": "لا يتأثر بالعلاج بمضادات التجلط أو الهيبارين أو الوارفارين.",
+        "prep_notes_ar": "ثاني أكثر طفرات التجلط الوراثي شيوعاً بعد العامل الخامس لايدن.",
+        "prep_notes_en": "Inherited thrombophilia workup for unprovoked venous thromboembolism.",
+        "fasting_hours": 0,
+        "tat": "3 أيام",
+        "tat_hours": 72,
+        "cost": 650,
+        "price": 650,
+        "out_source_cost": 420,
+        "parameters": [
+            {
+                "name": "Prothrombin G20210A Genotype",
+                "unit": "genotype",
+                "ref": "G/G (Wild Type Normal homozygous)"
+            }
+        ],
+        "id": "factor_ii_prothrombin_mutation",
+        "default_parameters": [
+            {
+                "name": "Prothrombin G20210A Genotype",
+                "unit": "genotype",
+                "ref": "G/G (Wild Type Normal homozygous)"
+            }
+        ]
+    },
+    {
+        "key": "mthfr_mutation_c677t_a1298c",
+        "code": "GEN-012",
+        "name": "طفرات جين MTHFR للإجهاض المتكرر وتجلط الدم (MTHFR Mutations PCR)",
+        "name_ar": "تحليل طفرات إنزيم MTHFR (C677T و A1298C) واستقلاب الفوليك",
+        "name_en": "MTHFR Gene Polymorphisms (C677T & A1298C) by Real-Time PCR",
+        "category": "genetics_molecular",
+        "category_name": "الجينات الجزيئية والوراثة المتقدمة",
+        "category_ar": "الجينات الجزيئية والوراثة المتقدمة",
+        "tube": "أنبوبة موف EDTA 🟣",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة EDTA",
+        "tube_name_en": "EDTA Tube",
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "تقييم الإجهاض المتكرر وارتفاع الهوموسيستين والحاجة لميثيل فولات النشط.",
+        "prep_notes_en": "Recurrent pregnancy loss and hyperhomocysteinemia risk assessment.",
+        "fasting_hours": 0,
+        "tat": "3 أيام",
+        "tat_hours": 72,
+        "cost": 750,
+        "price": 750,
+        "out_source_cost": 480,
+        "parameters": [
+            {
+                "name": "MTHFR C677T Genotype",
+                "unit": "genotype",
+                "ref": "C/C (Normal Wild Type)"
+            },
+            {
+                "name": "MTHFR A1298C Genotype",
+                "unit": "genotype",
+                "ref": "A/A (Normal Wild Type)"
+            }
+        ],
+        "id": "mthfr_mutation_c677t_a1298c",
+        "default_parameters": [
+            {
+                "name": "MTHFR C677T Genotype",
+                "unit": "genotype",
+                "ref": "C/C (Normal Wild Type)"
+            },
+            {
+                "name": "MTHFR A1298C Genotype",
+                "unit": "genotype",
+                "ref": "A/A (Normal Wild Type)"
+            }
+        ]
+    },
+    {
+        "key": "myositis_extended_blot",
+        "code": "IMM-039",
+        "name": "لوحة التهاب العضلات المناعي الممتدة 16 جسماً مضاداً (Myositis Extended Immunoblot)",
+        "name_ar": "فحص التهاب العضلات المناعي والجلد الشامل (16 جسم مضاد نسيجي)",
+        "name_en": "Extended Myositis Autoantibody Profile (Jo-1, Mi-2, SRP, MDA5, TIF1g, NXP2, PM-Scl)",
+        "category": "immunology",
+        "category_name": "المناعة والأمصال والأجسام المضادة",
+        "category_ar": "المناعة والأمصال والأجسام المضادة",
+        "tube": "أنبوبة صفراء جل 🟡",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم جل صفراء",
+        "tube_name_en": "Serum Gel Yellow Tube",
+        "prep": "لا يشترط الصيام. فحص دقيق لتشخيص التهاب العضلات والجلد وتحديد خطورة تليف الرئة والأورام المصاحبة.",
+        "prep_notes_ar": "MDA5 يرتبط بتليف الرئة السريع التطور، و TIF1-gamma يرتبط بالأورام السرطانية المصاحبة.",
+        "prep_notes_en": "Line blot distinguishes polymyositis, dermatomyositis, and antisynthetase syndrome.",
+        "fasting_hours": 0,
+        "tat": "3-5 أيام",
+        "tat_hours": 96,
+        "cost": 1400,
+        "price": 1400,
+        "out_source_cost": 950,
+        "parameters": [
+            {
+                "name": "Anti-Jo-1",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-Mi-2 alpha/beta",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-MDA5",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-TIF1-gamma",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-SRP",
+                "unit": "qual",
+                "ref": "Negative"
+            }
+        ],
+        "id": "myositis_extended_blot",
+        "default_parameters": [
+            {
+                "name": "Anti-Jo-1",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-Mi-2 alpha/beta",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-MDA5",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-TIF1-gamma",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-SRP",
+                "unit": "qual",
+                "ref": "Negative"
+            }
+        ]
+    },
+    {
+        "key": "systemic_sclerosis_extended_blot",
+        "code": "IMM-040",
+        "name": "لوحة التصلب الجلدي المناعي الممتدة (Systemic Sclerosis Scl Extended Profile)",
+        "name_ar": "تحليل الأجسام المضادة لمرض التصلب الجلدي المنتشر والمحدود (تصلب الجلد)",
+        "name_en": "Systemic Sclerosis Autoantibodies Profile (Scl-70, Centromere, RNA Pol III, Th/To)",
+        "category": "immunology",
+        "category_name": "المناعة والأمصال والأجسام المضادة",
+        "category_ar": "المناعة والأمصال والأجسام المضادة",
+        "tube": "أنبوبة صفراء جل 🟡",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم جل صفراء",
+        "tube_name_en": "Serum Gel Tube",
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "RNA Polymerase III يرتبط بخطر أزمة الكلى التصلبية Scleroderma Renal Crisis.",
+        "prep_notes_en": "Risk stratification for diffuse cutaneous systemic sclerosis and pulmonary fibrosis.",
+        "fasting_hours": 0,
+        "tat": "3-5 أيام",
+        "tat_hours": 96,
+        "cost": 1350,
+        "price": 1350,
+        "out_source_cost": 900,
+        "parameters": [
+            {
+                "name": "Anti-Scl-70 (Topoisomerase I)",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-Centromere (CENP A/B)",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-RNA Polymerase III",
+                "unit": "qual",
+                "ref": "Negative"
+            }
+        ],
+        "id": "systemic_sclerosis_extended_blot",
+        "default_parameters": [
+            {
+                "name": "Anti-Scl-70 (Topoisomerase I)",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-Centromere (CENP A/B)",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-RNA Polymerase III",
+                "unit": "qual",
+                "ref": "Negative"
+            }
+        ]
+    },
+    {
+        "key": "anti_aqp4_neuromyelitis",
+        "code": "IMM-041",
+        "name": "الأجسام المضادة لمرض ديفك والتهاب العصب البصري والنخاع (Anti-Aquaporin-4 / NMO)",
+        "name_ar": "تحليل أكوابورين-4 (AQP4-IgG) للتفريق بين التصلب اللويحي ومرض NMO",
+        "name_en": "Aquaporin-4 Receptor Autoantibodies (NMO-IgG / AQP4-IgG by Cell-Based Assay CBA)",
+        "category": "immunology",
+        "category_name": "المناعة والأمصال والأجسام المضادة",
+        "category_ar": "المناعة والأمصال والأجسام المضادة",
+        "tube": "أنبوبة صفراء جل أو سائل نخاعي CSF 🟡🧪",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم صفراء جل",
+        "tube_name_en": "Serum Gel Yellow Tube",
+        "prep": "يفضل سحب العينة قبل إعطاء جرعات الكورتيزون الوريدي العالية أو جلسات فصل البلازما.",
+        "prep_notes_ar": "الفحص الأدق بتقنية CBA لتشخيص مرض ديفك Devic Disease وتجنب علاجات MS الخاطئة.",
+        "prep_notes_en": "Cell-Based Assay (CBA). Critical to differentiate NMO spectrum from Multiple Sclerosis.",
+        "fasting_hours": 0,
+        "tat": "5 أيام",
+        "tat_hours": 120,
+        "cost": 1250,
+        "price": 1250,
+        "out_source_cost": 850,
+        "parameters": [
+            {
+                "name": "Aquaporin-4 (AQP4-IgG) Titer",
+                "unit": "titer",
+                "ref": "Negative (< 1:10 Titer)"
+            }
+        ],
+        "id": "anti_aqp4_neuromyelitis",
+        "default_parameters": [
+            {
+                "name": "Aquaporin-4 (AQP4-IgG) Titer",
+                "unit": "titer",
+                "ref": "Negative (< 1:10 Titer)"
+            }
+        ]
+    },
+    {
+        "key": "anti_mog_encephalomyelitis",
+        "code": "IMM-042",
+        "name": "الأجسام المضادة للبروتين السكري المياليني (Anti-MOG Antibodies CBA)",
+        "name_ar": "تحليل الأجسام المضادة لمرض MOGAD العصبي المناعي (Anti-MOG IgG)",
+        "name_en": "Myelin Oligodendrocyte Glycoprotein (MOG-IgG) Autoantibodies by CBA",
+        "category": "immunology",
+        "category_name": "المناعة والأمصال والأجسام المضادة",
+        "category_ar": "المناعة والأمصال والأجسام المضادة",
+        "tube": "أنبوبة صفراء جل 🟡",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم صفراء",
+        "tube_name_en": "Serum Gel Tube",
+        "prep": "سحب العينة في الطور الحاد للأعراض العصبية.",
+        "prep_notes_ar": "تشخيص مرض التهاب الدماغ والنخاع المصاحب لـ MOG عند الأطفال والبالغين.",
+        "prep_notes_en": "MOGAD diagnosis (Optic Neuritis, Transverse Myelitis, ADEM).",
+        "fasting_hours": 0,
+        "tat": "5-7 أيام",
+        "tat_hours": 144,
+        "cost": 1350,
+        "price": 1350,
+        "out_source_cost": 920,
+        "parameters": [
+            {
+                "name": "MOG-IgG Titer",
+                "unit": "titer",
+                "ref": "Negative (< 1:20 Titer)"
+            }
+        ],
+        "id": "anti_mog_encephalomyelitis",
+        "default_parameters": [
+            {
+                "name": "MOG-IgG Titer",
+                "unit": "titer",
+                "ref": "Negative (< 1:20 Titer)"
+            }
+        ]
+    },
+    {
+        "key": "autoimmune_encephalitis_panel",
+        "code": "IMM-043",
+        "name": "لوحة التهاب الدماغ المناعي الذاتي الشاملة (Autoimmune Encephalitis Panel)",
+        "name_ar": "فحص الأجسام المضادة للصرع والتهاب الدماغ المناعي (NMDA, LGI1, CASPR2, AMPA, GABA)",
+        "name_en": "Comprehensive Autoimmune Encephalitis Panel (Serum & CSF Paired CBA)",
+        "category": "immunology",
+        "category_name": "المناعة والأمصال والأجسام المضادة",
+        "category_ar": "المناعة والأمصال والأجسام المضادة",
+        "tube": "سيروم دم وسحب سائل نخاع شوكي CSF 🟡🧪",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم صفراء + أنبوبة CSF معقمة",
+        "tube_name_en": "Paired Serum & Sterile CSF Tube",
+        "prep": "إرسال العينات المزدوجة (دم وسحب نخاع شوكي) في درجة حرارة مثلجة.",
+        "prep_notes_ar": "كشف أسباب الصرع والذهان الحاد المفاجئ وفقدان الذاكرة الناتج عن هجوم مناعي على خلايا المخ.",
+        "prep_notes_en": "Diagnostic for Anti-NMDA receptor encephalitis, LGI1 faciobrachial seizures.",
+        "fasting_hours": 0,
+        "tat": "7-10 أيام",
+        "tat_hours": 192,
+        "cost": 2900,
+        "price": 2900,
+        "out_source_cost": 2000,
+        "parameters": [
+            {
+                "name": "Anti-NMDA Receptor (NR1)",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-LGI1",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-CASPR2",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-AMPA Receptors (GluR1/2)",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-GABAB Receptor",
+                "unit": "qual",
+                "ref": "Negative"
+            }
+        ],
+        "id": "autoimmune_encephalitis_panel",
+        "default_parameters": [
+            {
+                "name": "Anti-NMDA Receptor (NR1)",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-LGI1",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-CASPR2",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-AMPA Receptors (GluR1/2)",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Anti-GABAB Receptor",
+                "unit": "qual",
+                "ref": "Negative"
+            }
+        ]
+    },
+    {
+        "key": "anti_pla2r_nephropathy",
+        "code": "IMM-044",
+        "name": "الأجسام المضادة لاعتلال الكلية الغشائي المناعي (Anti-PLA2R Quantitative)",
+        "name_ar": "تحليل الأجسام المضادة لمستقبل الفوسفوليباز A2 لمرضى متلازمة النيفروز بالكلى",
+        "name_en": "Phospholipase A2 Receptor (PLA2R) Autoantibodies Quantitative ELISA / IFA",
+        "category": "immunology",
+        "category_name": "المناعة والأمصال والأجسام المضادة",
+        "category_ar": "المناعة والأمصال والأجسام المضادة",
+        "tube": "أنبوبة صفراء جل 🟡",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم صفراء",
+        "tube_name_en": "Serum Gel Tube",
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "يغني في كثير من الحالات عن أخذ عينة جراحية من الكلى لمتابعة متلازمة النيفروز Membranous Nephropathy.",
+        "prep_notes_en": "Diagnostic and prognostic biomarker for primary membranous nephropathy (MN).",
+        "fasting_hours": 0,
+        "tat": "3 أيام",
+        "tat_hours": 72,
+        "cost": 850,
+        "price": 850,
+        "out_source_cost": 550,
+        "parameters": [
+            {
+                "name": "Anti-PLA2R IgG Level",
+                "unit": "RU/mL",
+                "ref": "< 14.0 RU/mL (Negative)"
+            }
+        ],
+        "id": "anti_pla2r_nephropathy",
+        "default_parameters": [
+            {
+                "name": "Anti-PLA2R IgG Level",
+                "unit": "RU/mL",
+                "ref": "< 14.0 RU/mL (Negative)"
+            }
+        ]
+    },
+    {
+        "key": "anca_extended_pr3_mpo",
+        "code": "IMM-045",
+        "name": "لوحة التهاب الأوعية الدموية المناعي الكمي (PR3-ANCA & MPO-ANCA Quantitative)",
+        "name_ar": "تحليل الأجسام المضادة للعدلات PR3 (c-ANCA) و MPO (p-ANCA) الكمي",
+        "name_en": "ANCA Vasculitis Specific Antibodies (Proteinase 3 PR3 & Myeloperoxidase MPO ELISA)",
+        "category": "immunology",
+        "category_name": "المناعة والأمصال والأجسام المضادة",
+        "category_ar": "المناعة والأمصال والأجسام المضادة",
+        "tube": "أنبوبة صفراء جل 🟡",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم صفراء",
+        "tube_name_en": "Serum Gel Tube",
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "تشخيص حبيبي فيجنر Granulomatosis with Polyangiitis (GPA) والتهاب الأوعية المجهري MPA.",
+        "prep_notes_en": "Differentiates GPA (PR3-positive) from MPA/EGPA (MPO-positive) vasculitis.",
+        "fasting_hours": 0,
+        "tat": "24-48 ساعة",
+        "tat_hours": 36,
+        "cost": 650,
+        "price": 650,
+        "out_source_cost": 400,
+        "parameters": [
+            {
+                "name": "Anti-PR3 (c-ANCA) Quantitative",
+                "unit": "IU/mL",
+                "ref": "< 2.0 (Negative)"
+            },
+            {
+                "name": "Anti-MPO (p-ANCA) Quantitative",
+                "unit": "IU/mL",
+                "ref": "< 3.5 (Negative)"
+            }
+        ],
+        "id": "anca_extended_pr3_mpo",
+        "default_parameters": [
+            {
+                "name": "Anti-PR3 (c-ANCA) Quantitative",
+                "unit": "IU/mL",
+                "ref": "< 2.0 (Negative)"
+            },
+            {
+                "name": "Anti-MPO (p-ANCA) Quantitative",
+                "unit": "IU/mL",
+                "ref": "< 3.5 (Negative)"
+            }
+        ]
+    },
+    {
+        "key": "alex2_allergy_microarray",
+        "code": "IMM-046",
+        "name": "المصفوفة الجزيئية الشاملة لـ 300 مسبب حساسية (ALEX2 Molecular Allergy Explorer)",
+        "name_ar": "فحص الحساسية الجزيئي الشامل لـ 300 مسبب حساسية غذائي وهوائي ونباتي (ALEX2)",
+        "name_en": "ALEX2 Allergy Explorer (Molecular IgE Microarray with CCD Inhibition)",
+        "category": "immunology",
+        "category_name": "المناعة والأمصال والأجسام المضادة",
+        "category_ar": "المناعة والأمصال والأجسام المضادة",
+        "tube": "أنبوبة صفراء جل 🟡",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم صفراء",
+        "tube_name_en": "Serum Gel Tube",
+        "prep": "لا يشترط إيقاف مضادات الهيستامين أو أدوية الحساسية قبل التحليل.",
+        "prep_notes_ar": "أحدث فحص حساسية في العالم يغطي 300 مسبب حساسية (حليب، بيض، فول سوداني، غبار، لقاح، سم الحشرات) مع تثبيط التفاعل العرضي CCD.",
+        "prep_notes_en": "Nanotechnology biochip measures total IgE and 295 specific molecular allergen components.",
+        "fasting_hours": 0,
+        "tat": "5 أيام",
+        "tat_hours": 120,
+        "cost": 3600,
+        "price": 3600,
+        "out_source_cost": 2600,
+        "parameters": [
+            {
+                "name": "Total IgE Level",
+                "unit": "kU/L",
+                "ref": "< 100.0"
+            },
+            {
+                "name": "Food Allergens Sensitization",
+                "unit": "profile",
+                "ref": "Class 0 (< 0.3 kUA/L Negative)"
+            },
+            {
+                "name": "Inhalant Pollen & Dust Sensitization",
+                "unit": "profile",
+                "ref": "Class 0 (< 0.3 kUA/L Negative)"
+            }
+        ],
+        "id": "alex2_allergy_microarray",
+        "default_parameters": [
+            {
+                "name": "Total IgE Level",
+                "unit": "kU/L",
+                "ref": "< 100.0"
+            },
+            {
+                "name": "Food Allergens Sensitization",
+                "unit": "profile",
+                "ref": "Class 0 (< 0.3 kUA/L Negative)"
+            },
+            {
+                "name": "Inhalant Pollen & Dust Sensitization",
+                "unit": "profile",
+                "ref": "Class 0 (< 0.3 kUA/L Negative)"
+            }
+        ]
+    },
+    {
+        "key": "food_intolerance_220_igg",
+        "code": "IMM-047",
+        "name": "فحص البصمة الغذائية وعدم التحمل لـ 220 طعاماً (Food Intolerance IgG 220 Foods)",
+        "name_ar": "تحليل عدم التحمل الغذائي للأجسام المضادة IgG لـ 220 صنف طعام",
+        "name_en": "Comprehensive Food Intolerance IgG Microarray (220 Food Antigens)",
+        "category": "immunology",
+        "category_name": "المناعة والأمصال والأجسام المضادة",
+        "category_ar": "المناعة والأمصال والأجسام المضادة",
+        "tube": "أنبوبة صفراء جل 🟡",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم جل صفراء",
+        "tube_name_en": "Serum Gel Tube",
+        "prep": "لا يشترط الصيام. تناول الطعام المعتاد خلال الأيام السابقة للتحليل.",
+        "prep_notes_ar": "يحدد الأطعمة المسببة للانتفاخ المزمن وعسر الهضم والصداع النصفي ومشاكل القولون العصبي.",
+        "prep_notes_en": "Identifies delayed IgG-mediated food hypersensitivity for dietary elimination.",
+        "fasting_hours": 0,
+        "tat": "5-7 أيام",
+        "tat_hours": 144,
+        "cost": 2800,
+        "price": 2800,
+        "out_source_cost": 1900,
+        "parameters": [
+            {
+                "name": "Dairy & Milk Proteins IgG",
+                "unit": "U/mL",
+                "ref": "< 24.0 (Normal / No intolerance)"
+            },
+            {
+                "name": "Grains & Gluten IgG",
+                "unit": "U/mL",
+                "ref": "< 24.0 (Normal / No intolerance)"
+            },
+            {
+                "name": "Meats & Seafood IgG",
+                "unit": "U/mL",
+                "ref": "< 24.0 (Normal / No intolerance)"
+            },
+            {
+                "name": "Nuts & Legumes IgG",
+                "unit": "U/mL",
+                "ref": "< 24.0 (Normal / No intolerance)"
+            }
+        ],
+        "id": "food_intolerance_220_igg",
+        "default_parameters": [
+            {
+                "name": "Dairy & Milk Proteins IgG",
+                "unit": "U/mL",
+                "ref": "< 24.0 (Normal / No intolerance)"
+            },
+            {
+                "name": "Grains & Gluten IgG",
+                "unit": "U/mL",
+                "ref": "< 24.0 (Normal / No intolerance)"
+            },
+            {
+                "name": "Meats & Seafood IgG",
+                "unit": "U/mL",
+                "ref": "< 24.0 (Normal / No intolerance)"
+            },
+            {
+                "name": "Nuts & Legumes IgG",
+                "unit": "U/mL",
+                "ref": "< 24.0 (Normal / No intolerance)"
+            }
+        ]
+    },
+    {
+        "key": "flow_cytometry_leukemia_30_markers",
+        "code": "HEM-019",
+        "name": "التدفق الخلوي المناعي لأورام وسرطانات الدم (Flow Cytometry Leukemia 30-Markers)",
+        "name_ar": "تحليل الفلوسيتومتري لسرطان الدم الليمفاوي والنخاعي (30 مؤشراً مناعياً)",
+        "name_en": "Multi-Color Flow Cytometry Immunophenotyping for Acute Leukemia & LPD (30 CD Markers)",
+        "category": "hematology",
+        "category_name": "أمراض الدم والتجلط المتقدمة",
+        "category_ar": "أمراض الدم والتجلط المتقدمة",
+        "tube": "أنبوبة موف EDTA أو نخاع عظمي طازج 🟣🦴",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة EDTA دم طرفي أو سائل بذل نخاع العظم",
+        "tube_name_en": "EDTA Blood or Bone Marrow Aspirate",
+        "prep": "سحب فوري وإرسال خلال 6-12 ساعة في درجة حرارة الغرفة (تجنب التجميد تماماً).",
+        "prep_notes_ar": "الفحص الحاسم لتحديد نوع سرطان الدم (AML vs ALL - B-cell or T-cell) واختيار بروتوكول العلاج الكيميائي.",
+        "prep_notes_en": "CD19, CD20, CD3, CD34, CD117, MPO, CD13, CD33, HLA-DR for accurate lineage assignment.",
+        "fasting_hours": 0,
+        "tat": "24-48 ساعة",
+        "tat_hours": 36,
+        "cost": 2600,
+        "price": 2600,
+        "out_source_cost": 1800,
+        "parameters": [
+            {
+                "name": "Blast Cell Percentage (%)",
+                "unit": "%",
+                "ref": "< 5.0% in Bone Marrow | 0% in Peripheral Blood"
+            },
+            {
+                "name": "Lineage Specific Diagnosis",
+                "unit": "diag",
+                "ref": "Normal polyclonal lymphocyte & myeloid distribution"
+            }
+        ],
+        "id": "flow_cytometry_leukemia_30_markers",
+        "default_parameters": [
+            {
+                "name": "Blast Cell Percentage (%)",
+                "unit": "%",
+                "ref": "< 5.0% in Bone Marrow | 0% in Peripheral Blood"
+            },
+            {
+                "name": "Lineage Specific Diagnosis",
+                "unit": "diag",
+                "ref": "Normal polyclonal lymphocyte & myeloid distribution"
+            }
+        ]
+    },
+    {
+        "key": "pnh_clones_flaer_flow",
+        "code": "HEM-020",
+        "name": "فحص البيلة الهيموجلوبينية الليلية الانتيابية بالفلوسيتومتري (PNH Clone FLAER)",
+        "name_ar": "تحليل استنساخ خلايا PNH ببروتين FLAER لكرات الدم البيضاء والحمراء",
+        "name_en": "High-Sensitivity Paroxysmal Nocturnal Hemoglobinuria (PNH) by FLAER Flow Cytometry",
+        "category": "hematology",
+        "category_name": "أمراض الدم والتجلط المتقدمة",
+        "category_ar": "أمراض الدم والتجلط المتقدمة",
+        "tube": "أنبوبة موف EDTA طازجة 🟣",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة EDTA طازجة",
+        "tube_name_en": "EDTA Tube",
+        "prep": "لا يشترط الصيام. إرسال خلال 24 ساعة.",
+        "prep_notes_ar": "تشخيص متلازمة تكسر الدم الليلي PNH المصاحب للجلطات غير المعتادة وفشل النخاع العظمي.",
+        "prep_notes_en": "Measures CD55, CD59 deficiency and FLAER binding in granulocytes and monocytes.",
+        "fasting_hours": 0,
+        "tat": "48 ساعة",
+        "tat_hours": 48,
+        "cost": 1400,
+        "price": 1400,
+        "out_source_cost": 950,
+        "parameters": [
+            {
+                "name": "PNH Clone in Granulocytes (%)",
+                "unit": "%",
+                "ref": "< 0.01% (Normal / Negative)"
+            },
+            {
+                "name": "PNH Clone in Monocytes (%)",
+                "unit": "%",
+                "ref": "< 0.01% (Normal / Negative)"
+            }
+        ],
+        "id": "pnh_clones_flaer_flow",
+        "default_parameters": [
+            {
+                "name": "PNH Clone in Granulocytes (%)",
+                "unit": "%",
+                "ref": "< 0.01% (Normal / Negative)"
+            },
+            {
+                "name": "PNH Clone in Monocytes (%)",
+                "unit": "%",
+                "ref": "< 0.01% (Normal / Negative)"
+            }
+        ]
+    },
+    {
+        "key": "adamts13_activity_inhibitor",
+        "code": "HEM-021",
+        "name": "نشاط إنزيم أدامتس-13 لفرفرية نقص الصفائح التخثرية (ADAMTS13 Activity & Inhibitor)",
+        "name_ar": "تحليل نشاط إنزيم ADAMTS-13 وأجسام التثبيط لمرض TTP",
+        "name_en": "ADAMTS13 Protease Activity & Inhibiting Autoantibodies (TTP vs HUS Workup)",
+        "category": "hematology",
+        "category_name": "أمراض الدم والتجلط المتقدمة",
+        "category_ar": "أمراض الدم والتجلط المتقدمة",
+        "tube": "أنبوبة لبني سيترات صوديوم 9:1 مفصولة فوراً 🔵❄️",
+        "tube_color": "blue",
+        "tube_name_ar": "بلازما مفصولة ومجمدة فوراً",
+        "tube_name_en": "Platelet-Poor Citrated Frozen Plasma",
+        "prep": "فحص طوارئ فرفرية التخثر TTP قبل بدء جلسات تبديل البلازما (Plasma Exchange).",
+        "prep_notes_ar": "هبوط نشاط الإنزيم لأقل من 10% يؤكد تشخيص مرض TTP الطارئ.",
+        "prep_notes_en": "Activity < 10% confirms thrombotic thrombocytopenic purpura (TTP).",
+        "fasting_hours": 0,
+        "tat": "24-48 ساعة",
+        "tat_hours": 36,
+        "cost": 1850,
+        "price": 1850,
+        "out_source_cost": 1250,
+        "parameters": [
+            {
+                "name": "ADAMTS13 Activity (%)",
+                "unit": "%",
+                "ref": "67 - 150%"
+            },
+            {
+                "name": "ADAMTS13 Inhibitor",
+                "unit": "Bethesda",
+                "ref": "< 0.4 Bethesda Units (Negative)"
+            }
+        ],
+        "id": "adamts13_activity_inhibitor",
+        "default_parameters": [
+            {
+                "name": "ADAMTS13 Activity (%)",
+                "unit": "%",
+                "ref": "67 - 150%"
+            },
+            {
+                "name": "ADAMTS13 Inhibitor",
+                "unit": "Bethesda",
+                "ref": "< 0.4 Bethesda Units (Negative)"
+            }
+        ]
+    },
+    {
+        "key": "respiratory_multiplex_pcr_24",
+        "code": "VIR-019",
+        "name": "لوحة ميكروبات الجهاز التنفسي الفائقة 24 ميكروباً بالـ PCR (FilmArray Respiratory Panel)",
+        "name_ar": "فحص الـ PCR المتعدد لفيروسات وبكتيريا الصدر والجهاز التنفسي (24 ميكروباً)",
+        "name_en": "BioFire FilmArray Respiratory Panel 2.1 (20 Viruses & 4 Bacteria Multiplex RT-PCR)",
+        "category": "immunology",
+        "category_name": "المناعة والأمراض المعدية والفيروسات",
+        "category_ar": "المناعة والأمراض المعدية والفيروسات",
+        "tube": "مسحة بلعوم أنفي في سائل نقل فيروسات VTM 🧪🦠",
+        "tube_color": "teal",
+        "tube_name_ar": "مسحة معقمة بسائل VTM",
+        "tube_name_en": "Nasopharyngeal Swab in VTM",
+        "prep": "أخذ مسحة من عمق البلعوم الأنفي بلطف بواسطة فني معمل مدرب.",
+        "prep_notes_ar": "يكتشف في ساعة واحدة: كورونا، الإنفلونزا أ و ب، الفيروس المخلوي التنفسي RSV، البارافلو، البكتيريا المسببة للسعال الديكي، والميكوبلازما.",
+        "prep_notes_en": "1-hour multiplex PCR for SARS-CoV-2, Flu A/B, RSV, Rhinovirus, Adenovirus, Bordetella pertussis.",
+        "fasting_hours": 0,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 1850,
+        "price": 1850,
+        "out_source_cost": 1250,
+        "parameters": [
+            {
+                "name": "SARS-CoV-2 (COVID-19)",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Influenza A & B",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Respiratory Syncytial Virus (RSV)",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Bordetella pertussis (السعال الديكي)",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Mycoplasma pneumoniae",
+                "unit": "qual",
+                "ref": "Not Detected"
+            }
+        ],
+        "id": "respiratory_multiplex_pcr_24",
+        "default_parameters": [
+            {
+                "name": "SARS-CoV-2 (COVID-19)",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Influenza A & B",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Respiratory Syncytial Virus (RSV)",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Bordetella pertussis (السعال الديكي)",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Mycoplasma pneumoniae",
+                "unit": "qual",
+                "ref": "Not Detected"
+            }
+        ]
+    },
+    {
+        "key": "gastrointestinal_multiplex_pcr_22",
+        "code": "VIR-020",
+        "name": "لوحة النزلات المعوية والميكروبات بالـ PCR (GI Multiplex 22 Pathogens Panel)",
+        "name_ar": "فحص الـ PCR المتعدد لميكروبات النزلات المعوية والإسهال الحاد (22 ميكروباً)",
+        "name_en": "BioFire FilmArray Gastrointestinal Panel (Bacteria, Parasites, Viruses in Stool)",
+        "category": "immunology",
+        "category_name": "المناعة والأمراض المعدية والفيروسات",
+        "category_ar": "المناعة والأمراض المعدية والفيروسات",
+        "tube": "علبة براز معقمة في سائل كاري بلير Cary-Blair 🧪💩",
+        "tube_color": "green",
+        "tube_name_ar": "علبة براز معقمة بسائل كاري بلير",
+        "tube_name_en": "Cary-Blair Stool Transport Medium",
+        "prep": "جمع عينة براز طازجة في وسط كاري بلير وإرسالها للمعمل فوراً.",
+        "prep_notes_ar": "يكتشف بكتيريا الكوليرا، السالمونيلا، الشيجلا، الكامبيلوباكتر، الكلوستريديوم ديفيسيل، فيروسات الروتا والنورو، والجيارديا والإنتاميبا.",
+        "prep_notes_en": "Detects Clostridioides difficile, Salmonella, Shigella, Campylobacter, Rotavirus, Norovirus, Giardia.",
+        "fasting_hours": 0,
+        "tat": "3 ساعات",
+        "tat_hours": 3,
+        "cost": 1950,
+        "price": 1950,
+        "out_source_cost": 1300,
+        "parameters": [
+            {
+                "name": "Clostridioides difficile toxin A/B",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Salmonella / Shigella / E. coli O157",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Rotavirus A / Norovirus GI/GII",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Giardia lamblia / Entamoeba histolytica",
+                "unit": "qual",
+                "ref": "Not Detected"
+            }
+        ],
+        "id": "gastrointestinal_multiplex_pcr_22",
+        "default_parameters": [
+            {
+                "name": "Clostridioides difficile toxin A/B",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Salmonella / Shigella / E. coli O157",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Rotavirus A / Norovirus GI/GII",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Giardia lamblia / Entamoeba histolytica",
+                "unit": "qual",
+                "ref": "Not Detected"
+            }
+        ]
+    },
+    {
+        "key": "meningitis_encephalitis_multiplex_pcr",
+        "code": "VIR-021",
+        "name": "لوحة ميكروبات الالتهاب السحائي للسائل الشوكي بالـ PCR (Meningitis/Encephalitis Panel)",
+        "name_ar": "فحص الـ PCR المتعدد لالتهاب السحايا الحاد في السائل النخاعي (14 ميكروباً طارئاً)",
+        "name_en": "FilmArray Meningitis/Encephalitis (ME) CSF Multiplex PCR (14 Viral, Bacterial, Fungal)",
+        "category": "immunology",
+        "category_name": "المناعة والأمراض المعدية والفيروسات",
+        "category_ar": "المناعة والأمراض المعدية والفيروسات",
+        "tube": "أنبوبة سائل نخاع شوكي CSF معقمة تماماً 🧪❄️",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة بزل نخاع شوكي معقمة",
+        "tube_name_en": "Sterile CSF Tube",
+        "prep": "سحب عينة سائل نخاع شوكي بواسطة استشاري الأعصاب/التخدير تحت تعقيم جراحي.",
+        "prep_notes_ar": "فحص طوارئ منقذ للحياة لتحديد ميكروب الحمى الشوكية (المكورات السحائية، الرئوية، الهربس HSV-1/2، والخمائر) خلال ساعة واحدة.",
+        "prep_notes_en": "Emergency 1-hour test for Neisseria meningitidis, Streptococcus pneumoniae, HSV-1/2, Cryptococcus.",
+        "fasting_hours": 0,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 2500,
+        "price": 2500,
+        "out_source_cost": 1700,
+        "parameters": [
+            {
+                "name": "Neisseria meningitidis (المكور السحائي)",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Streptococcus pneumoniae (المكور الرئوي)",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Herpes Simplex Virus 1 & 2 (HSV-1/2)",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Cryptococcus neoformans/gattii",
+                "unit": "qual",
+                "ref": "Not Detected"
+            }
+        ],
+        "id": "meningitis_encephalitis_multiplex_pcr",
+        "default_parameters": [
+            {
+                "name": "Neisseria meningitidis (المكور السحائي)",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Streptococcus pneumoniae (المكور الرئوي)",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Herpes Simplex Virus 1 & 2 (HSV-1/2)",
+                "unit": "qual",
+                "ref": "Not Detected"
+            },
+            {
+                "name": "Cryptococcus neoformans/gattii",
+                "unit": "qual",
+                "ref": "Not Detected"
+            }
+        ]
+    },
+    {
+        "key": "sti_multiplex_pcr_10",
+        "code": "VIR-022",
+        "name": "لوحة ميكروبات العدوى التناسلية بالـ PCR (STI Multiplex 10 Pathogens)",
+        "name_ar": "فحص الـ PCR المتعدد للأمراض المنقولة جنسياً والمسالك البولية (10 ميكروبات)",
+        "name_en": "Sexually Transmitted Infections (STI) 10-Pathogen Multiplex Real-Time PCR",
+        "category": "immunology",
+        "category_name": "المناعة والأمراض المعدية والفيروسات",
+        "category_ar": "المناعة والأمراض المعدية والفيروسات",
+        "tube": "عينة بول أول الصباح أو مسحة تناسلية معقمة 🧪🟣",
+        "tube_color": "purple",
+        "tube_name_ar": "بول أول قطرة أو مسحة تناسلية جافة",
+        "tube_name_en": "First-Catch Urine / Swab",
+        "prep": "حبس البول لمدة ساعتين قبل جمع أول قطرات البول في العلبة المعقمة.",
+        "prep_notes_ar": "يكتشف بدقة متناهية: الكلاميديا، السيلان، الميكوبلازما التناسلية، اليوريابلازما، والتريكوموناس والهربس.",
+        "prep_notes_en": "Detects Chlamydia trachomatis, Neisseria gonorrhoeae, Mycoplasma genitalium, Trichomonas vaginalis.",
+        "fasting_hours": 0,
+        "tat": "24-48 ساعة",
+        "tat_hours": 36,
+        "cost": 1200,
+        "price": 1200,
+        "out_source_cost": 800,
+        "parameters": [
+            {
+                "name": "Chlamydia trachomatis DNA",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Neisseria gonorrhoeae DNA",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Mycoplasma genitalium DNA",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Trichomonas vaginalis DNA",
+                "unit": "qual",
+                "ref": "Negative"
+            }
+        ],
+        "id": "sti_multiplex_pcr_10",
+        "default_parameters": [
+            {
+                "name": "Chlamydia trachomatis DNA",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Neisseria gonorrhoeae DNA",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Mycoplasma genitalium DNA",
+                "unit": "qual",
+                "ref": "Negative"
+            },
+            {
+                "name": "Trichomonas vaginalis DNA",
+                "unit": "qual",
+                "ref": "Negative"
+            }
+        ]
+    },
+    {
+        "key": "fungitell_beta_d_glucan",
+        "code": "MIC-015",
+        "name": "فحص بيتا-دي-جلوكان للفطريات العميقة الغازية (Fungitell 1,3-Beta-D-Glucan)",
+        "name_ar": "تحليل كشف الفطريات الغازية بالدم (1,3-Beta-D-Glucan)",
+        "name_en": "Fungitell (1,3)-Beta-D-Glucan Serum Assay for Invasive Fungal Infection",
+        "category": "microbiology",
+        "category_name": "الميكروبيولوجي والمزارع وسوائل الجسم",
+        "category_ar": "الميكروبيولوجي والمزارع وسوائل الجسم",
+        "tube": "أنبوبة حمراء زجاجية خالية من التلوث الفطري 🔴",
+        "tube_color": "red",
+        "tube_name_ar": "أنبوبة سيروم خالية من ملوثات الجلوكان",
+        "tube_name_en": "Glucan-Free Plain Red Tube",
+        "prep": "سحب باستخدام سرنجات وأنابيب خاصة معقمة خالية من السليلوز والقطن.",
+        "prep_notes_ar": "تشخيص عدوى الفطريات الغازية في العناية المركزة ومرضى الأورام (Candida, Aspergillus, Pneumocystis jirovecii).",
+        "prep_notes_en": "Biomarker for invasive candidiasis, aspergillosis, and PCP pneumonia.",
+        "fasting_hours": 0,
+        "tat": "24-48 ساعة",
+        "tat_hours": 36,
+        "cost": 1400,
+        "price": 1400,
+        "out_source_cost": 950,
+        "parameters": [
+            {
+                "name": "1,3-Beta-D-Glucan Level",
+                "unit": "pg/mL",
+                "ref": "< 60.0 (Negative) | > 80.0 (Positive for invasive fungal disease)"
+            }
+        ],
+        "id": "fungitell_beta_d_glucan",
+        "default_parameters": [
+            {
+                "name": "1,3-Beta-D-Glucan Level",
+                "unit": "pg/mL",
+                "ref": "< 60.0 (Negative) | > 80.0 (Positive for invasive fungal disease)"
+            }
+        ]
+    },
+    {
+        "key": "galactomannan_aspergillus_antigen",
+        "code": "MIC-016",
+        "name": "مستضد جالاكتومانان لفطريات الرئة الاسبرجيلوس (Aspergillus Galactomannan Antigen)",
+        "name_ar": "تحليل مستضد الاسبرجيلوس بالدم وغسيل الشعب الهوائية BAL",
+        "name_en": "Aspergillus Galactomannan Antigen Enzyme Immunoassay (Serum / BAL Fluid)",
+        "category": "microbiology",
+        "category_name": "الميكروبيولوجي والمزارع وسوائل الجسم",
+        "category_ar": "الميكروبيولوجي والمزارع وسوائل الجسم",
+        "tube": "أنبوبة صفراء جل أو سائل غسيل الشعب BAL 🟡🧪",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم جل صفراء أو BAL معقم",
+        "tube_name_en": "Serum Gel Tube / Sterile BAL",
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "مؤشر مبكر لمرض داء الرشاشيات الرئوي الغازي Invasive Aspergillosis لمرضى نقص المناعة وزراعة النخاع.",
+        "prep_notes_en": "Index >= 0.5 considered positive for invasive pulmonary aspergillosis.",
+        "fasting_hours": 0,
+        "tat": "24-48 ساعة",
+        "tat_hours": 36,
+        "cost": 1250,
+        "price": 1250,
+        "out_source_cost": 850,
+        "parameters": [
+            {
+                "name": "Galactomannan Optical Density Index",
+                "unit": "ODI",
+                "ref": "< 0.5 (Negative)"
+            }
+        ],
+        "id": "galactomannan_aspergillus_antigen",
+        "default_parameters": [
+            {
+                "name": "Galactomannan Optical Density Index",
+                "unit": "ODI",
+                "ref": "< 0.5 (Negative)"
+            }
+        ]
+    },
+    {
+        "key": "newborn_screening_ms_ms_50",
+        "code": "BIO-029",
+        "name": "المسح الشامل لحديثي الولادة لـ 50 مرضاً وراثياً بالرنين الكتلي (Newborn Screening MS/MS)",
+        "name_ar": "فحص حديثي الولادة بالرنين الكتلي الترادفي (Tandem Mass Spectrometry 50+ Disorders)",
+        "name_en": "Expanded Newborn Metabolic Screening by Tandem Mass Spectrometry (MS/MS)",
+        "category": "biochemistry",
+        "category_name": "الكيمياء الحيوية والتمثيل الغذائي",
+        "category_ar": "الكيمياء الحيوية والتمثيل الغذائي",
+        "tube": "بطاقة كارت جوثري لقطرات الدم المجففة 🟨🩸",
+        "tube_color": "yellow",
+        "tube_name_ar": "بطاقة Guthrie Card لقطرات دم كعب الطفل",
+        "tube_name_en": "Guthrie Dried Blood Spot (DBS) Card",
+        "prep": "أخذ قطرات دم من كعب الرضيع بين اليوم الثالث واليوم السابع بعد الولادة وبعد بدء الرضاعة بـ 24 ساعة.",
+        "prep_notes_ar": "يكتشف أمراض التمثيل الغذائي القاتلة مبكراً (PKU، داء بول شراب القيقب MSUD، أحماض عضوية، وأكسدة الدهون) لمنع التخلف العقلي والوفاة.",
+        "prep_notes_en": "Screens for 50+ inborn errors of amino acid, organic acid, and fatty acid oxidation.",
+        "fasting_hours": 0,
+        "tat": "5-7 أيام",
+        "tat_hours": 144,
+        "cost": 1600,
+        "price": 1600,
+        "out_source_cost": 1100,
+        "parameters": [
+            {
+                "name": "Phenylalanine (PKU)",
+                "unit": "umol/L",
+                "ref": "< 120"
+            },
+            {
+                "name": "Leucine / Isoleucine (MSUD)",
+                "unit": "umol/L",
+                "ref": "< 250"
+            },
+            {
+                "name": "Acylcarnitine Profile",
+                "unit": "panel",
+                "ref": "Normal physiological profile / No block"
+            }
+        ],
+        "id": "newborn_screening_ms_ms_50",
+        "default_parameters": [
+            {
+                "name": "Phenylalanine (PKU)",
+                "unit": "umol/L",
+                "ref": "< 120"
+            },
+            {
+                "name": "Leucine / Isoleucine (MSUD)",
+                "unit": "umol/L",
+                "ref": "< 250"
+            },
+            {
+                "name": "Acylcarnitine Profile",
+                "unit": "panel",
+                "ref": "Normal physiological profile / No block"
+            }
+        ]
+    },
+    {
+        "key": "plasma_amino_acids_hplc",
+        "code": "BIO-030",
+        "name": "الأحماض الأمينية الكمية في البلازما (Quantitative Plasma Amino Acids HPLC)",
+        "name_ar": "التحليل الكمي للأحماض الأمينية في البلازما بجهاز الكروماتوجرافي السائل HPLC",
+        "name_en": "Quantitative Amino Acids Profile (42 Amino Acids by Ion-Exchange / HPLC)",
+        "category": "biochemistry",
+        "category_name": "الكيمياء الحيوية والتمثيل الغذائي",
+        "category_ar": "الكيمياء الحيوية والتمثيل الغذائي",
+        "tube": "أنبوبة خضراء ليثيوم هيبارين مفصولة ومثلجة فوراً 🟢❄️",
+        "tube_color": "green",
+        "tube_name_ar": "بلازما هيبارين مفصولة ومجمدة فوراً",
+        "tube_name_en": "Heparinized Platelet-Free Frozen Plasma",
+        "prep": "صيام 6-8 ساعات (للأطفال حسب العمر). فصل البلازما وتجميدها فوراً عند -20 مئوية.",
+        "prep_notes_ar": "تشخيص اعتلالات دورة اليوريا وحموضة الدم الأمينية عند الأطفال والرضع.",
+        "prep_notes_en": "Critical for urea cycle defects and aminoacidopathies. Strict prompt deproteinization.",
+        "fasting_hours": 6,
+        "tat": "7 أيام",
+        "tat_hours": 168,
+        "cost": 1800,
+        "price": 1800,
+        "out_source_cost": 1200,
+        "parameters": [
+            {
+                "name": "Glutamine",
+                "unit": "umol/L",
+                "ref": "380 - 750"
+            },
+            {
+                "name": "Alanine",
+                "unit": "umol/L",
+                "ref": "200 - 550"
+            },
+            {
+                "name": "Citrulline",
+                "unit": "umol/L",
+                "ref": "12 - 55"
+            },
+            {
+                "name": "Arginine",
+                "unit": "umol/L",
+                "ref": "40 - 130"
+            }
+        ],
+        "id": "plasma_amino_acids_hplc",
+        "default_parameters": [
+            {
+                "name": "Glutamine",
+                "unit": "umol/L",
+                "ref": "380 - 750"
+            },
+            {
+                "name": "Alanine",
+                "unit": "umol/L",
+                "ref": "200 - 550"
+            },
+            {
+                "name": "Citrulline",
+                "unit": "umol/L",
+                "ref": "12 - 55"
+            },
+            {
+                "name": "Arginine",
+                "unit": "umol/L",
+                "ref": "40 - 130"
+            }
+        ]
+    },
+    {
+        "key": "urine_organic_acids_gcms",
+        "code": "BIO-031",
+        "name": "الأحماض العضوية الكمية في البول بجهاز الكروماتوجرافي الغازي (Urine Organic Acids GC-MS)",
+        "name_ar": "تحليل الأحماض العضوية بالبول بالغاز ماس سبكتروميتري (GC-MS)",
+        "name_en": "Qualitative & Quantitative Urine Organic Acids Profile by GC-MS",
+        "category": "biochemistry",
+        "category_name": "الكيمياء الحيوية والتمثيل الغذائي",
+        "category_ar": "الكيمياء الحيوية والتمثيل الغذائي",
+        "tube": "علبة بول معقمة مجمدة فوراً بدون مواد حافظة 🧪❄️",
+        "tube_color": "yellow",
+        "tube_name_ar": "عينة بول طازجة مجمدة",
+        "tube_name_en": "Frozen Sterile Urine (No Preservatives)",
+        "prep": "جمع أول عينة بول صباحية وتجميدها فوراً عند -20 مئوية.",
+        "prep_notes_ar": "تشخيص حموضة الميثيل مالونيك MMA وحموضة البروبيونيك وحموضة الأيزوفاليريك لدى الأطفال المعانين من قيء وغيبوبة متكررة.",
+        "prep_notes_en": "Essential for diagnosing organic acidemias during acute metabolic decompensation.",
+        "fasting_hours": 0,
+        "tat": "7-10 أيام",
+        "tat_hours": 192,
+        "cost": 1950,
+        "price": 1950,
+        "out_source_cost": 1350,
+        "parameters": [
+            {
+                "name": "Methylmalonic Acid (MMA)",
+                "unit": "mmol/mol Cr",
+                "ref": "< 5.0"
+            },
+            {
+                "name": "Glutaric Acid",
+                "unit": "mmol/mol Cr",
+                "ref": "< 2.0"
+            },
+            {
+                "name": "Lactic / Pyruvic Ratio",
+                "unit": "ratio",
+                "ref": "< 20.0"
+            }
+        ],
+        "id": "urine_organic_acids_gcms",
+        "default_parameters": [
+            {
+                "name": "Methylmalonic Acid (MMA)",
+                "unit": "mmol/mol Cr",
+                "ref": "< 5.0"
+            },
+            {
+                "name": "Glutaric Acid",
+                "unit": "mmol/mol Cr",
+                "ref": "< 2.0"
+            },
+            {
+                "name": "Lactic / Pyruvic Ratio",
+                "unit": "ratio",
+                "ref": "< 20.0"
+            }
+        ]
+    },
+    {
+        "key": "ceruloplasmin_wilson",
+        "code": "BIO-032",
+        "name": "سيرولوبلازمين ونحاس الدم لمرض ويلسون (Serum Ceruloplasmin for Wilson Disease)",
+        "name_ar": "تحليل بروتين سيرولوبلازمين لتشخيص مرض ويلسون وتراكم النحاس بالكبد والمخ",
+        "name_en": "Serum Ceruloplasmin & Copper Workup for Hepatolenticular Degeneration",
+        "category": "biochemistry",
+        "category_name": "الكيمياء الحيوية والتمثيل الغذائي",
+        "category_ar": "الكيمياء الحيوية والتمثيل الغذائي",
+        "tube": "أنبوبة صفراء جل 🟡",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم صفراء",
+        "tube_name_en": "Serum Gel Tube",
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "انخفاضه الشديد (< 10 mg/dL) مع حلقة كايزر فلايشر بالعين يؤكد مرض ويلسون الوراثي.",
+        "prep_notes_en": "Hallmark biomarker for Wilson disease copper overload.",
+        "fasting_hours": 0,
+        "tat": "24-48 ساعة",
+        "tat_hours": 36,
+        "cost": 320,
+        "price": 320,
+        "out_source_cost": 190,
+        "parameters": [
+            {
+                "name": "Serum Ceruloplasmin",
+                "unit": "mg/dL",
+                "ref": "20.0 - 45.0"
+            }
+        ],
+        "id": "ceruloplasmin_wilson",
+        "default_parameters": [
+            {
+                "name": "Serum Ceruloplasmin",
+                "unit": "mg/dL",
+                "ref": "20.0 - 45.0"
+            }
+        ]
+    },
+    {
+        "key": "alpha1_antitrypsin_level",
+        "code": "BIO-033",
+        "name": "ألفا-1 أنتيتريبسين لتليف الكبد وانتفاخ الرئة (Alpha-1 Antitrypsin Level)",
+        "name_ar": "تحليل مستوى إنزيم ألفا-1 أنتيتريبسين بالدم (AAT)",
+        "name_en": "Alpha-1 Antitrypsin (AAT) Quantitative Nephelometry & Phenotyping",
+        "category": "biochemistry",
+        "category_name": "الكيمياء الحيوية والتمثيل الغذائي",
+        "category_ar": "الكيمياء الحيوية والتمثيل الغذائي",
+        "tube": "أنبوبة صفراء جل 🟡",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم جل",
+        "tube_name_en": "Serum Gel Tube",
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "نقص الإنزيم يسبب انتفاخ الرئة Emphysema المبكر في الشباب وتليف الكبد عند الأطفال.",
+        "prep_notes_en": "AAT deficiency causes premature panacinar emphysema and neonatal cholestasis.",
+        "fasting_hours": 0,
+        "tat": "24 ساعة",
+        "tat_hours": 24,
+        "cost": 380,
+        "price": 380,
+        "out_source_cost": 230,
+        "parameters": [
+            {
+                "name": "Alpha-1 Antitrypsin Quantitative",
+                "unit": "mg/dL",
+                "ref": "90 - 200"
+            }
+        ],
+        "id": "alpha1_antitrypsin_level",
+        "default_parameters": [
+            {
+                "name": "Alpha-1 Antitrypsin Quantitative",
+                "unit": "mg/dL",
+                "ref": "90 - 200"
+            }
+        ]
+    },
+    {
+        "key": "total_homocysteine_plasma",
+        "code": "BIO-034",
+        "name": "الهوموسيستين الكلي بالبلازما لجلطات القلب والمخ (Plasma Total Homocysteine)",
+        "name_ar": "تحليل نسبة الهوموسيستين في الدم لتصلب الشرايين والجلطات الوعائية",
+        "name_en": "Total Homocysteine (tHcy) in Plasma by Chemiluminescence",
+        "category": "biochemistry",
+        "category_name": "الكيمياء الحيوية والتمثيل الغذائي",
+        "category_ar": "الكيمياء الحيوية والتمثيل الغذائي",
+        "tube": "أنبوبة موف EDTA مثلجة مفصولة خلال 30 دقيقة 🟣❄️",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة EDTA على ثلج مفصولة فوراً",
+        "tube_name_en": "Iced EDTA Tube, prompt plasma separation",
+        "prep": "صيام 10-12 ساعة. فصل البلازما فوراً خلال 30 دقيقة من السحب لتفادي تسرب الهوموسيستين من كرات الدم.",
+        "prep_notes_ar": "مؤشر خطورة مستقل لتصلب الشرايين التاجية، جلطات الأوردة العميقة، والإجهاض المتكرر.",
+        "prep_notes_en": "Independent risk factor for coronary artery disease and deep vein thrombosis.",
+        "fasting_hours": 10,
+        "tat": "24 ساعة",
+        "tat_hours": 24,
+        "cost": 340,
+        "price": 340,
+        "out_source_cost": 210,
+        "parameters": [
+            {
+                "name": "Total Homocysteine",
+                "unit": "umol/L",
+                "ref": "5.0 - 15.0"
+            }
+        ],
+        "id": "total_homocysteine_plasma",
+        "default_parameters": [
+            {
+                "name": "Total Homocysteine",
+                "unit": "umol/L",
+                "ref": "5.0 - 15.0"
+            }
+        ]
+    },
+    {
+        "key": "cystatin_c_egfr",
+        "code": "BIO-035",
+        "name": "سيستاتين-سي ومعدل الترشيح الكلوي الدقيق (Cystatin C & eGFR High Precision)",
+        "name_ar": "تحليل سيستاتين سي لوظائف الكلى الفائقة الدقة بدون التأثر بالكتلة العضلية",
+        "name_en": "Cystatin C & KDIGO eGFR Calculator (Non-Creatinine Renal Clearance)",
+        "category": "biochemistry",
+        "category_name": "الكيمياء الحيوية والتمثيل الغذائي",
+        "category_ar": "الكيمياء الحيوية والتمثيل الغذائي",
+        "tube": "أنبوبة صفراء جل 🟡",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم صفراء",
+        "tube_name_en": "Serum Gel Tube",
+        "prep": "لا يشترط الصيام ولا يتأثر بالوجبات البروتينية أو الكتلة العضلية.",
+        "prep_notes_ar": "المعيار الأدق عالمياً لكشف القصور الكلوي المبكر لكبار السن وضعاف العضلات ومرضى السمنة وبتر الأطراف.",
+        "prep_notes_en": "Gold standard KDIGO marker for early GFR decline without muscle mass bias.",
+        "fasting_hours": 0,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 360,
+        "price": 360,
+        "out_source_cost": 220,
+        "parameters": [
+            {
+                "name": "Serum Cystatin C",
+                "unit": "mg/L",
+                "ref": "0.55 - 1.05"
+            },
+            {
+                "name": "eGFR (Cystatin C KDIGO)",
+                "unit": "mL/min/1.73m2",
+                "ref": "> 90 (Normal GFR)"
+            }
+        ],
+        "id": "cystatin_c_egfr",
+        "default_parameters": [
+            {
+                "name": "Serum Cystatin C",
+                "unit": "mg/L",
+                "ref": "0.55 - 1.05"
+            },
+            {
+                "name": "eGFR (Cystatin C KDIGO)",
+                "unit": "mL/min/1.73m2",
+                "ref": "> 90 (Normal GFR)"
+            }
+        ]
+    },
+    {
+        "key": "hs_troponin_t_cardiac",
+        "code": "BIO-036",
+        "name": "تروبونين تي القلبي فائق الحساسية للجلطة الحادة (High-Sensitivity Cardiac Troponin T hs-cTnT)",
+        "name_ar": "تحليل تروبونين تي القلبي فائق الدقة لطوارئ الذبحة والجلطة القلبية",
+        "name_en": "High-Sensitivity Cardiac Troponin T (hs-cTnT 5th Gen)",
+        "category": "biochemistry",
+        "category_name": "الكيمياء الحيوية والتمثيل الغذائي",
+        "category_ar": "الكيمياء الحيوية والتمثيل الغذائي",
+        "tube": "أنبوبة خضراء ليثيوم هيبارين أو صفراء جل 🟢🟡",
+        "tube_color": "green",
+        "tube_name_ar": "أنبوبة هيبارين خضراء أو سيروم جل",
+        "tube_name_en": "Heparin Plasma or Serum Gel",
+        "prep": "فحص طوارئ فوري مع تكراره بعد 1-3 ساعات حسب بروتوكول ESC للذبحة الصدرية.",
+        "prep_notes_ar": "يكتشف موت خلايا عضلة القلب حتى مستوى بيكوجرام بدقة قاطعة.",
+        "prep_notes_en": "ESC 0/1h or 0/3h accelerated diagnostic protocol for acute myocardial infarction.",
+        "fasting_hours": 0,
+        "tat": "30 دقيقة",
+        "tat_hours": 0.5,
+        "cost": 320,
+        "price": 320,
+        "out_source_cost": 200,
+        "parameters": [
+            {
+                "name": "hs-cTnT Level",
+                "unit": "ng/L (pg/mL)",
+                "ref": "< 14.0 (Normal / 99th percentile cutoff)"
+            }
+        ],
+        "id": "hs_troponin_t_cardiac",
+        "default_parameters": [
+            {
+                "name": "hs-cTnT Level",
+                "unit": "ng/L (pg/mL)",
+                "ref": "< 14.0 (Normal / 99th percentile cutoff)"
+            }
+        ]
+    },
+    {
+        "key": "heavy_metals_blood_panel",
+        "code": "TOX-009",
+        "name": "لوحة المعادن الثقيلة السامة بالدم بالبلازما المقترنة حثياً (Heavy Metals Blood Panel ICP-MS)",
+        "name_ar": "تحليل التسمم بالمعادن الثقيلة (الرصاص، الزئبق، الكادميوم، والزرنيخ)",
+        "name_en": "Heavy Metals Screen in Whole Blood (Lead, Mercury, Cadmium, Arsenic by ICP-MS)",
+        "category": "toxicology",
+        "category_name": "السموم ومراقبة الأدوية العلاجية",
+        "category_ar": "السموم ومراقبة الأدوية العلاجية",
+        "tube": "أنبوبة كحلي خالية من المعادن الشحيحة 🔵",
+        "tube_color": "blue",
+        "tube_name_ar": "أنبوبة كحلي خالية من المعادن Royal Blue Trace Element",
+        "tube_name_en": "Royal Blue Top Trace Element Blood Tube",
+        "prep": "تجنب تناول المأكولات البحرية والأسماك لمدة 48 ساعة قبل التحليل (تحتوي على زرنيخ بحري حميد).",
+        "prep_notes_ar": "الفحص المعتمد عالمياً للتسمم المهني والبيئي وعمال المصانع والبطاريات ومصادر المياه.",
+        "prep_notes_en": "Avoid seafood 48h prior. Gold standard ICP-MS multi-element detection.",
+        "fasting_hours": 0,
+        "tat": "3-5 أيام",
+        "tat_hours": 96,
+        "cost": 1200,
+        "price": 1200,
+        "out_source_cost": 800,
+        "parameters": [
+            {
+                "name": "Blood Lead (Pb)",
+                "unit": "ug/dL",
+                "ref": "< 5.0"
+            },
+            {
+                "name": "Blood Mercury (Hg)",
+                "unit": "ug/L",
+                "ref": "< 10.0"
+            },
+            {
+                "name": "Blood Cadmium (Cd)",
+                "unit": "ug/L",
+                "ref": "< 1.5"
+            },
+            {
+                "name": "Blood Arsenic (As)",
+                "unit": "ug/L",
+                "ref": "< 12.0"
+            }
+        ],
+        "id": "heavy_metals_blood_panel",
+        "default_parameters": [
+            {
+                "name": "Blood Lead (Pb)",
+                "unit": "ug/dL",
+                "ref": "< 5.0"
+            },
+            {
+                "name": "Blood Mercury (Hg)",
+                "unit": "ug/L",
+                "ref": "< 10.0"
+            },
+            {
+                "name": "Blood Cadmium (Cd)",
+                "unit": "ug/L",
+                "ref": "< 1.5"
+            },
+            {
+                "name": "Blood Arsenic (As)",
+                "unit": "ug/L",
+                "ref": "< 12.0"
+            }
+        ]
+    },
+    {
+        "key": "porphyria_screen_urine_blood",
+        "code": "BIO-037",
+        "name": "فحص البورفيريا الحادة بالبول والدم (Acute Intermittent Porphyria Screen)",
+        "name_ar": "تحليل البورفيرين وحمض دلتا أمينوليفولينيك والبورفوبيلينوجين للبورفيريا",
+        "name_en": "Porphyria Screen (Porphobilinogen PBG, Delta-ALA & Porphyrins protected from light)",
+        "category": "biochemistry",
+        "category_name": "الكيمياء الحيوية والتمثيل الغذائي",
+        "category_ar": "الكيمياء الحيوية والتمثيل الغذائي",
+        "tube": "علبة بول معتمة ومغلفة بالقصدير لحجب الضوء 🧪⬛",
+        "tube_color": "yellow",
+        "tube_name_ar": "علبة بول محمية تماماً من الضوء بالقصدير",
+        "tube_name_en": "Light-Protected Foil-Wrapped Urine Container",
+        "prep": "تغليف العينة بالقصدير فور التبول وحمايتها من الضوء (البورفيرين يتحلل سريعاً بالضوء).",
+        "prep_notes_ar": "تشخيص آلام البطن الشديدة غير المفسرة والاضطرابات النفسية والعصبية والبول الداكن كلون النبيذ.",
+        "prep_notes_en": "Essential light protection. Evaluates neurovisceral crisis and port-wine colored urine.",
+        "fasting_hours": 0,
+        "tat": "3-5 أيام",
+        "tat_hours": 96,
+        "cost": 950,
+        "price": 950,
+        "out_source_cost": 650,
+        "parameters": [
+            {
+                "name": "Urine Porphobilinogen (PBG)",
+                "unit": "umol/L",
+                "ref": "< 9.0 (Negative)"
+            },
+            {
+                "name": "Delta-Aminolevulinic Acid (ALA)",
+                "unit": "umol/L",
+                "ref": "< 35.0"
+            }
+        ],
+        "id": "porphyria_screen_urine_blood",
+        "default_parameters": [
+            {
+                "name": "Urine Porphobilinogen (PBG)",
+                "unit": "umol/L",
+                "ref": "< 9.0 (Negative)"
+            },
+            {
+                "name": "Delta-Aminolevulinic Acid (ALA)",
+                "unit": "umol/L",
+                "ref": "< 35.0"
+            }
+        ]
+    },
+    {
+        "key": "beta2_glycoprotein1_ab",
+        "code": "IMM-048",
+        "name": "أجسام مضادة لبيتا-2 جليكوبروتين 1 لتجلط الدم والإجهاض (Beta-2 Glycoprotein 1 IgG & IgM)",
+        "name_ar": "تحليل الأجسام المضادة لـ Beta-2 Glycoprotein 1 لمتلازمة أضداد الفوسفوليبيد",
+        "name_en": "Beta-2 Glycoprotein 1 (B2GP1) IgG & IgM Quantitative ELISA",
+        "category": "immunology",
+        "category_name": "المناعة والأمصال والأجسام المضادة",
+        "category_ar": "المناعة والأمصال والأجسام المضادة",
+        "tube": "أنبوبة صفراء جل 🟡",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم صفراء",
+        "tube_name_en": "Serum Gel Tube",
+        "prep": "لا يشترط الصيام. إعادة التحليل بعد 12 أسبوعاً للتأكيد التشخيصي لمجلس سابورو.",
+        "prep_notes_ar": "أحد المعايير المعملية الثلاثة لتشخيص متلازمة أضداد الفوسفوليبيد APLS وتكرار الإجهاض وجلطات الشرايين والأوردة.",
+        "prep_notes_en": "Sapporo criteria for Antiphospholipid Syndrome (APS) and recurrent miscarriages.",
+        "fasting_hours": 0,
+        "tat": "24-48 ساعة",
+        "tat_hours": 36,
+        "cost": 480,
+        "price": 480,
+        "out_source_cost": 300,
+        "parameters": [
+            {
+                "name": "B2GP1 IgG",
+                "unit": "SGU",
+                "ref": "< 20.0 (Negative)"
+            },
+            {
+                "name": "B2GP1 IgM",
+                "unit": "SMU",
+                "ref": "< 20.0 (Negative)"
+            }
+        ],
+        "id": "beta2_glycoprotein1_ab",
+        "default_parameters": [
+            {
+                "name": "B2GP1 IgG",
+                "unit": "SGU",
+                "ref": "< 20.0 (Negative)"
+            },
+            {
+                "name": "B2GP1 IgM",
+                "unit": "SMU",
+                "ref": "< 20.0 (Negative)"
+            }
+        ]
+    },
+    {
+        "key": "anticardiolipin_ab_igg_igm",
+        "code": "IMM-049",
+        "name": "أجسام مضادة للكارديوليبين كمي (Anticardiolipin Antibodies IgG & IgM)",
+        "name_ar": "تحليل الأجسام المضادة للكارديوليبين لجلطات الدم والإجهاض",
+        "name_en": "Anticardiolipin (aCL) IgG & IgM Quantitative ELISA",
+        "category": "immunology",
+        "category_name": "المناعة والأمصال والأجسام المضادة",
+        "category_ar": "المناعة والأمصال والأجسام المضادة",
+        "tube": "أنبوبة صفراء جل 🟡",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم صفراء",
+        "tube_name_en": "Serum Gel Tube",
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "تشخيص الذئبة الحمراء ومتلازمة الفوسفوليبيد APLS.",
+        "prep_notes_en": "Persistent elevation indicates high thrombotic risk.",
+        "fasting_hours": 0,
+        "tat": "24 ساعة",
+        "tat_hours": 24,
+        "cost": 450,
+        "price": 450,
+        "out_source_cost": 280,
+        "parameters": [
+            {
+                "name": "aCL IgG",
+                "unit": "GPL-U/mL",
+                "ref": "< 12.0 (Negative)"
+            },
+            {
+                "name": "aCL IgM",
+                "unit": "MPL-U/mL",
+                "ref": "< 12.0 (Negative)"
+            }
+        ],
+        "id": "anticardiolipin_ab_igg_igm",
+        "default_parameters": [
+            {
+                "name": "aCL IgG",
+                "unit": "GPL-U/mL",
+                "ref": "< 12.0 (Negative)"
+            },
+            {
+                "name": "aCL IgM",
+                "unit": "MPL-U/mL",
+                "ref": "< 12.0 (Negative)"
+            }
+        ]
+    },
+    {
+        "key": "lupus_anticoagulant_drvvt",
+        "code": "HEM-022",
+        "name": "مانع تجلط الذئبة باختبار سم أفعى راسيل المخفف (Lupus Anticoagulant dRVVT)",
+        "name_ar": "فحص مانع تخثر الذئبة dRVVT بنسبة الفحص والتأكيد لسيولة وتجلط الدم",
+        "name_en": "Dilute Russell Viper Venom Time (dRVVT Screen & Confirm Ratio)",
+        "category": "hematology",
+        "category_name": "أمراض الدم والتجلط المتقدمة",
+        "category_ar": "أمراض الدم والتجلط المتقدمة",
+        "tube": "أنبوبة لبني سيترات صوديوم 9:1 مفصولة مرتين 🔵",
+        "tube_color": "blue",
+        "tube_name_ar": "بلازما سيترات منزوعة الصفائح تماماً",
+        "tube_name_en": "Double-Centrifuged Platelet-Poor Citrated Plasma",
+        "prep": "يجب إيقاف مضادات التجلط المباشرة DOACs والوارفارين أو استشارة الطبيب قبل الفحص.",
+        "prep_notes_ar": "أدق فحص لتأكيد مانع تجلط الذئبة Lupus Anticoagulant وتفسير استطالة زمن aPTT غير المفسرة.",
+        "prep_notes_en": "Normalized ratio > 1.20 confirms presence of lupus anticoagulant.",
+        "fasting_hours": 0,
+        "tat": "24-48 ساعة",
+        "tat_hours": 36,
+        "cost": 600,
+        "price": 600,
+        "out_source_cost": 380,
+        "parameters": [
+            {
+                "name": "dRVVT Screen Time",
+                "unit": "sec",
+                "ref": "30.0 - 45.0"
+            },
+            {
+                "name": "dRVVT Normalized Ratio",
+                "unit": "ratio",
+                "ref": "< 1.20 (Negative)"
+            }
+        ],
+        "id": "lupus_anticoagulant_drvvt",
+        "default_parameters": [
+            {
+                "name": "dRVVT Screen Time",
+                "unit": "sec",
+                "ref": "30.0 - 45.0"
+            },
+            {
+                "name": "dRVVT Normalized Ratio",
+                "unit": "ratio",
+                "ref": "< 1.20 (Negative)"
+            }
+        ]
+    },
+    {
+        "key": "thromboelastography_teg_rotem",
+        "code": "HEM-023",
+        "name": "تخطيط حركية وتماسك الجلطة الدموية (Thromboelastography TEG / ROTEM)",
+        "name_ar": "فحص ديناميكية تجلط الدم TEG لجراحات القلب والنزيف الحاد والعناية",
+        "name_en": "Thromboelastography (TEG 5000 / ROTEM Viscoelastic Hemostasis Testing)",
+        "category": "hematology",
+        "category_name": "أمراض الدم والتجلط المتقدمة",
+        "category_ar": "أمراض الدم والتجلط المتقدمة",
+        "tube": "أنبوبة لبني سيترات صوديوم طازجة تفحص فوراً 🔵⏱️",
+        "tube_color": "blue",
+        "tube_name_ar": "أنبوبة سيترات تفحص خلال ساعتين",
+        "tube_name_en": "Fresh Citrated Whole Blood",
+        "prep": "فحص نقطة الرعاية (Point-of-Care) بجوار غرفة العمليات أو العناية المركزة لتقييم النزيف الحاد.",
+        "prep_notes_ar": "يوجه نقل الدم والمشتقات (بلازما، صفائح، كريوبريسيبتات) بدقة متناهية أثناء الجراحة.",
+        "prep_notes_en": "Assesses clot initiation (R time), kinetics (K time, alpha angle), and clot strength (MA).",
+        "fasting_hours": 0,
+        "tat": "45 دقيقة",
+        "tat_hours": 0.75,
+        "cost": 850,
+        "price": 850,
+        "out_source_cost": 550,
+        "parameters": [
+            {
+                "name": "Reaction Time (R)",
+                "unit": "min",
+                "ref": "5.0 - 10.0"
+            },
+            {
+                "name": "K Time",
+                "unit": "min",
+                "ref": "1.0 - 3.0"
+            },
+            {
+                "name": "Alpha Angle",
+                "unit": "deg",
+                "ref": "53 - 72"
+            },
+            {
+                "name": "Maximum Amplitude (MA)",
+                "unit": "mm",
+                "ref": "50 - 70"
+            }
+        ],
+        "id": "thromboelastography_teg_rotem",
+        "default_parameters": [
+            {
+                "name": "Reaction Time (R)",
+                "unit": "min",
+                "ref": "5.0 - 10.0"
+            },
+            {
+                "name": "K Time",
+                "unit": "min",
+                "ref": "1.0 - 3.0"
+            },
+            {
+                "name": "Alpha Angle",
+                "unit": "deg",
+                "ref": "53 - 72"
+            },
+            {
+                "name": "Maximum Amplitude (MA)",
+                "unit": "mm",
+                "ref": "50 - 70"
+            }
+        ]
+    },
+    {
+        "key": "von_willebrand_factor_panel",
+        "code": "HEM-024",
+        "name": "عامل فون فيلبراند للنزيف الوراثي (von Willebrand Factor Antigen & Activity)",
+        "name_ar": "تحليل مستضد ونشاط عامل فون فيلبراند (vWF Ag & Ristocetin Activity)",
+        "name_en": "von Willebrand Factor (vWF:Ag & vWF:RCo Ristocetin Cofactor Activity)",
+        "category": "hematology",
+        "category_name": "أمراض الدم والتجلط المتقدمة",
+        "category_ar": "أمراض الدم والتجلط المتقدمة",
+        "tube": "أنبوبة لبني سيترات صوديوم مفصولة ومجمدة فوراً 🔵❄️",
+        "tube_color": "blue",
+        "tube_name_ar": "بلازما سيترات مجمدة",
+        "tube_name_en": "Frozen Citrated Plasma",
+        "prep": "تجنب الإجهاد البدني والتمارين العنيفة قبل السحب (ترفع vWF مؤقتاً).",
+        "prep_notes_ar": "أشهر أسباب النزف الوراثي وغزارة الطمث ونزيف الأنف المتكرر عند الفتيات والرجال.",
+        "prep_notes_en": "Diagnosis of von Willebrand Disease (Types 1, 2, 3) and menorrhagia workup.",
+        "fasting_hours": 0,
+        "tat": "3-5 أيام",
+        "tat_hours": 96,
+        "cost": 1100,
+        "price": 1100,
+        "out_source_cost": 750,
+        "parameters": [
+            {
+                "name": "vWF Antigen",
+                "unit": "%",
+                "ref": "50 - 150%"
+            },
+            {
+                "name": "vWF Ristocetin Cofactor Activity",
+                "unit": "%",
+                "ref": "50 - 150%"
+            },
+            {
+                "name": "vWF Activity / Antigen Ratio",
+                "unit": "ratio",
+                "ref": "> 0.7"
+            }
+        ],
+        "id": "von_willebrand_factor_panel",
+        "default_parameters": [
+            {
+                "name": "vWF Antigen",
+                "unit": "%",
+                "ref": "50 - 150%"
+            },
+            {
+                "name": "vWF Ristocetin Cofactor Activity",
+                "unit": "%",
+                "ref": "50 - 150%"
+            },
+            {
+                "name": "vWF Activity / Antigen Ratio",
+                "unit": "ratio",
+                "ref": "> 0.7"
+            }
+        ]
+    },
+    {
+        "key": "factor_viii_activity_hemophilia",
+        "code": "HEM-025",
+        "name": "نشاط العامل الثامن للهيموفيليا أ (Factor VIII Chromogenic Activity)",
+        "name_ar": "تحليل قياس نشاط العامل الثامن بالدم لتشخيص الهيموفيليا أ",
+        "name_en": "Factor VIII Clotting Activity (FVIII:C) for Hemophilia A Diagnosis",
+        "category": "hematology",
+        "category_name": "أمراض الدم والتجلط المتقدمة",
+        "category_ar": "أمراض الدم والتجلط المتقدمة",
+        "tube": "أنبوبة لبني سيترات صوديوم 🔵",
+        "tube_color": "blue",
+        "tube_name_ar": "بلازما سيترات",
+        "tube_name_en": "Citrated Plasma",
+        "prep": "سحب هادئ بدون ربط تورنيكيه لفترات طويلة.",
+        "prep_notes_ar": "تشخيص النزف المفصلي ونقص العامل الثامن وتحديد درجة شدة مرض الهيموفيليا أ.",
+        "prep_notes_en": "Differentiates severe (< 1%), moderate (1-5%), and mild (5-40%) Hemophilia A.",
+        "fasting_hours": 0,
+        "tat": "24 ساعة",
+        "tat_hours": 24,
+        "cost": 420,
+        "price": 420,
+        "out_source_cost": 260,
+        "parameters": [
+            {
+                "name": "Factor VIII Activity",
+                "unit": "%",
+                "ref": "50 - 150%"
+            }
+        ],
+        "id": "factor_viii_activity_hemophilia",
+        "default_parameters": [
+            {
+                "name": "Factor VIII Activity",
+                "unit": "%",
+                "ref": "50 - 150%"
+            }
+        ]
+    },
+    {
+        "key": "factor_ix_activity_christmas",
+        "code": "HEM-026",
+        "name": "نشاط العامل التاسع للهيموفيليا ب (Factor IX Activity - Hemophilia B)",
+        "name_ar": "تحليل قياس نشاط العامل التاسع بالدم لمرض كريسماس (الهيموفيليا ب)",
+        "name_en": "Factor IX Clotting Activity (FIX:C) for Hemophilia B Diagnosis",
+        "category": "hematology",
+        "category_name": "أمراض الدم والتجلط المتقدمة",
+        "category_ar": "أمراض الدم والتجلط المتقدمة",
+        "tube": "أنبوبة لبني سيترات صوديوم 🔵",
+        "tube_color": "blue",
+        "tube_name_ar": "بلازما سيترات",
+        "tube_name_en": "Citrated Plasma",
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "تشخيص الهيموفيليا ب (Christmas Disease) ومتابعة العلاج التعويضي.",
+        "prep_notes_en": "Hemophilia B severity classification.",
+        "fasting_hours": 0,
+        "tat": "24 ساعة",
+        "tat_hours": 24,
+        "cost": 420,
+        "price": 420,
+        "out_source_cost": 260,
+        "parameters": [
+            {
+                "name": "Factor IX Activity",
+                "unit": "%",
+                "ref": "60 - 140%"
+            }
+        ],
+        "id": "factor_ix_activity_christmas",
+        "default_parameters": [
+            {
+                "name": "Factor IX Activity",
+                "unit": "%",
+                "ref": "60 - 140%"
+            }
+        ]
+    },
+    {
+        "key": "serum_free_light_chains",
+        "code": "TUM-011",
+        "name": "السلاسل الخفيفة الحرة بالسيروم للمايلوما (Serum Free Light Chains sFLC Freelite)",
+        "name_ar": "تحليل سلاسل كابا ولامدا الحرة بالدم ونسبة كابا/لامدا لسرطان المايلوما المتعددة",
+        "name_en": "Serum Free Light Chains (Kappa & Lambda sFLC with K/L Ratio)",
+        "category": "tumor_markers",
+        "category_name": "دلالات الأورام والأنسجة",
+        "category_ar": "دلالات الأورام والأنسجة",
+        "tube": "أنبوبة صفراء جل 🟡",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم صفراء",
+        "tube_name_en": "Serum Gel Tube",
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "الفحص الأدق لمتابعة مرضى المايلوما متعدية السلاسل الخفيفة وداء النشواني AL Amyloidosis ومؤشر الاستجابة للعلاج الكيميائي.",
+        "prep_notes_en": "IMWG guideline test for multiple myeloma, smoldering myeloma, and AL amyloidosis.",
+        "fasting_hours": 0,
+        "tat": "24-48 ساعة",
+        "tat_hours": 36,
+        "cost": 750,
+        "price": 750,
+        "out_source_cost": 480,
+        "parameters": [
+            {
+                "name": "Free Kappa Light Chains",
+                "unit": "mg/L",
+                "ref": "3.3 - 19.4"
+            },
+            {
+                "name": "Free Lambda Light Chains",
+                "unit": "mg/L",
+                "ref": "5.7 - 26.3"
+            },
+            {
+                "name": "Kappa / Lambda FLC Ratio",
+                "unit": "ratio",
+                "ref": "0.26 - 1.65 (Renal failure 0.37 - 3.10)"
+            }
+        ],
+        "id": "serum_free_light_chains",
+        "default_parameters": [
+            {
+                "name": "Free Kappa Light Chains",
+                "unit": "mg/L",
+                "ref": "3.3 - 19.4"
+            },
+            {
+                "name": "Free Lambda Light Chains",
+                "unit": "mg/L",
+                "ref": "5.7 - 26.3"
+            },
+            {
+                "name": "Kappa / Lambda FLC Ratio",
+                "unit": "ratio",
+                "ref": "0.26 - 1.65 (Renal failure 0.37 - 3.10)"
+            }
+        ]
+    },
+    {
+        "key": "immunofixation_ife_serum_urine",
+        "code": "TUM-012",
+        "name": "التثبيت المناعي الكهربائي للبروتينات بالدم والبول (Immunofixation IFE)",
+        "name_ar": "تحليل التثبيت المناعي الكهربائي لبروتين بنس جونز وحزمة M-Band الشاذة",
+        "name_en": "Immunofixation Electrophoresis (IFE) Serum & 24h Urine (Bence-Jones Protein)",
+        "category": "tumor_markers",
+        "category_name": "دلالات الأورام والأنسجة",
+        "category_ar": "دلالات الأورام والأنسجة",
+        "tube": "سيروم دم وبول تجميعي 24 ساعة 🟡🧪",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم صفراء + جردل بول 24 ساعة",
+        "tube_name_en": "Serum Gel Tube + 24h Urine Container",
+        "prep": "جمع بول 24 ساعة كاملاً مع تجنب إهدار أي كمية.",
+        "prep_notes_ar": "يحدد النوع الدقيق للأجسام المضادة الأحادية النواة Monoclonal Gammopathy (IgG, IgA, IgM, Kappa, Lambda).",
+        "prep_notes_en": "Characterizes paraprotein band in MGUS, Multiple Myeloma, and Waldenstrom.",
+        "fasting_hours": 0,
+        "tat": "3-5 أيام",
+        "tat_hours": 96,
+        "cost": 650,
+        "price": 650,
+        "out_source_cost": 420,
+        "parameters": [
+            {
+                "name": "Serum Monoclonal Band (M-protein)",
+                "unit": "desc",
+                "ref": "No monoclonal gammopathy detected"
+            },
+            {
+                "name": "Urine Bence-Jones Protein",
+                "unit": "desc",
+                "ref": "Negative / No light chain paraprotein"
+            }
+        ],
+        "id": "immunofixation_ife_serum_urine",
+        "default_parameters": [
+            {
+                "name": "Serum Monoclonal Band (M-protein)",
+                "unit": "desc",
+                "ref": "No monoclonal gammopathy detected"
+            },
+            {
+                "name": "Urine Bence-Jones Protein",
+                "unit": "desc",
+                "ref": "Negative / No light chain paraprotein"
+            }
+        ]
+    },
+    {
+        "key": "fecal_calprotectin_ibd",
+        "code": "MIC-017",
+        "name": "كالبروتكتين البراز لتقرحات وداء كرون (Fecal Calprotectin for IBD)",
+        "name_ar": "تحليل كالبروتكتين في البراز للتفريق القاطع بين القولون العصبي IBS والقولون التقرحي IBD",
+        "name_en": "Fecal Calprotectin Quantitative ELISA / Chemiluminescence",
+        "category": "microbiology",
+        "category_name": "الميكروبيولوجي والمزارع وسوائل الجسم",
+        "category_ar": "الميكروبيولوجي والمزارع وسوائل الجسم",
+        "tube": "علبة براز معقمة جافة بدون بول 🧪",
+        "tube_color": "green",
+        "tube_name_ar": "علبة براز معقمة جافة",
+        "tube_name_en": "Sterile Clean Stool Cup",
+        "prep": "تجنب تناول المسكنات ومضادات الالتهاب (NSAIDs كالبروفين والفولتارين) قبل أسبوع من الفحص.",
+        "prep_notes_ar": "المعيار غير الجراحي الأول لتقييم نشاط والتهاب بطانة الأمعاء وتحديد الحاجة لمنظار القولون.",
+        "prep_notes_en": "< 50 ug/g IBS / Normal; > 200 ug/g Active IBD mucosal inflammation.",
+        "fasting_hours": 0,
+        "tat": "24 ساعة",
+        "tat_hours": 24,
+        "cost": 450,
+        "price": 450,
+        "out_source_cost": 280,
+        "parameters": [
+            {
+                "name": "Fecal Calprotectin Level",
+                "unit": "ug/g",
+                "ref": "< 50 (Normal / Non-inflammatory) | 50-200 (Borderline) | > 200 (Active IBD)"
+            }
+        ],
+        "id": "fecal_calprotectin_ibd",
+        "default_parameters": [
+            {
+                "name": "Fecal Calprotectin Level",
+                "unit": "ug/g",
+                "ref": "< 50 (Normal / Non-inflammatory) | 50-200 (Borderline) | > 200 (Active IBD)"
+            }
+        ]
+    },
+    {
+        "key": "fecal_pancreatic_elastase1",
+        "code": "MIC-018",
+        "name": "إيلاستاز البنكرياس بالبراز لعسر الهضم والقصور الإفرازي (Fecal Pancreatic Elastase-1)",
+        "name_ar": "تحليل إيلاستاز البنكرياس في البراز لقصور وظائف البنكرياس الخارجية EPI",
+        "name_en": "Fecal Pancreatic Elastase-1 (PE-1) for Exocrine Pancreatic Insufficiency",
+        "category": "microbiology",
+        "category_name": "الميكروبيولوجي والمزارع وسوائل الجسم",
+        "category_ar": "الميكروبيولوجي والمزارع وسوائل الجسم",
+        "tube": "علبة براز معقمة 🧪",
+        "tube_color": "green",
+        "tube_name_ar": "علبة براز صلبة أو نصف صلبة",
+        "tube_name_en": "Sterile Stool Cup",
+        "prep": "لا يتأثر بالعلاج التعويضي لإنزيمات البنكرياس (Creon) فيمكن إجراؤه أثناء العلاج.",
+        "prep_notes_ar": "تشخيص الإسهال الدهني وعسر الهضم وفقدان الوزن غير المبرر الناتج عن ضعف البنكرياس.",
+        "prep_notes_en": "< 100 ug/g indicates severe exocrine pancreatic insufficiency.",
+        "fasting_hours": 0,
+        "tat": "48 ساعة",
+        "tat_hours": 48,
+        "cost": 550,
+        "price": 550,
+        "out_source_cost": 350,
+        "parameters": [
+            {
+                "name": "Fecal Elastase-1",
+                "unit": "ug/g",
+                "ref": "> 200 (Normal Pancreatic Function) | < 100 (Severe Insufficiency)"
+            }
+        ],
+        "id": "fecal_pancreatic_elastase1",
+        "default_parameters": [
+            {
+                "name": "Fecal Elastase-1",
+                "unit": "ug/g",
+                "ref": "> 200 (Normal Pancreatic Function) | < 100 (Severe Insufficiency)"
+            }
+        ]
+    },
+    {
+        "key": "hdv_rna_quantitative_pcr",
+        "code": "VIR-023",
+        "name": "فيروس دلتا الكبدي الكمي بالـ PCR (Hepatitis Delta Virus HDV RNA)",
+        "name_ar": "تحليل الـ PCR الكمي لفيروس دلتا المصاحب لفيروس بي الكبدي",
+        "name_en": "Hepatitis Delta Virus (HDV) Quantitative Real-Time PCR",
+        "category": "immunology",
+        "category_name": "المناعة والأمراض المعدية والفيروسات",
+        "category_ar": "المناعة والأمراض المعدية والفيروسات",
+        "tube": "أنبوبة صفراء جل أو موف EDTA مفصولة فوراً 🟡🟣",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم مفصولة ومثلجة",
+        "tube_name_en": "Frozen Serum/Plasma Tube",
+        "prep": "يطلب لمرضى فيروس بي الحاملين للمستضد السطحي HBsAg الإيجابي لتشخيص العدوى المزدوجة الخطيرة.",
+        "prep_notes_ar": "عدوى فيروس دلتا تزيد من سرعة حدوث تليف وفشل الكبد وسرطان الكبد.",
+        "prep_notes_en": "Superinfection in chronic HBV patients. Monitors antiviral response.",
+        "fasting_hours": 0,
+        "tat": "5 أيام",
+        "tat_hours": 120,
+        "cost": 1400,
+        "price": 1400,
+        "out_source_cost": 950,
+        "parameters": [
+            {
+                "name": "HDV RNA Viral Load",
+                "unit": "IU/mL",
+                "ref": "Not Detected (< 10 IU/mL)"
+            }
+        ],
+        "id": "hdv_rna_quantitative_pcr",
+        "default_parameters": [
+            {
+                "name": "HDV RNA Viral Load",
+                "unit": "IU/mL",
+                "ref": "Not Detected (< 10 IU/mL)"
+            }
+        ]
+    },
+    {
+        "key": "ebv_dna_quantitative_pcr",
+        "code": "VIR-024",
+        "name": "فيروس إبشتاين بار الكمي بالـ PCR (EBV DNA Quantitative PCR)",
+        "name_ar": "تحليل الـ PCR الكمي لفيروس إبشتاين بار لمرضى زراعة الأعضاء والليمفوما",
+        "name_en": "Epstein-Barr Virus (EBV) Viral Load by Real-Time PCR (Whole Blood & Plasma)",
+        "category": "immunology",
+        "category_name": "المناعة والأمراض المعدية والفيروسات",
+        "category_ar": "المناعة والأمراض المعدية والفيروسات",
+        "tube": "أنبوبة موف EDTA 🟣",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة EDTA معقمة",
+        "tube_name_en": "EDTA Tube",
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "متابعة متلازمة التكاثر الليمفاوي بعد زراعة الأعضاء (PTLD) وسرطان البلعوم الأنفي.",
+        "prep_notes_en": "Critical surveillance for post-transplant lymphoproliferative disorder (PTLD).",
+        "fasting_hours": 0,
+        "tat": "48-72 ساعة",
+        "tat_hours": 60,
+        "cost": 850,
+        "price": 850,
+        "out_source_cost": 550,
+        "parameters": [
+            {
+                "name": "EBV DNA Load",
+                "unit": "copies/mL",
+                "ref": "Not Detected (< 100 copies/mL)"
+            }
+        ],
+        "id": "ebv_dna_quantitative_pcr",
+        "default_parameters": [
+            {
+                "name": "EBV DNA Load",
+                "unit": "copies/mL",
+                "ref": "Not Detected (< 100 copies/mL)"
+            }
+        ]
+    },
+    {
+        "key": "cmv_dna_quantitative_pcr",
+        "code": "VIR-025",
+        "name": "الفيروس المضخم للخلايا الكمي بالـ PCR (CMV DNA Quantitative PCR)",
+        "name_ar": "تحليل الـ PCR الكمي للفيروس المضخم للخلايا CMV بالدم لمرضى الكلى وزراعة الأعضاء",
+        "name_en": "Cytomegalovirus (CMV) Viral Load Real-Time PCR (WHO International Units)",
+        "category": "immunology",
+        "category_name": "المناعة والأمراض المعدية والفيروسات",
+        "category_ar": "المناعة والأمراض المعدية والفيروسات",
+        "tube": "أنبوبة موف EDTA 🟣",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة EDTA",
+        "tube_name_en": "EDTA Tube",
+        "prep": "لا يشترط الصيام. إرسال فوري.",
+        "prep_notes_ar": "متابعة عدوى الفيروس المضخم للخلايا بعد زراعة الكلى والكبد وتعديل جرعات الفالجانسيكلوفير.",
+        "prep_notes_en": "Directs preemptive antiviral therapy in post-transplant and immunocompromised patients.",
+        "fasting_hours": 0,
+        "tat": "48 ساعة",
+        "tat_hours": 48,
+        "cost": 850,
+        "price": 850,
+        "out_source_cost": 550,
+        "parameters": [
+            {
+                "name": "CMV DNA Viral Load",
+                "unit": "IU/mL",
+                "ref": "Not Detected (< 35 IU/mL)"
+            }
+        ],
+        "id": "cmv_dna_quantitative_pcr",
+        "default_parameters": [
+            {
+                "name": "CMV DNA Viral Load",
+                "unit": "IU/mL",
+                "ref": "Not Detected (< 35 IU/mL)"
+            }
+        ]
+    },
+    {
+        "key": "bkv_dna_quantitative_pcr",
+        "code": "VIR-026",
+        "name": "فيروس بي كيه الكمي لزارعي الكلى بالـ PCR (BK Virus DNA Quantitative PCR)",
+        "name_ar": "تحليل الـ PCR الكمي لفيروس BK في الدم والبول لحماية الكلية المزروعة من الرفض",
+        "name_en": "BK Polyomavirus (BKV) Quantitative Real-Time PCR (Plasma & Urine)",
+        "category": "immunology",
+        "category_name": "المناعة والأمراض المعدية والفيروسات",
+        "category_ar": "المناعة والأمراض المعدية والفيروسات",
+        "tube": "أنبوبة موف EDTA وعينة بول معقمة 🟣🧪",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة EDTA + علبة بول",
+        "tube_name_en": "EDTA Blood + Sterile Urine",
+        "prep": "فحص دوري شهري بعد عمليات زراعة الكلى.",
+        "prep_notes_ar": "ارتفاعه في البلازما (> 10,000 copies/mL) ينذر باعتلال الكلية الفيروسي BKN وخطر فقد الكلية.",
+        "prep_notes_en": "Surveillance for BK virus nephropathy in renal allograft recipients.",
+        "fasting_hours": 0,
+        "tat": "48-72 ساعة",
+        "tat_hours": 60,
+        "cost": 950,
+        "price": 950,
+        "out_source_cost": 620,
+        "parameters": [
+            {
+                "name": "BKV Plasma Viral Load",
+                "unit": "copies/mL",
+                "ref": "Not Detected (< 250 copies/mL)"
+            },
+            {
+                "name": "BKV Urine Viral Load",
+                "unit": "copies/mL",
+                "ref": "< 10,000 copies/mL"
+            }
+        ],
+        "id": "bkv_dna_quantitative_pcr",
+        "default_parameters": [
+            {
+                "name": "BKV Plasma Viral Load",
+                "unit": "copies/mL",
+                "ref": "Not Detected (< 250 copies/mL)"
+            },
+            {
+                "name": "BKV Urine Viral Load",
+                "unit": "copies/mL",
+                "ref": "< 10,000 copies/mL"
+            }
+        ]
+    },
+    {
+        "key": "vitamin_b1_thiamine_whole_blood",
+        "code": "END-025",
+        "name": "فيتامين ب1 الثيامين النشط بالدم الكامل (Vitamin B1 Thiamine Pyrophosphate)",
+        "name_ar": "تحليل فيتامين ب1 (ثيامين بيروفوسفات) بالدم لتشخيص متلازمة فيرنيكي والبري بري",
+        "name_en": "Vitamin B1 (Thiamine Pyrophosphate TPP) in Whole Blood by HPLC",
+        "category": "endocrinology",
+        "category_name": "الهرمونات والغدد والفيتامينات",
+        "category_ar": "الهرمونات والغدد والفيتامينات",
+        "tube": "أنبوبة موف EDTA محمية من الضوء بالقصدير 🟣⬛",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة EDTA مغلفة بالقصدير ومحمية من الضوء",
+        "tube_name_en": "Light-Protected Foil-Wrapped EDTA Tube",
+        "prep": "صيام 10-12 ساعة. حماية العينة من الضوء فور السحب (حساس جداً للضوء).",
+        "prep_notes_ar": "تشخيص حالات الهذيان وفقدان التوازن واعتلال الأعصاب الطرفية بعد جراحات التكميم والقيء المستعصي.",
+        "prep_notes_en": "Evaluates Wernicke-Korsakoff syndrome, post-bariatric beriberi neuropathy.",
+        "fasting_hours": 10,
+        "tat": "3-5 أيام",
+        "tat_hours": 96,
+        "cost": 550,
+        "price": 550,
+        "out_source_cost": 350,
+        "parameters": [
+            {
+                "name": "Thiamine Pyrophosphate",
+                "unit": "nmol/L",
+                "ref": "70 - 180"
+            }
+        ],
+        "id": "vitamin_b1_thiamine_whole_blood",
+        "default_parameters": [
+            {
+                "name": "Thiamine Pyrophosphate",
+                "unit": "nmol/L",
+                "ref": "70 - 180"
+            }
+        ]
+    },
+    {
+        "key": "vitamin_b6_plp_plasma",
+        "code": "END-026",
+        "name": "فيتامين ب6 البيريدوكسال النشط بالبلازما (Vitamin B6 Pyridoxal 5-Phosphate PLP)",
+        "name_ar": "تحليل فيتامين ب6 النشط (PLP) بالبلازما للأعصاب وتشنجات الأطفال",
+        "name_en": "Vitamin B6 (Pyridoxal 5-Phosphate PLP) in Plasma by HPLC (Light Protected)",
+        "category": "endocrinology",
+        "category_name": "الهرمونات والغدد والفيتامينات",
+        "category_ar": "الهرمونات والغدد والفيتامينات",
+        "tube": "أنبوبة موف EDTA محمية من الضوء بالقصدير 🟣⬛",
+        "tube_color": "purple",
+        "tube_name_ar": "أنبوبة EDTA محمية من الضوء",
+        "tube_name_en": "Light-Protected EDTA Tube",
+        "prep": "صيام 8 ساعات وحماية تامة من الضوء.",
+        "prep_notes_ar": "تقييم التشنجات الصرعية المعتمدة على فيتامين ب6 عند الرضع والتهاب الأعصاب الناتج عن أدوية الدرن (Isoniazid).",
+        "prep_notes_en": "Diagnoses pyridoxine-dependent epilepsy and INH-induced peripheral neuropathy.",
+        "fasting_hours": 8,
+        "tat": "3-5 أيام",
+        "tat_hours": 96,
+        "cost": 550,
+        "price": 550,
+        "out_source_cost": 350,
+        "parameters": [
+            {
+                "name": "Pyridoxal 5-Phosphate",
+                "unit": "nmol/L",
+                "ref": "20.0 - 125.0"
+            }
+        ],
+        "id": "vitamin_b6_plp_plasma",
+        "default_parameters": [
+            {
+                "name": "Pyridoxal 5-Phosphate",
+                "unit": "nmol/L",
+                "ref": "20.0 - 125.0"
+            }
+        ]
+    },
+    {
+        "key": "coenzyme_q10_plasma",
+        "code": "END-027",
+        "name": "الإنزيم المساعد كيو-10 لصحة القلب والطاقة (Coenzyme Q10 Ubiquinone Level)",
+        "name_ar": "تحليل إنزيم CoQ10 بالدم لصحة عضلة القلب وآلام العضلات مع أدوية الستاتين",
+        "name_en": "Coenzyme Q10 (Ubiquinone) Plasma Level by HPLC",
+        "category": "endocrinology",
+        "category_name": "الهرمونات والغدد والفيتامينات",
+        "category_ar": "الهرمونات والغدد والفيتامينات",
+        "tube": "أنبوبة خضراء هيبارين أو صفراء جل محمية من الضوء 🟢⬛",
+        "tube_color": "green",
+        "tube_name_ar": "أنبوبة هيبارين محمية بالقصدير ومجمدة",
+        "tube_name_en": "Light-Protected Frozen Plasma Tube",
+        "prep": "صيام 8 ساعات.",
+        "prep_notes_ar": "مهم لمرضى هبوط القلب وتقييم آلام وتعب العضلات لمتناولي أدوية خفض الكوليسترول الستاتينات Statin-induced myopathy.",
+        "prep_notes_en": "Evaluates mitochondrial myopathy, statin myalgia, and cardiac bioenergetics.",
+        "fasting_hours": 8,
+        "tat": "5 أيام",
+        "tat_hours": 120,
+        "cost": 650,
+        "price": 650,
+        "out_source_cost": 420,
+        "parameters": [
+            {
+                "name": "Total Coenzyme Q10",
+                "unit": "ug/mL",
+                "ref": "0.50 - 1.80"
+            }
+        ],
+        "id": "coenzyme_q10_plasma",
+        "default_parameters": [
+            {
+                "name": "Total Coenzyme Q10",
+                "unit": "ug/mL",
+                "ref": "0.50 - 1.80"
+            }
+        ]
+    },
+    {
+        "key": "copper_zinc_ratio_24h_urine",
+        "code": "BIO-038",
+        "name": "نحاس البول التجميعي 24 ساعة لمرض ويلسون (24-Hour Urine Copper Excretion)",
+        "name_ar": "تحليل نحاس البول التجميعي 24 ساعة لتراكم النحاس ومتابعة علاج مرض ويلسون",
+        "name_en": "24-Hour Urine Copper Quantitative Excretion by ICP-MS",
+        "category": "biochemistry",
+        "category_name": "الكيمياء الحيوية والتمثيل الغذائي",
+        "category_ar": "الكيمياء الحيوية والتمثيل الغذائي",
+        "tube": "جالون بول 24 ساعة معقم وخالي من المعادن 🧪",
+        "tube_color": "yellow",
+        "tube_name_ar": "جالون تجميع بول خالي من النحاس والمعادن",
+        "tube_name_en": "Trace Element Free 24h Urine Jug",
+        "prep": "جمع بول 24 ساعة كاملاً في جالون معقم خالي من المعادن مخصص للمعمل.",
+        "prep_notes_ar": "ارتفاع إفراز النحاس في البول (> 100 ug/24h) مع انخفاض السيرولوبلازمين يؤكد تشخيص مرض ويلسون.",
+        "prep_notes_en": "> 100 ug/24h diagnostic for symptomatic Wilson disease.",
+        "fasting_hours": 0,
+        "tat": "3-5 أيام",
+        "tat_hours": 96,
+        "cost": 450,
+        "price": 450,
+        "out_source_cost": 290,
+        "parameters": [
+            {
+                "name": "24h Urine Copper Excretion",
+                "unit": "ug/24h",
+                "ref": "15.0 - 60.0 (< 100 ug/24h)"
+            }
+        ],
+        "id": "copper_zinc_ratio_24h_urine",
+        "default_parameters": [
+            {
+                "name": "24h Urine Copper Excretion",
+                "unit": "ug/24h",
+                "ref": "15.0 - 60.0 (< 100 ug/24h)"
+            }
+        ]
+    },
+    {
+        "key": "interleukin_6_serum",
+        "code": "IMM-050",
+        "name": "إنترلوكين-6 مؤشر العاصفة السيتوكينية والالتهاب الحاد (Interleukin-6 IL-6 Serum)",
+        "name_ar": "تحليل إنترلوكين 6 بالدم لعاصفة السيتوكينات في كورونا والتعفن الرئوي",
+        "name_en": "Interleukin-6 (IL-6) Quantitative Chemiluminescent Immunoassay",
+        "category": "immunology",
+        "category_name": "المناعة والأمصال والأجسام المضادة",
+        "category_ar": "المناعة والأمصال والأجسام المضادة",
+        "tube": "أنبوبة صفراء جل مفصولة ومجمدة فوراً 🟡❄️",
+        "tube_color": "yellow",
+        "tube_name_ar": "أنبوبة سيروم جل مفصولة فوراً",
+        "tube_name_en": "Frozen Serum Tube",
+        "prep": "لا يشترط الصيام. فصل فوري وتجميد عند -20 مئوية.",
+        "prep_notes_ar": "المؤشر الحيوي الأهم لتحديد عاصفة السيتوكينات Cytokine Storm في العناية المركزة وتوجيه أدوية Tocilizumab.",
+        "prep_notes_en": "Marker of systemic hyperinflammation and guide for IL-6 receptor antagonists.",
+        "fasting_hours": 0,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 480,
+        "price": 480,
+        "out_source_cost": 300,
+        "parameters": [
+            {
+                "name": "Interleukin-6 Level",
+                "unit": "pg/mL",
+                "ref": "< 7.0 (Normal baseline)"
+            }
+        ],
+        "id": "interleukin_6_serum",
+        "default_parameters": [
+            {
+                "name": "Interleukin-6 Level",
+                "unit": "pg/mL",
+                "ref": "< 7.0 (Normal baseline)"
+            }
+        ]
     }
 ],
 
-    // 2. كتالوج فحوصات الأشعة التشخيصية الشاملة
+    // 2. كتالوج فحوصات الأشعة التشخيصية والطب النووي الشامل
     radiologyExams: [
     {
         "key": "ct_brain_plain",
@@ -10777,6 +13786,1356 @@ const MedicalCatalog = {
         "indications": "تخطيط تقويم الأسنان الشامل، بروز الفك السفلي أو العلوي، جراحات الوجه والفكين التقويمية، انقطاع التنفس أثناء النوم OSA",
         "id": "rad_cephalometric_xray",
         "price": 140
+    },
+    {
+        "key": "ct_dual_energy_gout_joints",
+        "code": "CT-032",
+        "name": "أشعة مقطعية طيفية ثنائية الطاقة لبلورات النقرس (Dual-Energy CT Gout)",
+        "name_ar": "أشعة مقطعية طيفية مزدوجة الطاقة (DECT) لكشف بلورات النقرس في المفاصل",
+        "name_en": "Dual-Energy Spectral CT for Monosodium Urate (MSU) Gout Crystal Mapping",
+        "modality": "CT",
+        "modality_ar": "أشعة مقطعية طيفية مزدوجة",
+        "category": "ct_scan",
+        "category_ar": "الأشعة المقطعية",
+        "body_part": "MSK",
+        "body_part_ar": "المفاصل والأطراف",
+        "contrast": false,
+        "contrast_type": "None (بدون صبغة)",
+        "fasting_hours": 0,
+        "prep": "لا يشترط الصيام وبدون أي حقن صبغة. فحص ملون طيفي يلون بلورات اليورات باللون الأخضر المميز.",
+        "prep_notes_ar": "المعيار الذهبي لتشخيص ترسيب أملاح النقرس في أوتار وغضاريف المفاصل حتى في غياب نوبات الألم الحادة.",
+        "prep_notes_en": "Color-coded 3D volume rendering separates uric acid crystals (green) from calcium (purple).",
+        "duration_mins": 10,
+        "tat": "1 ساعة",
+        "tat_hours": 1,
+        "cost": 650,
+        "price": 650,
+        "out_source_cost": 420,
+        "indications": "تشخيص النقرس المزمن، تقييم توفي النقرس في القدم والركبة واليدين، متابعة فعالية أدوية خفض اليوريك",
+        "id": "ct_dual_energy_gout_joints"
+    },
+    {
+        "key": "ct_dual_energy_pulmonary_perfusion",
+        "code": "CT-033",
+        "name": "مقطعية طيفية على الشرايين الرئوية وخريطة تروية الرئة (DECT Pulmonary Angio & Perfusion Map)",
+        "name_ar": "أشعة مقطعية طيفية مزدوجة لشرايين الرئة وخريطة تروية اليود الموضعية لجلطات الرئة",
+        "name_en": "Dual-Energy CT Pulmonary Angiography with Lung Parenchymal Iodine Perfusion Map",
+        "modality": "CT",
+        "modality_ar": "أشعة مقطعية طيفية مزدوجة",
+        "category": "ct_scan",
+        "category_ar": "الأشعة المقطعية",
+        "body_part": "Pulmonary",
+        "body_part_ar": "الرئتين والشرايين الرئوية",
+        "contrast": true,
+        "contrast_type": "IV Contrast Bolus Chase (بالصبغة الوريدية فائقة السرعة)",
+        "fasting_hours": 4,
+        "prep": "صيام 4 ساعات. إحضار تحليل وظائف كلى حديث. كانيولا وريدية واسعة مقاس 18 خضراء بالمرفق.",
+        "prep_notes_ar": "يكشف انسداد الشرايين الدقيقة في أطراف الرئة ويرسم خريطة تروية الأنسجة بنقص اليود الناتج عن الجلطة.",
+        "prep_notes_en": "Evaluates macrovascular clot burden and microvascular ischemic lung parenchymal perfusion defects.",
+        "duration_mins": 15,
+        "tat": "1 ساعة",
+        "tat_hours": 1,
+        "cost": 1100,
+        "price": 1100,
+        "out_source_cost": 720,
+        "indications": "الجلطات الرئوية الحادة والمزمنة (CTEPH)، ضيق التنفس الحاد مجهول السبب، تقييم كفاءة التروية الرئوية",
+        "id": "ct_dual_energy_pulmonary_perfusion"
+    },
+    {
+        "key": "ct_stroke_code_triple",
+        "code": "CT-034",
+        "name": "بروتوكول السكتة الدماغية الطارئ الشامل (CT Stroke Code: Plain + CTP + CTA Arch to Vertex)",
+        "name_ar": "بروتوكول كود السكتة الدماغية الثلاثي الطارئ (عادي + تروية المخ + شرايين الرقبة والمخ)",
+        "name_en": "Comprehensive Acute Stroke CT Code (Non-contrast CT + CT Perfusion + CTA Arch-to-Vertex)",
+        "modality": "CT",
+        "modality_ar": "أشعة مقطعية طوارئ",
+        "category": "ct_scan",
+        "category_ar": "الأشعة المقطعية",
+        "body_part": "Brain & Neck",
+        "body_part_ar": "المخ وشرايين الرقبة",
+        "contrast": true,
+        "contrast_type": "Rapid Dynamic IV Contrast (بالصبغة الوريدية الديناميكية السريعة)",
+        "fasting_hours": 0,
+        "prep": "فحص طوارئ فوري خلال النافذة الذهبية (Golden Window 4.5 - 24 ساعة). كانيولا وريدية 18.",
+        "prep_notes_ar": "يحدد حجم الجلطة الميتة (Core) والأنسجة الحية القابلة للإنقاذ بالقسطرة ومذيب التجلط (Penumbra).",
+        "prep_notes_en": "Guides emergency IV thrombolysis and mechanical endovascular thrombectomy window up to 24h.",
+        "duration_mins": 15,
+        "tat": "30 دقيقة",
+        "tat_hours": 0.5,
+        "cost": 1600,
+        "price": 1600,
+        "out_source_cost": 1100,
+        "indications": "السكتة الدماغية الإقفارية الحادة، الشلل النصفي المفاجئ، فقدان النطق، تحديد أهلية القسطرة المخية",
+        "id": "ct_stroke_code_triple"
+    },
+    {
+        "key": "ct_coronary_ffr_ct",
+        "code": "CT-035",
+        "name": "مقطعية شرايين القلب مع قياس احتياطي التدفق الجزئي (CT Coronary & FFR-CT)",
+        "name_ar": "أشعة مقطعية للشرايين التاجية مع قياس ديناميكية الدم واحتياطي تدفق الشريان دون قسطرة",
+        "name_en": "Coronary CT Angiography with Non-Invasive Fractional Flow Reserve (FFR-CT)",
+        "modality": "CT",
+        "modality_ar": "أشعة مقطعية قلبية متقدمة",
+        "category": "ct_scan",
+        "category_ar": "الأشعة المقطعية",
+        "body_part": "Heart",
+        "body_part_ar": "شرايين القلب التاجية",
+        "contrast": true,
+        "contrast_type": "IV Contrast ECG-Gated (بالصبغة الوريدية متزامنة التخطيط)",
+        "fasting_hours": 6,
+        "prep": "صيام 6 ساعات. الامتناع عن المنبهات (الشاي والقهوة) لـ 12 ساعة. نبض القلب أقل من 65 نبضة/دقيقة.",
+        "prep_notes_ar": "يحسب ديناميكا تدفق الدم التاجي بدقة القسطرة التداخلية لتحديد ما إذا كان ضيق الشريان يحتاج دعامة أم علاج دوائي.",
+        "prep_notes_en": "Non-invasive computational fluid dynamics determines hemodynamic significance of coronary lesions.",
+        "duration_mins": 30,
+        "tat": "6 ساعات",
+        "tat_hours": 6,
+        "cost": 2200,
+        "price": 2200,
+        "out_source_cost": 1500,
+        "indications": "ضيق الشرايين التاجية المتوسط (40-70%)، تفادي القسطرة الاستكشافية غير الضرورية، تقييم حاجة الدعامات",
+        "id": "ct_coronary_ffr_ct"
+    },
+    {
+        "key": "ct_cisternography_csf_leak",
+        "code": "CT-036",
+        "name": "أشعة مقطعية بصبغة النخاع لتسريب سائل المخ من الأنف (CT Cisternography for CSF Leak)",
+        "name_ar": "أشعة مقطعية بقاع الجمجمة بحقن الصبغة بالنخاع الشوكي لتسريب سائل المخ الأنفي أو الأذني",
+        "name_en": "CT Cisternography with Intrathecal Non-Ionic Iodinated Contrast",
+        "modality": "CT",
+        "modality_ar": "أشعة مقطعية تداخلية",
+        "category": "ct_scan",
+        "category_ar": "الأشعة المقطعية",
+        "body_part": "Brain & Skull Base",
+        "body_part_ar": "قاع الجمجمة والجيوب الأنفية",
+        "contrast": true,
+        "contrast_type": "Intrathecal Contrast via Lumbar Puncture (بحقن صبغة بالنخاع الشوكي)",
+        "fasting_hours": 6,
+        "prep": "صيام 6 ساعات. حقن صبغة الأومنيباك غير الأيونية المعتمدة نخاعياً عبر بذل أسفل الظهر ثم قلب المريض لتصل للجمجمة.",
+        "prep_notes_ar": "الفحص الأدق لتحديد ثقب عظام قاع الجمجمة ومكان نزول سائل النخاع من الأنف (CSF Rhinorrhea) تمهيداً للإغلاق بالمنظار.",
+        "prep_notes_en": "Definitive localization of dural tear, cribriform plate fracture, and sphenoid sinus CSF leak.",
+        "duration_mins": 45,
+        "tat": "3 ساعات",
+        "tat_hours": 3,
+        "cost": 1650,
+        "price": 1650,
+        "out_source_cost": 1100,
+        "indications": "نزول سائل مائي نقي ومستمر من الأنف بعد الحوادث أو جراحات الجيوب، الصداع الوضعي، التهاب السحايا المتكرر",
+        "id": "ct_cisternography_csf_leak"
+    },
+    {
+        "key": "ct_liver_4phase_dynamic",
+        "code": "CT-037",
+        "name": "أشعة مقطعية رباعية المراحل الديناميكية للكبد (Dynamic 4-Phase CT Liver Protocol)",
+        "name_ar": "أشعة مقطعية رباعية المراحل للكبد (بدون صبغة + شرياني مبكر + وريدي بابي + متأخر متوازن)",
+        "name_en": "Dynamic 4-Phase Multidetector CT Liver (Unenhanced, Early Arterial, Portal Venous, Delayed)",
+        "modality": "CT",
+        "modality_ar": "أشعة مقطعية ديناميكية",
+        "category": "ct_scan",
+        "category_ar": "الأشعة المقطعية",
+        "body_part": "Liver",
+        "body_part_ar": "الكبد والبنكرياس والطحال",
+        "contrast": true,
+        "contrast_type": "High-Flow IV Contrast Bolus (بالصبغة الوريدية عالية التدفق)",
+        "fasting_hours": 6,
+        "prep": "صيام 6 ساعات. إحضار وظائف كلى حديثة. كانيولا وريدية خضراء 18.",
+        "prep_notes_ar": "الفحص المعتمد من الجمعية الأمريكية لدراسة الكبد (AASLD) لتشخيص أورام الكبد الخلوية HCC بدون الحاجة لأخذ عينة إبرية.",
+        "prep_notes_en": "Arterial hyperenhancement and venous wash-out for LI-RADS 5 definitive HCC diagnosis.",
+        "duration_mins": 25,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 980,
+        "price": 980,
+        "out_source_cost": 620,
+        "indications": "بؤر الكبد لمرضى التليف الكبدي وفيروس بي وسي، تشخيص سرطان الكبد HCC، متابعة ما بعد التردد الحراري والحقن الشرياني TACE",
+        "id": "ct_liver_4phase_dynamic"
+    },
+    {
+        "key": "ct_whole_body_trauma_panscan",
+        "code": "CT-038",
+        "name": "مسح مقطعي شامل لكامل الجسم لحوادث الطرق والإصابات (Whole Body Trauma Pan-Scan)",
+        "name_ar": "أشعة مقطعية طوارئ لكامل الجسم (الجمجمة + الفقرات العنقية + الصدر + البطن + الحوض)",
+        "name_en": "Whole-Body Multi-Slice CT Pan-Scan for Major Polytrauma (ATLS Protocol)",
+        "modality": "CT",
+        "modality_ar": "أشعة مقطعية طوارئ",
+        "category": "ct_scan",
+        "category_ar": "الأشعة المقطعية",
+        "body_part": "Whole Body",
+        "body_part_ar": "كامل الجسم (رأس، صدر، بطن، حوض)",
+        "contrast": true,
+        "contrast_type": "IV Dual-Bolus Split Contrast (بالصبغة الوريدية المنقسمة)",
+        "fasting_hours": 0,
+        "prep": "فحص طوارئ فوري لحالات الحوادث المتعددة والسقوط من علو دون اشتراط الصيام.",
+        "prep_notes_ar": "يكشف في 60 ثانية: نزيف المخ، كسور الفقرات، تمزق الطحال والكبد، نزيف الحوض، واسترواح الصدر الحاد.",
+        "prep_notes_en": "Rapid 60-second trauma acquisition clears internal hemorrhage, aortic injury and fractures.",
+        "duration_mins": 15,
+        "tat": "30 دقيقة",
+        "tat_hours": 0.5,
+        "cost": 1950,
+        "price": 1950,
+        "out_source_cost": 1300,
+        "indications": "حوادث السير الشديدة، السقوط من مرتفع، الإصابات المتعددة، صدمات الحوض والبطن المغلقة",
+        "id": "ct_whole_body_trauma_panscan"
+    },
+    {
+        "key": "ct_low_dose_lung_cancer_screening",
+        "code": "CT-039",
+        "name": "مقطعية الصدر منخفضة الجرعة للمسح المبكر لسرطان الرئة (Low-Dose CT Chest LDCT)",
+        "name_ar": "أشعة مقطعية منخفضة الجرعة على الصدر للمدخنين (LDCT) للاكتشاف المبكر لعقيدات الرئة",
+        "name_en": "Low-Dose CT (LDCT) Chest Screening for Lung Cancer (Lung-RADS Protocol)",
+        "modality": "CT",
+        "modality_ar": "أشعة مقطعية منخفضة الإشعاع",
+        "category": "ct_scan",
+        "category_ar": "الأشعة المقطعية",
+        "body_part": "Chest",
+        "body_part_ar": "الصدر والرئتين",
+        "contrast": false,
+        "contrast_type": "None (بدون صبغة نهائياً)",
+        "fasting_hours": 0,
+        "prep": "لا يشترط الصيام وبدون أي صبغة مع جرعة إشعاع تعادل 20% فقط من المقطعية التقليدية.",
+        "prep_notes_ar": "ينصح به سنوياً للمدخنين الحاليين والسابقين من سن 50 إلى 80 سنة لاكتشاف بؤر الرئة بحجم 2-3 مم.",
+        "prep_notes_en": "Annual screening protocol for heavy smokers. Submillimeter cuts with Lung-RADS score.",
+        "duration_mins": 5,
+        "tat": "1 ساعة",
+        "tat_hours": 1,
+        "cost": 480,
+        "price": 480,
+        "out_source_cost": 300,
+        "indications": "المسح السنوي للمدخنين، التاريخ العائلي لأورام الرئة، تتبع عقيدات الرئة الصغيرة Lung-RADS",
+        "id": "ct_low_dose_lung_cancer_screening"
+    },
+    {
+        "key": "ct_dacryocystography_dcg",
+        "code": "CT-040",
+        "name": "مقطعية بالصبغة على كيس ومجرى القنوات الدمعية (CT Dacryocystography - DCG)",
+        "name_ar": "أشعة مقطعية دقيقة بالصبغة لقنوات وكيس الدمع بالعين لانسداد مجرى الدمع",
+        "name_en": "High-Resolution CT Dacryocystography (DCG) with Contrast Cannulation",
+        "modality": "CT",
+        "modality_ar": "أشعة مقطعية تخصصية",
+        "category": "ct_scan",
+        "category_ar": "الأشعة المقطعية",
+        "body_part": "Facial & Orbits",
+        "body_part_ar": "محجر العين والقنوات الدمعية",
+        "contrast": true,
+        "contrast_type": "Intracanalicular Contrast Cannulation (بحقن صبغة بمجرى الدمع)",
+        "fasting_hours": 0,
+        "prep": "تخدير موضعي بقطرة للعين وقسطرة فتحة مجرى الدمع الدقيقة لحقن 1 مل صبغة أومنيباك.",
+        "prep_notes_ar": "تحديد الموضع الدقيق لانسداد القناة الأنفية الدمعية وتخطيط جراحة توصيل كيس الدمع بالأنف DCR.",
+        "prep_notes_en": "Delineates lacrimal sac distension, stenosis level, and bone anatomy prior to DCR surgery.",
+        "duration_mins": 20,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 650,
+        "price": 650,
+        "out_source_cost": 420,
+        "indications": "تدميع العين المستمر (Epiphora)، التهاب كيس الدمع المتكرر Dacryocystitis، تخطيط جراحة تسليك مجرى الدمع",
+        "id": "ct_dacryocystography_dcg"
+    },
+    {
+        "key": "ct_myelography_spine",
+        "code": "CT-041",
+        "name": "مقطعية بالصبغة النخاعية للعمود الفقري لحالات موانع الرنين (CT Myelography)",
+        "name_ar": "أشعة مقطعية بالقناة الشوكية بحقن الصبغة لمرضى منظم ضربات القلب والشرائح المعدنية",
+        "name_en": "CT Myelography (Post-Myelogram CT for Pacemakers & Metallic Hardware)",
+        "modality": "CT",
+        "modality_ar": "أشعة مقطعية تداخلية",
+        "category": "ct_scan",
+        "category_ar": "الأشعة المقطعية",
+        "body_part": "Spine",
+        "body_part_ar": "القناة العصبية والعمود الفقري",
+        "contrast": true,
+        "contrast_type": "Intrathecal Contrast (بحقن صبغة داخل الغشاء السحائي القطني)",
+        "fasting_hours": 6,
+        "prep": "صيام 6 ساعات. حقن الصبغة أسفل الظهر ثم إجراء التصوير فوراً.",
+        "prep_notes_ar": "البديل الدقيق الأوحد للرنين المغناطيسي لمرضى منظم القلب ومثبتات الظهر المعدنية ذات التشويش العالي.",
+        "prep_notes_en": "Alternative to MRI in patients with non-conditional pacemakers and severe metallic susceptibility.",
+        "duration_mins": 35,
+        "tat": "3 ساعات",
+        "tat_hours": 3,
+        "cost": 1250,
+        "price": 1250,
+        "out_source_cost": 800,
+        "indications": "ضيق القناة الشوكية الشديد والانزلاق الغضروفي لمرضى منظمات القلب والشظايا المعدنية",
+        "id": "ct_myelography_spine"
+    },
+    {
+        "key": "mri_whole_body_dwi_wbmri",
+        "code": "MRI-033",
+        "name": "رنين مغناطيسي كامل الجسم مع مسح الانتشار الخلوي (Whole-Body MRI with DWI - MY-RADS)",
+        "name_ar": "رنين مغناطيسي مسحي شامل لكامل الجسم (WB-MRI) مع تسلسل DWI لأورام النخاع والنقائل",
+        "name_en": "Whole-Body MRI with Diffusion-Weighted Imaging (MY-RADS Protocol)",
+        "modality": "MRI",
+        "modality_ar": "رنين مغناطيسي كامل الجسم",
+        "category": "mri",
+        "category_ar": "الرنين المغناطيسي",
+        "body_part": "Whole Body",
+        "body_part_ar": "كامل الجسم من الرأس للقدمين",
+        "contrast": false,
+        "contrast_type": "None (بدون صبغة نهائياً)",
+        "fasting_hours": 4,
+        "prep": "صيام 4 ساعات لتقليل حركة الأمعاء. خالي تماماً من الإشعاع والصبغة.",
+        "prep_notes_ar": "المعيار العالمي الأول لمرضى المايلوما المتعددة (MY-RADS) وسرطان البروستاتا وسرطان الثدي لمسح نقائل العظام مبكراً.",
+        "prep_notes_en": "National and international guidelines gold standard for multiple myeloma staging without radiation.",
+        "duration_mins": 45,
+        "tat": "4 ساعات",
+        "tat_hours": 4,
+        "cost": 2400,
+        "price": 2400,
+        "out_source_cost": 1600,
+        "indications": "المسح المبكر لانتشار الأورام، تصنيف ومتابعة المايلوما المتعددة، متلازمة لينش الوراثية، متلازمة لي-فراوميني",
+        "id": "mri_whole_body_dwi_wbmri"
+    },
+    {
+        "key": "fmri_brain_motor_language",
+        "code": "MRI-034",
+        "name": "رنين مغناطيسي وظيفي للمخ لتخطيط مراكز النطق والحركة (Functional MRI - fMRI Brain)",
+        "name_ar": "رنين وظيفي للمخ (fMRI) لتحديد خريطة مراكز النطق واليد والقدم قبل جراحة أورام المخ",
+        "name_en": "Functional MRI (fMRI) for Pre-Surgical Language & Sensorimotor Cortical Mapping",
+        "modality": "MRI",
+        "modality_ar": "رنين مغناطيسي وظيفي",
+        "category": "mri",
+        "category_ar": "الرنين المغناطيسي",
+        "body_part": "Brain",
+        "body_part_ar": "المخ وقشرة الدماغ",
+        "contrast": false,
+        "contrast_type": "None (يعتمد على إشارة BOLD الأكسجينية)",
+        "fasting_hours": 0,
+        "prep": "تدريب المريض على أداء مهام محددة داخل الجهاز (تحريك أصابع اليد، نطق كلمات، التفكير الإيجابي).",
+        "prep_notes_ar": "يحدد بعد الورم عن مراكز الكلام (Broca & Wernicke) والحركة لتمكين الجراح من استئصال الورم دون التسبب في شلل.",
+        "prep_notes_en": "Blood-Oxygen-Level-Dependent (BOLD) contrast maps eloquent cortex relative to brain tumors.",
+        "duration_mins": 45,
+        "tat": "6 ساعات",
+        "tat_hours": 6,
+        "cost": 1850,
+        "price": 1850,
+        "out_source_cost": 1250,
+        "indications": "تخطيط جراحة أورام المخ بالقرب من مراكز النطق والحركة، التخطيط لجراحات الصرع المستعصي",
+        "id": "fmri_brain_motor_language"
+    },
+    {
+        "key": "mri_dti_tractography_brain",
+        "code": "MRI-035",
+        "name": "رنين موتر الانتشار وتتبع المسارات العصبية البيضاء (Diffusion Tensor Imaging & Tractography)",
+        "name_ar": "رنين تتبع الألياف والمسارات العصبية البيضاء بالمخ 3D (DTI Tractography)",
+        "name_en": "3D Diffusion Tensor Imaging (DTI) & White Matter Tractography (Corticospinal & Arcuate)",
+        "modality": "MRI",
+        "modality_ar": "رنين مغناطيسي متقدم",
+        "category": "mri",
+        "category_ar": "الرنين المغناطيسي",
+        "body_part": "Brain",
+        "body_part_ar": "المسارات العصبية بالمخ",
+        "contrast": false,
+        "contrast_type": "None (بدون صبغة)",
+        "fasting_hours": 0,
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "يرسم حزم الأعصاب الرئيسية ثلاثية الأبعاد (المسار القشري النخاعي للحركة والحزمة المقوسة للنطق) وعلاقتها بالورم.",
+        "prep_notes_en": "3D visualization of corticospinal tract, arcuate fasciculus, optic radiation for neuronavigation.",
+        "duration_mins": 35,
+        "tat": "4 ساعات",
+        "tat_hours": 4,
+        "cost": 1600,
+        "price": 1600,
+        "out_source_cost": 1050,
+        "indications": "تخطيط جراحات المخ الملاحية Neuronavigation، إصابات المخ الرضية الشديدة، أمراض التنكس العصبي",
+        "id": "mri_dti_tractography_brain"
+    },
+    {
+        "key": "mr_neurography_brachial_plexus",
+        "code": "MRI-036",
+        "name": "رنين مغناطيسي عالي الدقة لأعصاب الضفيرة العضدية (MR Neurography Brachial Plexus)",
+        "name_ar": "رنين مغناطيسي متخصص على أعصاب الرقبة والكتف والضفيرة العضدية (MRN)",
+        "name_en": "High-Resolution MR Neurography Brachial Plexus (3D STIR SPACE & Contrast)",
+        "modality": "MRI",
+        "modality_ar": "رنين مغناطيسي تخصصي",
+        "category": "mri",
+        "category_ar": "الرنين المغناطيسي",
+        "body_part": "Neck & Shoulder",
+        "body_part_ar": "أعصاب الرقبة والكتف",
+        "contrast": true,
+        "contrast_type": "IV Gadolinium with Fat Suppression (بالصبغة الجادولينيوم)",
+        "fasting_hours": 4,
+        "prep": "صيام 4 ساعات، إحضار كفاءة كلى حديثة.",
+        "prep_notes_ar": "كشف قطع وانضغاط وتضخم الأعصاب بعد حوادث الدراجات النارية والولادة العسيرة وأورام الأعصاب Schwannoma.",
+        "prep_notes_en": "Dedicated submillimeter nerve visualization from rootlets (C5-T1) to terminal cords.",
+        "duration_mins": 40,
+        "tat": "3 ساعات",
+        "tat_hours": 3,
+        "cost": 1250,
+        "price": 1250,
+        "out_source_cost": 820,
+        "indications": "شلل أو ضعف الذراع بعد حادث (Brachial Plexus Injury)، شلل إرب عند المواليد Erb's Palsy، أورام الأعصاب",
+        "id": "mr_neurography_brachial_plexus"
+    },
+    {
+        "key": "mr_neurography_lumbosacral_plexus",
+        "code": "MRI-037",
+        "name": "رنين لأعصاب الحوض والضفيرة القطنية والعصب الوركي (MR Neurography Lumbosacral)",
+        "name_ar": "رنين مغناطيسي متخصص على أعصاب الحوض والضفيرة القطنية العجزية وعصب النسا (MRN)",
+        "name_en": "High-Resolution MR Neurography Lumbosacral Plexus & Sciatic Nerve",
+        "modality": "MRI",
+        "modality_ar": "رنين مغناطيسي تخصصي",
+        "category": "mri",
+        "category_ar": "الرنين المغناطيسي",
+        "body_part": "Pelvis & Hip",
+        "body_part_ar": "أعصاب الحوض وعرق النسا",
+        "contrast": true,
+        "contrast_type": "IV Gadolinium (بالصبغة)",
+        "fasting_hours": 4,
+        "prep": "صيام 4 ساعات. مثانة مفرغة.",
+        "prep_notes_ar": "تشخيص متلازمة العضلة الكمثرية Piriformis Syndrome وانضغاط عرق النسا العميق في الحوض والتهاب الأعصاب المناعي CIDP.",
+        "prep_notes_en": "Evaluates deep extraspinal sciatic nerve entrapment, piriformis syndrome, and plexus tumors.",
+        "duration_mins": 40,
+        "tat": "3 ساعات",
+        "tat_hours": 3,
+        "cost": 1250,
+        "price": 1250,
+        "out_source_cost": 820,
+        "indications": "عرق النسا مع سلامة رنين الفقرات القطنية، متلازمة العضلة الكمثرية، آلام الفخذ العصبية المستعصية",
+        "id": "mr_neurography_lumbosacral_plexus"
+    },
+    {
+        "key": "mr_arthrography_shoulder",
+        "code": "MRI-038",
+        "name": "رنين مغناطيسي بالصبغة المفصلية لمفصل الكتف (MR Arthrography Shoulder MRA)",
+        "name_ar": "رنين مفصل الكتف بحقن الصبغة المخففة داخل تجويف المفصل تحت توجيه الأشعة",
+        "name_en": "Direct MR Arthrography Shoulder Joint (Fluoroscopy-Guided Contrast Injection)",
+        "modality": "MRI",
+        "modality_ar": "رنين مغناطيسي تداخلي بالصبغة المفصلية",
+        "category": "mri",
+        "category_ar": "الرنين المغناطيسي",
+        "body_part": "MSK",
+        "body_part_ar": "مفصل الكتف",
+        "contrast": true,
+        "contrast_type": "Intra-Articular Dilute Gadolinium (حقن صبغة داخل تجويف المفصل)",
+        "fasting_hours": 0,
+        "prep": "حقن 10-15 مل من محلول صبغة الجادولينيوم المخففة جداً داخل المفصل تحت جهاز الفلوروسكوبي ثم الانتقال فوراً للرنين.",
+        "prep_notes_ar": "أعلى فحص دقة عالمياً لتشخيص تمزق الشفا الكبسولي SLAP tear وخلع الكتف المتكرر Bankart tear والقطع الجزئي للأوتار.",
+        "prep_notes_en": "Gold standard for superior labrum anterior-to-posterior (SLAP) and capsulolabral detachments.",
+        "duration_mins": 45,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 1350,
+        "price": 1350,
+        "out_source_cost": 900,
+        "indications": "خلع الكتف المتكرر للرياضيين، تمزق الشفا الكبسولي SLAP، تقييم ما بعد جراحات إصلاح أوتار الكتف",
+        "id": "mr_arthrography_shoulder"
+    },
+    {
+        "key": "mr_arthrography_hip_fai",
+        "code": "MRI-039",
+        "name": "رنين مغناطيسي بالصبغة المفصلية لمفصل الفخذ (MR Arthrography Hip FAI)",
+        "name_ar": "رنين مفصل الفخذ بحقن الصبغة داخل المفصل لاصطدام الفخذ الحقي وتمزق الشفا",
+        "name_en": "Direct MR Arthrography Hip Joint for Femoroacetabular Impingement (FAI & Labrum)",
+        "modality": "MRI",
+        "modality_ar": "رنين مغناطيسي تداخلي بالصبغة المفصلية",
+        "category": "mri",
+        "category_ar": "الرنين المغناطيسي",
+        "body_part": "Pelvis & Hip",
+        "body_part_ar": "مفصل الفخذ والحوض",
+        "contrast": true,
+        "contrast_type": "Intra-Articular Contrast (حقن صبغة موضعية داخل مفصل الفخذ)",
+        "fasting_hours": 0,
+        "prep": "حقن الصبغة تحت الأشعة التداخلية قبل الرنين مباشرة.",
+        "prep_notes_ar": "الفحص المعتمد قبل جراحات مناظير مفصل الفخذ لكشف قطع شفا الحقة Acetabular Labral Tear واصطدام عظمة الفخذ FAI.",
+        "prep_notes_en": "Pre-operative evaluation for hip arthroscopy in young athletic groin pain and CAM/Pincer lesions.",
+        "duration_mins": 45,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 1350,
+        "price": 1350,
+        "out_source_cost": 900,
+        "indications": "آلام مفصل الفخذ والمغبن عند ثني المفصل، طقطقة مفصل الحوض، اصطدام الفخذ الحقي للرياضيين",
+        "id": "mr_arthrography_hip_fai"
+    },
+    {
+        "key": "mr_arthrography_wrist",
+        "code": "MRI-040",
+        "name": "رنين مغناطيسي بالصبغة المفصلية لمفصل الرسغ (MR Arthrography Wrist)",
+        "name_ar": "رنين الرسغ بحقن الصبغة المفصلية لقطع أربطة عظام الرسغ والغضروف المثلثي TFCC",
+        "name_en": "Direct / Indirect MR Arthrography Wrist (Scapholunate & TFCC Tears)",
+        "modality": "MRI",
+        "modality_ar": "رنين مغناطيسي تداخلي بالصبغة المفصلية",
+        "category": "mri",
+        "category_ar": "الرنين المغناطيسي",
+        "body_part": "MSK",
+        "body_part_ar": "مفصل الرسغ",
+        "contrast": true,
+        "contrast_type": "Intra-Articular Radiocarpal Contrast (حقن صبغة بمفصل الرسغ)",
+        "fasting_hours": 0,
+        "prep": "حقن صبغة دقيق تحت الفلوروسكوبي داخل المفصل الكعبري الزورقي.",
+        "prep_notes_ar": "كشف انقطاع الرباط الزورقي الهلالي Scapholunate Ligament وعدم ثبات عظام الرسغ المعقدة DISI / VISI.",
+        "prep_notes_en": "Differentiates full-thickness from partial tears of scapholunate and lunotriquetral ligaments.",
+        "duration_mins": 40,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 1300,
+        "price": 1300,
+        "out_source_cost": 860,
+        "indications": "آلام الرسغ المزمنة بعد السقوط، طقطقة وعدم ثبات عظام الرسغ، تمزق أربطة عظام الرسغ",
+        "id": "mr_arthrography_wrist"
+    },
+    {
+        "key": "cardiac_mri_stress_perfusion",
+        "code": "MRI-041",
+        "name": "رنين مغناطيسي على القلب مع إجهاد دوائي الأدينوسين (Cardiac MRI Stress Perfusion)",
+        "name_ar": "رنين القلب مع التروية بالإجهاد الدوائي والصبغة المتأخرة لكشف قصور الشرايين التاجية",
+        "name_en": "Adenosine / Regadenoson Pharmacological Stress Perfusion Cardiac MRI & LGE",
+        "modality": "MRI",
+        "modality_ar": "رنين قلب متقدم مع إجهاد",
+        "category": "mri",
+        "category_ar": "الرنين المغناطيسي",
+        "body_part": "Heart",
+        "body_part_ar": "عضلة القلب والشرايين",
+        "contrast": true,
+        "contrast_type": "IV Gadolinium + Adenosine Infusion (بالصبغة وموسع الشرايين)",
+        "fasting_hours": 6,
+        "prep": "صيام 6 ساعات. الامتناع التام عن الشاي والقهوة والشوكولاتة ومشروبات الكافيين لـ 24 ساعة (الكافيين يعطل مفعول الأدينوسين).",
+        "prep_notes_ar": "أعلى فحص حساسية ودقة عالمياً لكشف نقص تروية عضلة القلب دون تعريض المريض لإشعاع المسح الذري.",
+        "prep_notes_en": "No caffeine 24h prior. Identifies myocardial ischemia with highest spatial resolution without ionizing radiation.",
+        "duration_mins": 50,
+        "tat": "4 ساعات",
+        "tat_hours": 4,
+        "cost": 2600,
+        "price": 2600,
+        "out_source_cost": 1800,
+        "indications": "آلام الصدر المشتبه في قصور الشرايين، تقييم خطورة الذبحة الصدرية، فحص حيوية وتروية القلب قبل الدعامات",
+        "id": "cardiac_mri_stress_perfusion"
+    },
+    {
+        "key": "mri_csf_flow_cine_nph",
+        "code": "MRI-042",
+        "name": "رنين قياس ديناميكية وسرعة تدفق سائل النخاع (MRI CSF Flow Dynamics Cine Phase-Contrast)",
+        "name_ar": "رنين سينمائي لسرعة وتدفق سائل النخاع بقناة سلفيوس واستسقاء المخ الشيخوخي NPH",
+        "name_en": "Cine Phase-Contrast MRI for Aqueductal CSF Flow Dynamics & Stroke Volume",
+        "modality": "MRI",
+        "modality_ar": "رنين مغناطيسي سينمائي",
+        "category": "mri",
+        "category_ar": "الرنين المغناطيسي",
+        "body_part": "Brain",
+        "body_part_ar": "المخ وبطينات الدماغ",
+        "contrast": false,
+        "contrast_type": "None (بدون صبغة سينمائي تزامني)",
+        "fasting_hours": 0,
+        "prep": "تخطيط تزامني مع نبضات القلب ECG-Gated بدون صبغة.",
+        "prep_notes_ar": "تشخيص مرض استسقاء المخ ذي الضغط الطبيعي NPH وتوقع مدى استجابة المريض لجراحة تركيب صمام المخ لتصحيح الخرف والترنح.",
+        "prep_notes_en": "Measures aqueductal stroke volume to predict shunt-responsiveness in Normal Pressure Hydrocephalus.",
+        "duration_mins": 25,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 950,
+        "price": 950,
+        "out_source_cost": 620,
+        "indications": "ثلاثية حكيم آدم (صعوبة المشي والترنح، فقدان الذاكرة، وسلس البول عند كبار السن)، انسداد قناة سلفيوس",
+        "id": "mri_csf_flow_cine_nph"
+    },
+    {
+        "key": "us_shearwave_elastography_liver",
+        "code": "US-013",
+        "name": "إيلاستوجرافي الكبد بالموجات القصية لتليف ودهون الكبد (SWE Liver FibroScan)",
+        "name_ar": "سونار إيلاستوجرافي بالموجات القصية (Shear Wave) لقياس تيبس الكبد ودرجة التليف والدهون (CAP)",
+        "name_en": "Shear Wave Elastography (SWE) Liver Fibrosis & Controlled Attenuation Parameter (CAP)",
+        "modality": "Ultrasound",
+        "modality_ar": "موجات صوتية إيلاستوجرافي",
+        "category": "ultrasound",
+        "category_ar": "الموجات الصوتية والدوبلر",
+        "body_part": "Liver",
+        "body_part_ar": "الكبد",
+        "contrast": false,
+        "contrast_type": "None (بدون صبغة)",
+        "fasting_hours": 4,
+        "prep": "صيام تام 4 ساعات عن الطعام والشراب (تناول الطعام يرفع تدفق الدم ويزيد قراءة التيبس كاذباً).",
+        "prep_notes_ar": "يغني عن أخذ عينة بالإبرة من الكبد ويحدد بدقة بوحدات الكيلوباسكال kPa درجة التليف (F0 حتى F4) ونسبة دهون الكبد.",
+        "prep_notes_en": "Quantitative liver stiffness (kPa) staging for NAFLD, viral hepatitis, and cirrhosis.",
+        "duration_mins": 15,
+        "tat": "20 دقيقة",
+        "tat_hours": 0.3,
+        "cost": 450,
+        "price": 450,
+        "out_source_cost": 260,
+        "indications": "الكبد الدهني، تليف الكبد، متابعة مرضى فيروس سي وبي، تقدير خطورة دوالي المريء",
+        "id": "us_shearwave_elastography_liver"
+    },
+    {
+        "key": "us_shearwave_elastography_thyroid",
+        "code": "US-014",
+        "name": "إيلاستوجرافي الغدة الدرقية لتقييم أورام الرقبة (SWE Thyroid Nodules TI-RADS)",
+        "name_ar": "موجات صوتية إيلاستوجرافي لقياس قساوة وصلابة عقد الغدة الدرقية ومؤشر الأورام",
+        "name_en": "Shear Wave Elastography for Thyroid Nodule Malignancy Risk Stratification",
+        "modality": "Ultrasound",
+        "modality_ar": "موجات صوتية إيلاستوجرافي",
+        "category": "ultrasound",
+        "category_ar": "الموجات الصوتية والدوبلر",
+        "body_part": "Neck",
+        "body_part_ar": "الغدة الدرقية والرقبة",
+        "contrast": false,
+        "contrast_type": "None (بدون صبغة)",
+        "fasting_hours": 0,
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "العقد الصلبة ذات المقاومة العالية (> 65 kPa) تزيد من احتمالية الأورام الخبيثة وتحدد العقد المحتاجة لعينة بالإبرة FNAC بدقة.",
+        "prep_notes_en": "Quantitative tissue elasticity improves TI-RADS specificity and reduces unnecessary FNAC biopsies.",
+        "duration_mins": 15,
+        "tat": "20 دقيقة",
+        "tat_hours": 0.3,
+        "cost": 320,
+        "price": 320,
+        "out_source_cost": 180,
+        "indications": "عقد الغدة الدرقية، تحديد العقد المشبوهة، تفريق الأورام الحميدة عن الخبيثة",
+        "id": "us_shearwave_elastography_thyroid"
+    },
+    {
+        "key": "us_shearwave_elastography_breast",
+        "code": "US-015",
+        "name": "إيلاستوجرافي الثدي لتقييم كتل وأورام الثدي (SWE Breast Lesions BI-RADS)",
+        "name_ar": "موجات صوتية إيلاستوجرافي لقياس صلابة كتل الثدي وتفريق الأورام الليفية عن السرطان",
+        "name_en": "Shear Wave Elastography for Breast Mass Characterization (BI-RADS Staging)",
+        "modality": "Ultrasound",
+        "modality_ar": "موجات صوتية إيلاستوجرافي",
+        "category": "ultrasound",
+        "category_ar": "الموجات الصوتية والدوبلر",
+        "body_part": "Breast",
+        "body_part_ar": "الثديين",
+        "contrast": false,
+        "contrast_type": "None (بدون صبغة)",
+        "fasting_hours": 0,
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "الكتل الخبيثة تكون أكثر صلابة ومقاومة للموجات (> 80 kPa) بينما الأورام الغدية الليفية الحميدة تكون طرية ومرنة.",
+        "prep_notes_en": "Reduces benign breast biopsies in BI-RADS 3/4a masses by measuring tissue stiffness.",
+        "duration_mins": 15,
+        "tat": "20 دقيقة",
+        "tat_hours": 0.3,
+        "cost": 340,
+        "price": 340,
+        "out_source_cost": 190,
+        "indications": "كتل الثدي المشكوك فيها، تقييم ما بعد الماموجرام، تفريق الورم الليفي عن الورم الخبيث",
+        "id": "us_shearwave_elastography_breast"
+    },
+    {
+        "key": "us_contrast_enhanced_ceus_liver",
+        "code": "US-016",
+        "name": "سونار بالصبغة الميكروية الفوق صوتية للكبد (Contrast-Enhanced Ultrasound CEUS)",
+        "name_ar": "موجات صوتية متقدمة بفقاعات الصبغة الميكروية الدقيقة (SonoVue) لكتل الكبد",
+        "name_en": "Contrast-Enhanced Ultrasound (CEUS) with Microbubble Agent for Liver Tumors",
+        "modality": "Ultrasound",
+        "modality_ar": "سونار بالصبغة الميكروية",
+        "category": "ultrasound",
+        "category_ar": "الموجات الصوتية والدوبلر",
+        "body_part": "Liver",
+        "body_part_ar": "الكبد",
+        "contrast": true,
+        "contrast_type": "Sulfur Hexafluoride Microbubbles SonoVue (بفقاعات الغاز الميكروية غير الكلوية)",
+        "fasting_hours": 4,
+        "prep": "صيام 4 ساعات. صبغة ميكروية آمنة 100% لمرضى الفشل الكلوي ولا تفرز بالكلى (تخرج مع هواء الزفير بالرئة).",
+        "prep_notes_ar": "البديل الذهبي للمقطعية والرنين لمرضى القصور الكلوي الشديد وحساسية صبغة اليود لتشخيص أورام الكبد ديناميكياً في الوقت الفعلي.",
+        "prep_notes_en": "Excreted via lungs. Completely safe in renal failure and GFR < 30 mL/min.",
+        "duration_mins": 25,
+        "tat": "30 دقيقة",
+        "tat_hours": 0.5,
+        "cost": 950,
+        "price": 950,
+        "out_source_cost": 620,
+        "indications": "كتل الكبد لمرضى الفشل الكلوي والغسيل، حساسية صبغة الأشعة المقطعية، تصنيف أورام الكبد في الوقت الفعلي",
+        "id": "us_contrast_enhanced_ceus_liver"
+    },
+    {
+        "key": "us_penile_doppler_pge1",
+        "code": "US-017",
+        "name": "دوبلر ملون للعضو الذكري بالحقن الدوائي لضعف الانتصاب (Penile Doppler with PGE1)",
+        "name_ar": "دوبلر الشرايين والأوردة للعضو الذكري بحقن البروستاجلاندين لتقييم التسرب الوريدي وضعف الشرايين",
+        "name_en": "Penile Color Duplex Ultrasound with Intracavernosal Prostaglandin E1 Injection",
+        "modality": "Ultrasound",
+        "modality_ar": "دوبلر ملون دوائي",
+        "category": "ultrasound",
+        "category_ar": "الموجات الصوتية والدوبلر",
+        "body_part": "Genital",
+        "body_part_ar": "الأوعية التناسلية",
+        "contrast": true,
+        "contrast_type": "Intracavernosal Pharmacological PGE1 (بحقن موضعي موسع)",
+        "fasting_hours": 0,
+        "prep": "يجرى الفحص بواسطة استشاري المسالك/الأشعة مع حقن 10-20 ميكروجرام بروستاجلاندين E1 لتوسيع الشرايين.",
+        "prep_notes_ar": "يقيس سرعة تدفق الشرايين الكهفية PSV لتشخيص القصور الشرياني، وسرعة نهاية الانبساط EDV لتشخيص التسرب الوريدي (Venous Leak).",
+        "prep_notes_en": "Differentiates arteriogenic insufficiency (PSV < 30 cm/s) from veno-occlusive dysfunction (EDV > 5 cm/s).",
+        "duration_mins": 30,
+        "tat": "30 دقيقة",
+        "tat_hours": 0.5,
+        "cost": 480,
+        "price": 480,
+        "out_source_cost": 280,
+        "indications": "ضعف الانتصاب المقاوم للعلاج الدوائي، التسرب الوريدي، مرض بيروني وتقوس العضو الذكري",
+        "id": "us_penile_doppler_pge1"
+    },
+    {
+        "key": "us_hyfosy_tubal_patency",
+        "code": "US-018",
+        "name": "سونار رغوي مهبلي لنفاذية قنوات فالوب بدون إشعاع (HyFoSy 3D Tubal Patency)",
+        "name_ar": "سونار مهبلي ثلاثي الأبعاد بالرغوة المعقمة لفحص نفاذية أنابيب فالوب لتأخر الحمل (HyFoSy)",
+        "name_en": "Hysterosalpingo-Foam Sonography (HyFoSy 3D/4D) Radiation-Free Tubal Assessment",
+        "modality": "Ultrasound",
+        "modality_ar": "سونار مهبلي ثلاثي الأبعاد بالصبغة الرغوية",
+        "category": "ultrasound",
+        "category_ar": "الموجات الصوتية والدوبلر",
+        "body_part": "GYN",
+        "body_part_ar": "الرحم وقنوات فالوب",
+        "contrast": true,
+        "contrast_type": "ExEm Foam Contrast Gel (برغوة مائية معقمة آمنة)",
+        "fasting_hours": 0,
+        "prep": "يجرى بين اليوم 7 واليوم 10 من بداية الدورة بعد انتهاء الطمث. بدون ألم تقريباً وبدون إشعاع نهائياً.",
+        "prep_notes_ar": "البديل الحديث الخالي من الأشعة لأشعة الصبغة HSG لفحص انسداد قنوات فالوب والالتصاقات وتجويف الرحم.",
+        "prep_notes_en": "Painless radiation-free office alternative to HSG with superior patient tolerance.",
+        "duration_mins": 25,
+        "tat": "20 دقيقة",
+        "tat_hours": 0.3,
+        "cost": 650,
+        "price": 650,
+        "out_source_cost": 380,
+        "indications": "تأخر الإنجاب، فحص نفاذية قنوات فالوب بدون ألم الأشعة العادية، فحص تجويف والياف الرحم",
+        "id": "us_hyfosy_tubal_patency"
+    },
+    {
+        "key": "us_pediatric_hip_graf",
+        "code": "US-019",
+        "name": "سونار حوض الرضع والأطفال لخلع الورك الولادي (Pediatric Hip US Graf Method)",
+        "name_ar": "موجات صوتية على مفصلي الفخذ لحديثي الولادة والرضع بطريقة جراف (DDH Screening)",
+        "name_en": "High-Resolution Infant Hip Ultrasound for Developmental Dysplasia of the Hip (Graf)",
+        "modality": "Ultrasound",
+        "modality_ar": "موجات صوتية أطفال",
+        "category": "ultrasound",
+        "category_ar": "الموجات الصوتية والدوبلر",
+        "body_part": "Pediatric Hips",
+        "body_part_ar": "مفصلي الحوض للرضع",
+        "contrast": false,
+        "contrast_type": "None (بدون صبغة)",
+        "fasting_hours": 0,
+        "prep": "الموعد المثالي بين الأسبوع الرابع والأسبوع السادس بعد الولادة. إرضاع الطفل لتهدئته قبل الفحص.",
+        "prep_notes_ar": "قياس زاويتي ألفا وبيتا بدقة جراف لتشخيص خلع الحوض الولادي مبكراً وتفادي العمليات الجراحية المعقدة بواسطة حزام بافليك.",
+        "prep_notes_en": "Graf alpha and beta angle measurement for early Pavlik harness management.",
+        "duration_mins": 15,
+        "tat": "15 دقيقة",
+        "tat_hours": 0.25,
+        "cost": 240,
+        "price": 240,
+        "out_source_cost": 130,
+        "indications": "المسح الدوري لمواليد الولادة المقعدية، التاريخ العائلي لخلع الورك، فحص تكة الورك الإيجابية (Ortolani/Barlow)",
+        "id": "us_pediatric_hip_graf"
+    },
+    {
+        "key": "us_neonatal_cranial_fontanelle",
+        "code": "US-020",
+        "name": "سونار مخ حديثي الولادة والمبتسرين عبر اليافوخ (Neonatal Cranial Ultrasound)",
+        "name_ar": "موجات صوتية على المخ وحديثي الولادة عبر اليافوخ لنزيف المخ واستسقاء الرأس",
+        "name_en": "Transfontanellar Cranial Ultrasound for Neonates & Premature Infants",
+        "modality": "Ultrasound",
+        "modality_ar": "موجات صوتية لحديثي الولادة",
+        "category": "ultrasound",
+        "category_ar": "الموجات الصوتية والدوبلر",
+        "body_part": "Neonatal Brain",
+        "body_part_ar": "المخ واليافوخ الأمامي",
+        "contrast": false,
+        "contrast_type": "None (بدون صبغة)",
+        "fasting_hours": 0,
+        "prep": "فحص سريع ولطيف بالسرير أو الحضانة عبر اليافوخ الأمامي المفتوح بدون أي إشعاع.",
+        "prep_notes_ar": "كشف نزيف المصفوفة الجنينية (IVH Grade 1-4) وتلين المادة البيضاء PVL واستسقاء بطينات المخ.",
+        "prep_notes_en": "Screening for intraventricular hemorrhage and periventricular leukomalacia in preterm infants.",
+        "duration_mins": 15,
+        "tat": "15 دقيقة",
+        "tat_hours": 0.25,
+        "cost": 260,
+        "price": 260,
+        "out_source_cost": 140,
+        "indications": "الأطفال المبتسرون وناقصو الوزن، نقص أكسجين الولادة، كبر حجم محيط الرأس، التشنجات الوليدية",
+        "id": "us_neonatal_cranial_fontanelle"
+    },
+    {
+        "key": "pet_ct_18f_fdg_whole_body",
+        "code": "NM-001",
+        "name": "مسح بي إي تي مقطعي أورام كامل الجسم بالجلوكوز المشع (PET-CT 18F-FDG Whole Body)",
+        "name_ar": "مسح ذري مقطعي بالانبعاث البوزيتروني كامل الجسم بمادة الفلوروديوكسيجلوكوز المشعة (18F-FDG)",
+        "name_en": "Whole-Body 18F-FDG PET/CT Oncology Staging & Response Assessment (Skull-to-Mid-Thigh)",
+        "modality": "PET-CT",
+        "modality_ar": "الطب النووي والمسح البوزيتروني المقطعي",
+        "category": "nuclear_medicine",
+        "category_ar": "الطب النووي والتصوير الجزيئي",
+        "body_part": "Whole Body",
+        "body_part_ar": "كامل الجسم (قاعدة الجمجمة للفخذين)",
+        "contrast": true,
+        "contrast_type": "18F-FDG Radiopharmaceutical + IV CT Contrast (بالمادة المشعة والصبغة)",
+        "fasting_hours": 6,
+        "prep": "صيام تام 6 ساعات عن الطعام والسكريات. شرب ماء نقي فقط. مستوى سكر الدم يجب أن يكون أقل من 150-180 mg/dL. تجنب التمارين العنيفة لـ 24 ساعة. الاسترخاء التام في غرفة دافئة بعد حقن المادة المشعة لمدة 60 دقيقة.",
+        "prep_notes_ar": "الفحص المرجعي الأقوى عالمياً لتصنيف مراحل الأورام الليمفاوية والرئة والقولون ومتابعة الاستجابة للعلاج الكيميائي بدقة SUVmax.",
+        "prep_notes_en": "Strict 6h fast, blood glucose < 180 mg/dL. 60-min resting uptake phase. Quantifies SUVmax.",
+        "duration_mins": 90,
+        "tat": "24 ساعة",
+        "tat_hours": 24,
+        "cost": 4200,
+        "price": 4200,
+        "out_source_cost": 3100,
+        "indications": "تصنيف مراحل الأورام الخبيثة (Staging)، تقييم الاستجابة للعلاج الكيميائي والإشعاعي، كشف البؤر الخبيثة غير المعروفة المصدر",
+        "id": "pet_ct_18f_fdg_whole_body"
+    },
+    {
+        "key": "pet_ct_68ga_psma_prostate",
+        "code": "NM-002",
+        "name": "مسح بي إي تي مقطعي متخصص لسرطان البروستاتا بجاليوم بي إس إم إيه (PET-CT 68Ga-PSMA)",
+        "name_ar": "مسح بي إي تي مقطعي جزيئي نوعي لسرطان البروستاتا بجاليوم-68 PSMA للانتكاس ومسح النقائل",
+        "name_en": "68Ga-PSMA-11 PET/CT for Prostate Cancer Staging & Biochemical Recurrence",
+        "modality": "PET-CT",
+        "modality_ar": "مسح بوزيتروني مقطعي نوعي",
+        "category": "nuclear_medicine",
+        "category_ar": "الطب النووي والتصوير الجزيئي",
+        "body_part": "Whole Body",
+        "body_part_ar": "كامل الجسم والبروستاتا",
+        "contrast": true,
+        "contrast_type": "68Ga-PSMA Radiopharmaceutical (بالمادة المشعة النوعية للبروستاتا)",
+        "fasting_hours": 4,
+        "prep": "صيام 4 ساعات، شرب كميات وافرة من الماء لإدرار البول. لا يشترط ضبط مستوى السكر.",
+        "prep_notes_ar": "أعلى فحص حساسية في العالم لكشف رجوع أورام البروستاتا عند ارتفاع تحليل PSA الطفيف (> 0.2 ng/mL) بعد استئصال البروستاتا.",
+        "prep_notes_en": "Superior detection of oligometastatic recurrence even at ultra-low PSA levels (> 0.2 ng/mL).",
+        "duration_mins": 75,
+        "tat": "24 ساعة",
+        "tat_hours": 24,
+        "cost": 5500,
+        "price": 5500,
+        "out_source_cost": 4200,
+        "indications": "الارتفاع الكيميائي الحيوي لتحليل PSA بعد الجراحة أو الإشعاع، كشف نقائل البروستاتا المجهرية بالعظام والغدد",
+        "id": "pet_ct_68ga_psma_prostate"
+    },
+    {
+        "key": "bone_scan_99mtc_mdp_spect_ct",
+        "code": "NM-003",
+        "name": "مسح ذري للعظام كامل الجسم مع مقطعية موضعية (Whole Body Bone Scan SPECT/CT)",
+        "name_ar": "مسح عظام نووي كامل الجسم بالتكنيشيوم-99m مع دمج الأشعة المقطعية SPECT/CT",
+        "name_en": "Whole-Body 99mTc-MDP Bone Scintigraphy with Targeted SPECT/CT",
+        "modality": "Nuclear Medicine",
+        "modality_ar": "طب نووي ومسح ذري",
+        "category": "nuclear_medicine",
+        "category_ar": "الطب النووي والتصوير الجزيئي",
+        "body_part": "Skeleton",
+        "body_part_ar": "الهيكل العظمي بالكامل",
+        "contrast": true,
+        "contrast_type": "99mTc-MDP Radiotracer (بحقن نظير التكنيشيوم-99m المشع)",
+        "fasting_hours": 0,
+        "prep": "لا يشترط الصيام. حقن المادة المشعة وريدياً والانتظار 2-3 ساعات مع شرب لترين ماء لتفريغ المثانة قبل التصوير.",
+        "prep_notes_ar": "الفحص المعتمد لمسح نقائل العظام لأورام الثدي والبروستاتا والرئة وكشف الكسور الإجهادية والتهاب العظام والنخاع Osteomyelitis.",
+        "prep_notes_en": "Whole-body skeletal survey for osteoblastic metastases, stress fractures, and osteomyelitis.",
+        "duration_mins": 45,
+        "tat": "4 ساعات",
+        "tat_hours": 4,
+        "cost": 950,
+        "price": 950,
+        "out_source_cost": 620,
+        "indications": "آلام العظام لمرضى الأورام، مسح انتشار أورام الثدي والبروستاتا، كسور الإجهاد للرياضيين، التهاب العظام الصديدي",
+        "id": "bone_scan_99mtc_mdp_spect_ct"
+    },
+    {
+        "key": "myocardial_perfusion_spect_sestamibi",
+        "code": "NM-004",
+        "name": "مسح ذري لتروية عضلة القلب إجهاد وراحة (Myocardial Perfusion SPECT Sestamibi)",
+        "name_ar": "مسح ذري على عضلة القلب بالتكنيشيوم-سستاميبي (إجهاد بالمجهود البدني/الدوائي وراحة)",
+        "name_en": "Myocardial Perfusion Imaging (MPI SPECT 99mTc-Sestamibi One-Day Stress & Rest)",
+        "modality": "Nuclear Medicine",
+        "modality_ar": "طب نووي قلبي",
+        "category": "nuclear_medicine",
+        "category_ar": "الطب النووي والتصوير الجزيئي",
+        "body_part": "Heart",
+        "body_part_ar": "عضلة القلب",
+        "contrast": true,
+        "contrast_type": "99mTc-Sestamibi Radiopharmaceutical (بنظير السستاميبي المشع)",
+        "fasting_hours": 4,
+        "prep": "صيام 4 ساعات. الامتناع التام عن الكافيين والقهوة والشاي لـ 24 ساعة. إيقاف أدوية البيتا-بلوكر 48 ساعة بعد استشارة الطبيب.",
+        "prep_notes_ar": "يقارن تروية القلب أثناء الجري على السير أو الإجهاد الدوائي بالديبيريدامول مع التروية وقت الراحة لتشخيص نقص تروية الشرايين القابل للشفاء.",
+        "prep_notes_en": "Differentiates reversible ischemia (viable myocardium) from fixed defect (infarcted scar).",
+        "duration_mins": 180,
+        "tat": "6 ساعات",
+        "tat_hours": 6,
+        "cost": 1600,
+        "price": 1600,
+        "out_source_cost": 1100,
+        "indications": "آلام الصدر، تقييم كفاءة الشرايين والدعامات، تقييم خطورة جراحات القلب المفتوح، مرضى السكري ذوي نقص التروية الصامت",
+        "id": "myocardial_perfusion_spect_sestamibi"
+    },
+    {
+        "key": "thyroid_scan_uptake_i131_technetium",
+        "code": "NM-005",
+        "name": "مسح ذري ونشاط الغدة الدرقية باليود المشع (Thyroid Scan & Radioactive Iodine Uptake)",
+        "name_ar": "مسح ذري على الغدة الدرقية مع قياس نسبة التقاط اليود المشع (RAIU & Scan)",
+        "name_en": "Thyroid Scintigraphy (99mTc-Pertechnetate / I-131) with Radioactive Iodine Uptake (RAIU)",
+        "modality": "Nuclear Medicine",
+        "modality_ar": "طب نووي",
+        "category": "nuclear_medicine",
+        "category_ar": "الطب النووي والتصوير الجزيئي",
+        "body_part": "Neck & Thyroid",
+        "body_part_ar": "الغدة الدرقية",
+        "contrast": true,
+        "contrast_type": "Radioactive Iodine-131 / 99mTc (باليود المشع أو التكنيشيوم)",
+        "fasting_hours": 4,
+        "prep": "التوقف عن أدوية الغدة (إلتروكسين 4 أسابيع، كاربيمازول أسبوعين) وتجنب صبغات الأشعة المقطعية لـ 4-6 أسابيع.",
+        "prep_notes_ar": "يحدد سبب فرط نشاط الدرقية (مرض جريفز بنشاط متجانس مقابل العقدة السامة Toxic Adenoma مقابل التهاب الدرقية الحاد ذو الالتقاط المنخفض).",
+        "prep_notes_en": "Differentiates Graves disease (high diffuse uptake) from subacute thyroiditis (low uptake).",
+        "duration_mins": 30,
+        "tat": "24 ساعة",
+        "tat_hours": 24,
+        "cost": 550,
+        "price": 550,
+        "out_source_cost": 350,
+        "indications": "فرط نشاط الغدة الدرقية (هبوط TSH)، العقد الدرقية الساخنة والباردة، تحديد جرعة اليود المشع العلاجي",
+        "id": "thyroid_scan_uptake_i131_technetium"
+    },
+    {
+        "key": "renal_dmsa_cortical_scan",
+        "code": "NM-006",
+        "name": "مسح ذري لقشرة الكليتين والندبات بالتكنيشيوم (Renal DMSA Cortical Scan)",
+        "name_ar": "مسح ذري سكوني لقشرة الكلى بـ 99mTc-DMSA لندبات الكلى والتهاب الكلى الصديدي والوظيفة النسبية",
+        "name_en": "99mTc-DMSA Renal Cortical Scintigraphy with Differential Kidney Function",
+        "modality": "Nuclear Medicine",
+        "modality_ar": "طب نووي للأطفال والمسالك",
+        "category": "nuclear_medicine",
+        "category_ar": "الطب النووي والتصوير الجزيئي",
+        "body_part": "Renal",
+        "body_part_ar": "الكليتين",
+        "contrast": true,
+        "contrast_type": "99mTc-DMSA Radiopharmaceutical (بنظير DMSA المشع)",
+        "fasting_hours": 0,
+        "prep": "لا يشترط الصيام. شرب سوائل وافرة. حقن المادة المشعة والتصوير بعد ساعتين إلى 3 ساعات.",
+        "prep_notes_ar": "الفحص المرجعي لحساب النسبة الدقيقة لمساهمة كل كلية في وظيفة الجسم (Split Renal Function %) وكشف ندبات الكلى الناتجة عن ارتجاع البول.",
+        "prep_notes_en": "Gold standard for renal cortical scarring and split differential renal function percentage.",
+        "duration_mins": 30,
+        "tat": "4 ساعات",
+        "tat_hours": 4,
+        "cost": 850,
+        "price": 850,
+        "out_source_cost": 550,
+        "indications": "التهابات حوض الكلى المتكررة عند الأطفال، ارتجاع البول VUR، الكلى المنكمشة، حساب وظيفة كل كلية قبل الجراحة",
+        "id": "renal_dmsa_cortical_scan"
+    },
+    {
+        "key": "renal_mag3_diuretic_renogram",
+        "code": "NM-007",
+        "name": "منحنى إفراغ الكلى الديناميكي مع مدر البول بالتكنيشيوم (Renal MAG3 Diuretic Renogram)",
+        "name_ar": "مسح ذري ديناميكي للكلى بـ 99mTc-MAG3 مع حقن لازيكس لتشخيص انسداد حوض الكلى UPJO",
+        "name_en": "99mTc-MAG3 Diuretic Renogram (F+20 Lasix Protocol for Hydronephrosis)",
+        "modality": "Nuclear Medicine",
+        "modality_ar": "طب نووي ديناميكي",
+        "category": "nuclear_medicine",
+        "category_ar": "الطب النووي والتصوير الجزيئي",
+        "body_part": "Renal",
+        "body_part_ar": "الكلى والمسالك البولية",
+        "contrast": true,
+        "contrast_type": "99mTc-MAG3 + Furosemide Lasix (بنظير MAG3 ومدر بول لازيكس)",
+        "fasting_hours": 0,
+        "prep": "ترطيب الجسم بشرب نصف لتر ماء قبل الفحص. حقن مدر البول اللازيكس بعد 20 دقيقة من بدء التصوير.",
+        "prep_notes_ar": "يفرق بشكل قاطع بين التضخم غير الانسدادي التوتري لانتفاخ الكلية والانسداد الحقيقي لوصلة حوض الكلى والحالب UPJO المحتاج للجراحة.",
+        "prep_notes_en": "Differentiates true mechanical UPJ obstruction from non-obstructive hydronephrosis.",
+        "duration_mins": 45,
+        "tat": "3 ساعات",
+        "tat_hours": 3,
+        "cost": 950,
+        "price": 950,
+        "out_source_cost": 620,
+        "indications": "تضخم وانتفاخ الكلى والحالبين، انسداد حوض الكلى الخلقي UPJO، تقييم سالكية المسالك بعد جراحة تجميل الحوض",
+        "id": "renal_mag3_diuretic_renogram"
+    },
+    {
+        "key": "fl_sialography_salivary",
+        "code": "XR-042",
+        "name": "أشعة بالصبغة على قنوات والغدد اللعابية (Sialography)",
+        "name_ar": "أشعة ملونة بالصبغة على قنوات الغدة النكافية وتحت الفك لحصوات وانسداد اللعاب",
+        "name_en": "Digital Sialography with Direct Salivary Duct Cannulation",
+        "modality": "Fluoroscopy",
+        "modality_ar": "أشعة فلوروسكوبي بالصبغة",
+        "category": "fluoroscopy",
+        "category_ar": "الأشعة السينية والفحص الفلوري",
+        "body_part": "Salivary Glands",
+        "body_part_ar": "الغدد والقنوات اللعابية",
+        "contrast": true,
+        "contrast_type": "Oil-Soluble / Water-Soluble Iodinated Contrast (بحقن صبغة بقناة اللعاب)",
+        "fasting_hours": 0,
+        "prep": "تناول شريحة ليمون لتحفيز إفراز اللعاب وتحديد فتحة القناة اللعابية الدقيقة داخل الفم لقسطرتها.",
+        "prep_notes_ar": "يكشف حصوات القنوات اللعابية الشفافة وتضيق القنوات والتهاب الغدة النكافية المتكرر ومتلازمة شوغرن.",
+        "prep_notes_en": "Delineates Stensen and Wharton duct strictures, radiolucent calculi, and sialectasis.",
+        "duration_mins": 25,
+        "tat": "1 ساعة",
+        "tat_hours": 1,
+        "cost": 420,
+        "price": 420,
+        "out_source_cost": 250,
+        "indications": "تورم الغدة النكافية مع الأكل، جفاف الفم، الاشتباه في حصوات القنوات اللعابية، متلازمة شوغرن",
+        "id": "fl_sialography_salivary"
+    },
+    {
+        "key": "fl_ttube_cholangiography",
+        "code": "XR-043",
+        "name": "أشعة بالصبغة عبر أنبوبة تي المرارية (T-Tube Cholangiography)",
+        "name_ar": "أشعة فلوروسكوبي بحقن الصبغة بأنبوبة T بعد جراحة استكشاف القنوات المرارية",
+        "name_en": "Post-Operative T-Tube Cholangiography Fluoroscopy",
+        "modality": "Fluoroscopy",
+        "modality_ar": "أشعة فلوروسكوبي بالصبغة",
+        "category": "fluoroscopy",
+        "category_ar": "الأشعة السينية والفحص الفلوري",
+        "body_part": "Biliary",
+        "body_part_ar": "القنوات المرارية المشتركة",
+        "contrast": true,
+        "contrast_type": "Water-Soluble Non-Ionic Contrast (بحقن صبغة داخل أنبوبة T)",
+        "fasting_hours": 4,
+        "prep": "صيام 4 ساعات. فتح غطاء أنبوبة تي وتصريف السائل المراري قبل الحقن تحت تعقيم كامل.",
+        "prep_notes_ar": "التأكد من خلو القناة المرارية العامة من أي حصوات متبقية وسلاسة تدفق الصبغة إلى الاثني عشر قبل نزع الأنبوبة.",
+        "prep_notes_en": "Confirms ductal clearance, absence of retained stones, and free flow to duodenum prior to tube removal.",
+        "duration_mins": 20,
+        "tat": "1 ساعة",
+        "tat_hours": 1,
+        "cost": 380,
+        "price": 380,
+        "out_source_cost": 220,
+        "indications": "متابعة ما بعد استئصال حصوات القناة المرارية جراحياً، التحقق قبل إزالة درنقة T-tube",
+        "id": "fl_ttube_cholangiography"
+    },
+    {
+        "key": "fl_defecating_proctography",
+        "code": "XR-044",
+        "name": "أشعة باريوم ديناميكية لحركية المستقيم والإخراج (Defecating Proctography)",
+        "name_ar": "أشعة سينمائية بالباريوم على المستقيم أثناء الإخراج لهبوط المستقيم والقيلة المستقيمية",
+        "name_en": "Evacuation Proctography (Defecography Fluoroscopy on Commode Chair)",
+        "modality": "Fluoroscopy",
+        "modality_ar": "أشعة فلوروسكوبي ديناميكية",
+        "category": "fluoroscopy",
+        "category_ar": "الأشعة السينية والفحص الفلوري",
+        "body_part": "Pelvis & Rectum",
+        "body_part_ar": "المستقيم وعضلات الحوض",
+        "contrast": true,
+        "contrast_type": "High-Density Barium Paste + Oral Small Bowel Barium (بعجينة الباريوم الشرجية)",
+        "fasting_hours": 4,
+        "prep": "حقن معجون الباريوم الكثيف المشابه لقوام البراز داخل المستقيم والجلوس على مقعد مرحاض شفاف للأشعة.",
+        "prep_notes_ar": "التشخيص الحركي لهبوط بطانة المستقيم الداخلي (Intussusception) والقيلة المستقيمية Rectocele والسلس البرازي.",
+        "prep_notes_en": "Dynamic cine fluoroscopy during rest, squeeze, and evacuation for pelvic floor descent.",
+        "duration_mins": 30,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 650,
+        "price": 650,
+        "out_source_cost": 390,
+        "indications": "صعوبة الإخراج والإمساك الانسدادي، الإحساس بعدم اكتمال التبرز، القيلة المستقيمية، هبوط قاع الحوض",
+        "id": "fl_defecating_proctography"
+    },
+    {
+        "key": "rad_cesm_contrast_mammography",
+        "code": "RAD-005",
+        "name": "ماموجرام طيفي بالصبغة الوريدية للثدي عالي الكثافة (Contrast-Enhanced Spectral Mammography CESM)",
+        "name_ar": "ماموجرام طيفي متقدم بحقن صبغة اليود بالوريد للثدي عالي الكثافة كبديل للرنين",
+        "name_en": "Contrast-Enhanced Spectral Mammography (CESM) Dual-Energy Subtraction",
+        "modality": "Mammography",
+        "modality_ar": "ماموجرام طيفي بالصبغة",
+        "category": "specialized",
+        "category_ar": "الفحوصات المتخصصة",
+        "body_part": "Breast",
+        "body_part_ar": "الثديين والغدد الليمفاوية",
+        "contrast": true,
+        "contrast_type": "IV Non-Ionic Iodinated Contrast (بالصبغة الوريدية المقطعية)",
+        "fasting_hours": 4,
+        "prep": "صيام 4 ساعات، إحضار تحليل وظائف كلى حديث. حقن صبغة اليود بالوريد ثم التصوير الطيفي المزدوج بعد دقيقتين.",
+        "prep_notes_ar": "حساسية تضاهي رنين الثدي (> 95%) لكشف الأورام النشطة بالأوعية الدموية في الثدي عالي الكثافة لمرضى موانع الرنين المغناطيسي.",
+        "prep_notes_en": "Dual-energy subtraction demonstrates tumor neovascularity with sensitivity comparable to breast MRI.",
+        "duration_mins": 20,
+        "tat": "1 ساعة",
+        "tat_hours": 1,
+        "cost": 850,
+        "price": 850,
+        "out_source_cost": 520,
+        "indications": "كثافة أنسجة الثدي العالية بالماموجرام العادي، الشك في أورام الثدي المجهرية، متابعة ما بعد جراحات الأورام",
+        "id": "rad_cesm_contrast_mammography"
+    },
+    {
+        "key": "ct_angio_upper_extremity",
+        "code": "CT-042",
+        "name": "أشعة مقطعية بالصبغة على شرايين الطرف العلوي والذراع (CTA Upper Extremity)",
+        "name_ar": "أشعة مقطعية بالصبغة على شرايين الكتف والذراع واليد (متلازمة مخرج الصدر وإصابات الشرايين)",
+        "name_en": "CT Angiography Upper Extremity (Thoracic Outlet & Arm Arteries)",
+        "modality": "CT",
+        "modality_ar": "أشعة مقطعية وعائية",
+        "category": "ct_scan",
+        "category_ar": "الأشعة المقطعية",
+        "body_part": "Vascular",
+        "body_part_ar": "شرايين الطرف العلوي",
+        "contrast": true,
+        "contrast_type": "IV Contrast Bolus Tracking (بالصبغة الوريدية)",
+        "fasting_hours": 6,
+        "prep": "صيام 6 ساعات، إحضار كفاءة كلى حديثة. تصوير الذراع في وضع الراحة ووضع الرفع لأعلى (Adson Test).",
+        "prep_notes_ar": "كشف انضغاط الشريان تحت الترقوة في متلازمة مخرج الصدر Thoracic Outlet وعلاج الوصلات الشريانية الوريدية للغسيل الكلوي AVF.",
+        "prep_notes_en": "Evaluates thoracic outlet syndrome, vascular trauma, and dialysis fistula mapping.",
+        "duration_mins": 25,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 980,
+        "price": 980,
+        "out_source_cost": 620,
+        "indications": "برودة وشحوب أصابع اليدين (ظاهرة رينود)، متلازمة مخرج الصدر، ضعف أو انسداد وصلة الغسيل الكلوي AVF",
+        "id": "ct_angio_upper_extremity"
+    },
+    {
+        "key": "ct_venography_lower_pelvis_ctv",
+        "code": "CT-043",
+        "name": "أشعة مقطعية بالصبغة على أوردة الحوض والساق لجلطة الحوض (CT Venography CTV)",
+        "name_ar": "أشعة مقطعية وريدية بالصبغة لأوردة الحوض والفخذ ومتلازمة ماي-تيرنر (May-Thurner)",
+        "name_en": "CT Venography (CTV) Abdomen, Pelvis & Lower Extremities for Iliofemoral DVT",
+        "modality": "CT",
+        "modality_ar": "أشعة مقطعية وعائية",
+        "category": "ct_scan",
+        "category_ar": "الأشعة المقطعية",
+        "body_part": "Vascular",
+        "body_part_ar": "أوردة الحوض والفخذ",
+        "contrast": true,
+        "contrast_type": "IV Contrast Delayed Venous Phase (بالصبغة الوريدية في المرحلة الوريدية)",
+        "fasting_hours": 6,
+        "prep": "صيام 6 ساعات، فحص كلى حديث. حقن الصبغة والتصوير عند 120-180 ثانية لامتلاء الأوردة الحرقفية والوريد الأجوف السفلي.",
+        "prep_notes_ar": "يكشف ضغط الشريان الحرقفي الأيمن على الوريد الحرقفي الأيسر (متلازمة May-Thurner) المسببة لجلطات الساق المتكررة.",
+        "prep_notes_en": "Evaluates May-Thurner syndrome, IVC filter thrombosis, and iliofemoral deep venous obstruction.",
+        "duration_mins": 25,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 1100,
+        "price": 1100,
+        "out_source_cost": 700,
+        "indications": "تورم الساق اليسرى الشديد المتكرر، جلطة أوردة الحوض العميقة، انسداد فلتر الوريد الأجوف السفلي",
+        "id": "ct_venography_lower_pelvis_ctv"
+    },
+    {
+        "key": "ct_temporal_cochlear_implant_3d",
+        "code": "CT-044",
+        "name": "مقطعية فائقة الدقة لتخطيط زراعة القوقعة للأطفال (HRCT Pre-Cochlear Implant 3D)",
+        "name_ar": "أشعة مقطعية تحت المليمترية ثلاثية الأبعاد لقياس نافذة القوقعة وعصب السمع قبل زراعة القوقعة",
+        "name_en": "HRCT Temporal Bone 3D Pre-Cochlear Implant (Round Window & Cochlear Duct Measurement)",
+        "modality": "CT",
+        "modality_ar": "أشعة مقطعية فائقة الدقة",
+        "category": "ct_scan",
+        "category_ar": "الأشعة المقطعية",
+        "body_part": "Ear",
+        "body_part_ar": "الأذن الداخلية والقوقعة",
+        "contrast": false,
+        "contrast_type": "None (بدون صبغة)",
+        "fasting_hours": 0,
+        "prep": "مقاطع 0.4 مم دقيقة جداً. للأطفال قد يتطلب مهدئ خفيف لضمان الثبات التام.",
+        "prep_notes_ar": "قياس أبعاد النافذة المستديرة Round Window وساليكية تجويف القوقعة من التكلس والتليف Cochlear Fibrosis.",
+        "prep_notes_en": "Submillimeter cuts (0.4 mm) confirm cochlear patency, facial nerve recess, and electrode trajectory.",
+        "duration_mins": 15,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 550,
+        "price": 550,
+        "out_source_cost": 340,
+        "indications": "ضعف وفقدان السمع الحسي العصبي الشديد للأطفال والبالغين، تخطيط جراحة زراعة القوقعة الإلكترونية",
+        "id": "ct_temporal_cochlear_implant_3d"
+    },
+    {
+        "key": "mri_tmj_bilateral_dynamic",
+        "code": "MRI-043",
+        "name": "رنين مغناطيسي ديناميكي على مفصلي الفك فم مفتوح ومغلق (MRI Bilateral TMJ Dynamic)",
+        "name_ar": "رنين مغناطيسي عالي الدقة على مفصلي الفك الصدغي (TMJ) وضع الفم مفتوحاً ومغلقاً",
+        "name_en": "High-Resolution Bilateral TMJ MRI (Open & Closed Mouth for Articular Disc Displacement)",
+        "modality": "MRI",
+        "modality_ar": "رنين مغناطيسي تخصصي",
+        "category": "mri",
+        "category_ar": "الرنين المغناطيسي",
+        "body_part": "Jaw & TMJ",
+        "body_part_ar": "مفصلي الفك الصدغي",
+        "contrast": false,
+        "contrast_type": "None (بدون صبغة)",
+        "fasting_hours": 0,
+        "prep": "استخدام أداة معقمة متدرجة لتثبيت الفم في أقصى فتحة مريحة بدون حركة.",
+        "prep_notes_ar": "كشف انزلاق وخلع غضروف مفصل الفك الأمامي (Internal Derangement With or Without Reduction) وتآكل لقمة الفك.",
+        "prep_notes_en": "Gold standard for temporomandibular joint articular disc subluxation, clicking, and perforation.",
+        "duration_mins": 30,
+        "tat": "2 ساعة",
+        "tat_hours": 2,
+        "cost": 850,
+        "price": 850,
+        "out_source_cost": 550,
+        "indications": "طقطقة وألم مفصل الفك عند المضغ، انغلاق الفك Lock Jaw، صعوبة فتح الفم، صداع الصدغ المزمن",
+        "id": "mri_tmj_bilateral_dynamic"
+    },
+    {
+        "key": "mri_penile_urethral_stricture",
+        "code": "MRI-044",
+        "name": "رنين مغناطيسي متخصص على مجرى البول والعضو الذكري (MRI Penile & Urethral Stricture)",
+        "name_ar": "رنين مغناطيسي عالي الدقة لتحديد طول وتليف ضيق مجرى البول وقاع الحوض",
+        "name_en": "High-Resolution MRI Urethrography for Complex Anterior & Posterior Urethral Strictures",
+        "modality": "MRI",
+        "modality_ar": "رنين مغناطيسي تخصصي",
+        "category": "mri",
+        "category_ar": "الرنين المغناطيسي",
+        "body_part": "Genitourinary",
+        "body_part_ar": "مجرى البول والأنسجة التناسلية",
+        "contrast": false,
+        "contrast_type": "None (or with retrograde saline/gel distension)",
+        "fasting_hours": 0,
+        "prep": "حقن جل معقم بمجرى البول لنفخ القناة وتوضيح جدارها.",
+        "prep_notes_ar": "يحدد بدقة عمق التليف الإسفنجي Spongiofibrosis وطول الضيق بالسنتيمتر قبل عمليات رأب وتجميل مجرى البول Urethroplasty.",
+        "prep_notes_en": "Evaluates depth and length of spongiofibrosis to guide end-to-end vs graft urethroplasty.",
+        "duration_mins": 30,
+        "tat": "3 ساعات",
+        "tat_hours": 3,
+        "cost": 880,
+        "price": 880,
+        "out_source_cost": 560,
+        "indications": "ضيق مجرى البول المرتجع بعد المناظير، انقطاع مجرى البول بعد كسور الحوض، تخطيط جراحة ترقيع مجرى البول",
+        "id": "mri_penile_urethral_stricture"
+    },
+    {
+        "key": "us_cevus_pediatric_reflux",
+        "code": "US-021",
+        "name": "سونار بالصبغة البولية لارتجاع الحالب للأطفال بدون إشعاع (CeVUS Pediatric Reflux)",
+        "name_ar": "سونار صاعد بالصبغة الميكروية للمثانة لكشف ارتجاع البول للكلى للأطفال دون أي إشعاع",
+        "name_en": "Contrast-Enhanced Voiding Urosonography (CeVUS) for Pediatric Vesicoureteral Reflux (VUR)",
+        "modality": "Ultrasound",
+        "modality_ar": "سونار بالصبغة الميكروية للأطفال",
+        "category": "ultrasound",
+        "category_ar": "الموجات الصوتية والدوبلر",
+        "body_part": "Renal & Bladder",
+        "body_part_ar": "المثانة والحالبين والكلى",
+        "contrast": true,
+        "contrast_type": "Intravesical SonoVue Microbubbles (بصبغة ميكروية داخل المثانة عبر قسطرة رفيعة)",
+        "fasting_hours": 0,
+        "prep": "تركيب قسطرة بولية معقمة دقيقة لملء المثانة بفقاعات صبغة السونار وتصوير الكليتين في الوقت الفعلي أثناء التبول.",
+        "prep_notes_ar": "البديل الحديث الخالي تماماً من الإشعاع لأشعة MCU التقليدية لحماية الغدد التناسلية للأطفال من خطر أشعة إكس.",
+        "prep_notes_en": "Higher sensitivity than fluoroscopic MCU/VCUG with ZERO ionizing radiation to gonads.",
+        "duration_mins": 25,
+        "tat": "20 دقيقة",
+        "tat_hours": 0.3,
+        "cost": 650,
+        "price": 650,
+        "out_source_cost": 390,
+        "indications": "التهابات البول والصديد المتكررة للرضع والأطفال، الاشتباه في ارتجاع البول VUR، متابعة ما بعد حقن صمام الحالب",
+        "id": "us_cevus_pediatric_reflux"
+    },
+    {
+        "key": "us_nerve_carpal_tunnel_highres",
+        "code": "US-022",
+        "name": "سونار عالي الدقة لأعصاب اليد والنفق الرسغي (High-Res Nerve Ultrasound for CTS)",
+        "name_ar": "موجات صوتية متقدمة على العصب الأوسط بمفصل الرسغ (قياس مساحة مقطع العصب CSA لمتلازمة النفق الرسغي)",
+        "name_en": "High-Resolution Neuromusculoskeletal Ultrasound for Carpal Tunnel & Peripheral Nerves",
+        "modality": "Ultrasound",
+        "modality_ar": "موجات صوتية تخصصية للأعصاب",
+        "category": "ultrasound",
+        "category_ar": "الموجات الصوتية والدوبلر",
+        "body_part": "Nerves & Wrist",
+        "body_part_ar": "الأعصاب الطرفية والرسغ",
+        "contrast": false,
+        "contrast_type": "None (بدون صبغة)",
+        "fasting_hours": 0,
+        "prep": "لا يشترط الصيام.",
+        "prep_notes_ar": "يقيس مساحة مقطع العصب الأوسط Cross-Sectional Area (CSA > 10 mm2) بدقة ميكرومترية لتشخيص اختناق العصب وعلاجه بالحقن أو التسليك.",
+        "prep_notes_en": "Median nerve cross-sectional area (CSA >= 10 mm2) diagnostic for carpal tunnel syndrome.",
+        "duration_mins": 15,
+        "tat": "15 دقيقة",
+        "tat_hours": 0.25,
+        "cost": 280,
+        "price": 280,
+        "out_source_cost": 150,
+        "indications": "تنميل وحرقان أصابع اليدين (الإبهام والسبابة والوسطى) ليلاً، متلازمة النفق الرسغي CTS، انحباس العصب الزندي بالكوع",
+        "id": "us_nerve_carpal_tunnel_highres"
+    },
+    {
+        "key": "fl_loopogram_ileal_conduit",
+        "code": "XR-045",
+        "name": "أشعة بالصبغة على مخرج البول المعوي البديل (Loopogram / Conduitography)",
+        "name_ar": "أشعة ملونة بالفلوروسكوبي عبر فتحة البول المعوية لمرضى استئصال المثانة الجذري",
+        "name_en": "Ileal Conduit Loopography Fluoroscopy Contrast Study",
+        "modality": "Fluoroscopy",
+        "modality_ar": "أشعة فلوروسكوبي بالصبغة",
+        "category": "fluoroscopy",
+        "category_ar": "الأشعة السينية والفحص الفلوري",
+        "body_part": "Stoma & Ureters",
+        "body_part_ar": "فتحة مخرج البول والحالبين",
+        "contrast": true,
+        "contrast_type": "Intrastomal Water-Soluble Contrast (بحقن صبغة عبر فتحة الاستوما)",
+        "fasting_hours": 0,
+        "prep": "قسطرة فتحة الاستوما المعوية بلطف وحقن 50-100 مل صبغة أومنيباك تحت الرؤية المباشرة.",
+        "prep_notes_ar": "تقييم انسداد أو تضيق وصلة الحالبين بالأمعاء والارتجاع وحصوات المخرج المعوي بعد استئصال المثانة.",
+        "prep_notes_en": "Evaluates ureteroileal anastomotic stricture, conduit redundancy, and calculi post-cystectomy.",
+        "duration_mins": 25,
+        "tat": "1 ساعة",
+        "tat_hours": 1,
+        "cost": 450,
+        "price": 450,
+        "out_source_cost": 270,
+        "indications": "متابعة ما بعد استئصال المثانة وتحويل البول المعوي، ارتفاع وظائف الكلى بعد الجراحة، صديد البول من الاستوما",
+        "id": "fl_loopogram_ileal_conduit"
+    },
+    {
+        "key": "fl_vfss_modified_barium_swallow",
+        "code": "XR-046",
+        "name": "أشعة فيديو فلوروسكوبي ديناميكية لتقييم الشردقة والبلع (Modified Barium Swallow VFSS)",
+        "name_ar": "أشعة بالباريوم متعدد القوام مع تسجيل الفيديو السينمائي لتقييم اضطرابات البلع والشردقة للرئة",
+        "name_en": "Videofluoroscopic Swallowing Study (VFSS / Modified Barium Swallow by Speech Pathologist)",
+        "modality": "Fluoroscopy",
+        "modality_ar": "أشعة فلوروسكوبي سينمائية مسجلة",
+        "category": "fluoroscopy",
+        "category_ar": "الأشعة السينية والفحص الفلوري",
+        "body_part": "Pharynx & Larynx",
+        "body_part_ar": "البلعوم والحنجرة والمريء",
+        "contrast": true,
+        "contrast_type": "Graded Barium Consistencies: Thin Liquid, Nectar, Honey, Pudding, Solid (بباريوم متدرج القوام)",
+        "fasting_hours": 4,
+        "prep": "صيام 4 ساعات. إعطاء المريض قوام مختلف من الباريوم (سائل خفيف، متوسط، عسل، مهلبية، وبسكويت صلب) مع تسجيل فيديو فائق السرعة (30 إطار/ثانية).",
+        "prep_notes_ar": "الفحص المرجعي لمرضى الجلطات والشلل الدماغي والشلل الرعاش لتحديد أمان البلع وتفادي الالتهاب الرئوي الشفطي القاتل Aspiration Pneumonia.",
+        "prep_notes_en": "Gold standard for silent tracheal aspiration and pharyngeal phase dysphagia management.",
+        "duration_mins": 30,
+        "tat": "1 ساعة",
+        "tat_hours": 1,
+        "cost": 550,
+        "price": 550,
+        "out_source_cost": 320,
+        "indications": "الشردقة المتكررة عند شرب الماء، الالتهاب الرئوي الشفطي المتكرر، مرضى السكتات الدماغية والباركنسون",
+        "id": "fl_vfss_modified_barium_swallow"
+    },
+    {
+        "key": "nm_pet_ct_68ga_dotatate_net",
+        "code": "NM-008",
+        "name": "مسح بي إي تي مقطعي لأورام الغدد الصم العصبية بجاليوم دوتاتات (PET-CT 68Ga-DOTATATE)",
+        "name_ar": "مسح بي إي تي مقطعي بمستقبلات السوماتوستاتين لمستقبلات أورام الكارسينويد والغدد الصم العصبية (NET)",
+        "name_en": "68Ga-DOTATATE (Somatostatin Receptor PET/CT) for Neuroendocrine Tumors (NETs)",
+        "modality": "PET-CT",
+        "modality_ar": "مسح بوزيتروني مقطعي نوعي",
+        "category": "nuclear_medicine",
+        "category_ar": "الطب النووي والتصوير الجزيئي",
+        "body_part": "Whole Body",
+        "body_part_ar": "كامل الجسم",
+        "contrast": true,
+        "contrast_type": "68Ga-DOTATATE Somatostatin Radiotracer (بالمادة المشعة النوعية للغدد الصم)",
+        "fasting_hours": 4,
+        "prep": "صيام 4 ساعات. إيقاف أدوية نظائر السوماتوستاتين طويلة المفعول (ساندوستاتين LAR) لمدة 3-4 أسابيع بالاتفاق مع الطبيب المعالج.",
+        "prep_notes_ar": "أعلى فحص حساسية عالمياً لكشف وتحديد مكان أورام الكارسينويد في البنكرياس والأمعاء والرئة، وتحديد الأهلية للعلاج بالنظائر المشعة PRRT (لوتيتيوم-177 Lu-177).",
+        "prep_notes_en": "High affinity for SSTR2 receptors for NET staging and Lu-177 PRRT peptide receptor therapy workup.",
+        "duration_mins": 75,
+        "tat": "24 ساعة",
+        "tat_hours": 24,
+        "cost": 5600,
+        "price": 5600,
+        "out_source_cost": 4300,
+        "indications": "أورام الكارسينويد، متلازمة الأورام الصماوية NET، إسهال واحمرار الوجه غير المفسر (Carcinoid Syndrome)",
+        "id": "nm_pet_ct_68ga_dotatate_net"
+    },
+    {
+        "key": "nm_parathyroid_mibi_spect_ct",
+        "code": "NM-009",
+        "name": "مسح ذري مقطعي للغدد الجاردرقية بالـ MIBI المزدوج (Parathyroid MIBI SPECT/CT)",
+        "name_ar": "مسح ذري هجين مزدوج الطور بالتكنيشيوم-سيستاميبي لتحديد ورم الغدة الجاردرقية (Adenoma)",
+        "name_en": "Dual-Phase 99mTc-Sestamibi Parathyroid Scintigraphy with SPECT/CT Hybrid Imaging",
+        "modality": "Nuclear Medicine",
+        "modality_ar": "طب نووي هجين",
+        "category": "nuclear_medicine",
+        "category_ar": "الطب النووي والتصوير الجزيئي",
+        "body_part": "Neck & Mediastinum",
+        "body_part_ar": "الرقبة والمنصف الصدري",
+        "contrast": true,
+        "contrast_type": "99mTc-Sestamibi Radiopharmaceutical (بنظير التكنيشيوم-سستاميبي)",
+        "fasting_hours": 0,
+        "prep": "لا يشترط الصيام. تصوير مبكر بعد 15 دقيقة وتصوير متأخر بعد ساعتين (الغدة الدرقية تتخلص من المادة بسرعة بينما الورم الجاردرقي يحتفظ بها).",
+        "prep_notes_ar": "التحديد الدقيق ثلاثي الأبعاد لمكان ورم الجاردرقية المفرز لهرمون PTH لتسهيل استئصاله عبر فتحة جراحية تجميلية مجهرية صغيرة (MIP).",
+        "prep_notes_en": "Guides minimally invasive parathyroidectomy (MIP) for primary hyperparathyroidism.",
+        "duration_mins": 120,
+        "tat": "4 ساعات",
+        "tat_hours": 4,
+        "cost": 1100,
+        "price": 1100,
+        "out_source_cost": 750,
+        "indications": "ارتفاع كالسيوم الدم مع ارتفاع هرمون PTH، تشخيص أورام الجاردرقية Adenoma في الرقبة أو داخل الصدر Ectopic",
+        "id": "nm_parathyroid_mibi_spect_ct"
     }
 ],
 
@@ -14132,354 +18491,1491 @@ const MedicalCatalog = {
     }
 ],
 
-    // 4. إجراءات العيادات التخصصية
+    // 4. إجراءات العيادات التخصصية لكافة الـ 12 تخصصاً
     clinicProcedures: [
-        // --- الباطنة والصدرية ---
-        {
-            code: 'PROC-INT-01',
-            specialty: 'internal',
-            specialty_name: 'الباطنة والصدرية',
-            name: 'رسم قلب كهربائي قياسي 12 قناة (12-Lead Electrocardiogram - ECG)',
-            equipment: 'جهاز تخطيط القلب الرقمي + إلكترودات معقمة',
-            consumables: 'جل تخطيط، إلكترودات لاصقة، ورق حراري',
-            duration: '10 دقائق',
-            doctor_commission_rate: 30,
-            fee: 150
-        },
-        {
-            code: 'PROC-INT-02',
-            specialty: 'internal',
-            specialty_name: 'الباطنة والصدرية',
-            name: 'جلسة استنشاق وتوسيع شعب هوائية (Ultrasonic Nebulizer Therapy)',
-            equipment: 'جهاز رذاذ نيبولايزر طبي',
-            consumables: 'ماسك استنشاق معقم، فاركولين / بالميكورت، محلول ملح',
-            duration: '15 دقيقة',
-            doctor_commission_rate: 25,
-            fee: 120
-        },
-        {
-            code: 'PROC-INT-03',
-            specialty: 'internal',
-            specialty_name: 'الباطنة والصدرية',
-            name: 'تركيب ومتابعة جهاز هولتر ضغط الدم 24 ساعة (24h BP Holter)',
-            equipment: 'جهاز هولتر ضغط دم رقمي مدمج',
-            consumables: 'بطاريات قلوية، كاف ضغط معقم',
-            duration: '20 دقيقة تركيب + 24 ساعة رصد',
-            doctor_commission_rate: 35,
-            fee: 550
-        },
-
-        // --- أمراض القلب ---
-        {
-            code: 'PROC-CRD-01',
-            specialty: 'cardio',
-            specialty_name: 'القلب والأوعية الدموية',
-            name: 'فحص الموجات الصوتية على عضلة القلب والدوبلر (Echocardiography - Echo)',
-            equipment: 'جهاز إيكو قلبي عالي الدقة مع مجس phased array',
-            consumables: 'جل تصوير صوتي، أوراق إيكو حرارية',
-            duration: '25 دقيقة',
-            doctor_commission_rate: 45,
-            fee: 750
-        },
-        {
-            code: 'PROC-CRD-02',
-            specialty: 'cardio',
-            specialty_name: 'القلب والأوعية الدموية',
-            name: 'رسم قلب بالمجهود على السير الكهربائي (Treadmill Stress Test)',
-            equipment: 'سير كهربائي مبرمج مع شاشة مراقبة رسم قلب حية',
-            consumables: 'إلكترودات لاصقة مجهدة، كابل 12 طرف',
-            duration: '30 دقيقة',
-            doctor_commission_rate: 40,
-            fee: 850
-        },
-        {
-            code: 'PROC-CRD-03',
-            specialty: 'cardio',
-            specialty_name: 'القلب والأوعية الدموية',
-            name: 'هولتر رسم قلب مستمر لرصد اضطراب النبض (24h/48h Holter ECG)',
-            equipment: 'مسجل هولتر نبض رقمي 3/12 قناة',
-            consumables: 'لاصقات صدرية طبية هيبوالرجينيك',
-            duration: '15 دقيقة تركيب + تحليل بيانات',
-            doctor_commission_rate: 35,
-            fee: 650
-        },
-
-        // --- العظام والمفاصل ---
-        {
-            code: 'PROC-ORT-01',
-            specialty: 'ortho',
-            specialty_name: 'العظام والمفاصل',
-            name: 'حقن مفصل الركبة الموضعي بالبلازما أو الهيالورونيك (Intra-Articular Injection)',
-            equipment: 'حاوية تعقيم وسن إبرة 21G معقم',
-            consumables: 'بتادين جراحي، شاش معقم، مادة الحقن المعتمدة، لاصق طبي',
-            duration: '15 دقيقة',
-            doctor_commission_rate: 40,
-            fee: 650
-        },
-        {
-            code: 'PROC-ORT-02',
-            specialty: 'ortho',
-            specialty_name: 'العظام والمفاصل',
-            name: 'بذل وتفريغ سائل المفصل تشخيصي وعلاجي (Joint Arthrocentesis)',
-            equipment: 'سرنجة تفريغ 20/50 مل + أنبوب جمع عينات لتحليل السائل',
-            consumables: 'مخدر موضعي ليدوكايين، قفازات معقمة، ضماد ضاغط',
-            duration: '20 دقيقة',
-            doctor_commission_rate: 35,
-            fee: 450
-        },
-        {
-            code: 'PROC-ORT-03',
-            specialty: 'ortho',
-            specialty_name: 'العظام والمفاصل',
-            name: 'تجبير وتركيب جبيرة أو جبس للأطراف (Plaster / Fiberglass Cast)',
-            equipment: 'حوض ماء فاتر ومقص جبس طبي',
-            consumables: 'رول قطن عظام، لفائف جبس أو فايبر جلاس، رباط ضاغط',
-            duration: '20 دقيقة',
-            doctor_commission_rate: 30,
-            fee: 380
-        },
-
-        // --- الأنف والأذن والحنجرة ---
-        {
-            code: 'PROC-ENT-01',
-            specialty: 'ent',
-            specialty_name: 'الأنف والأذن والحنجرة',
-            name: 'غسيل وتنظيف الأذن وإزالة الصمغ (Bilateral Ear Lavage / Irrigation)',
-            equipment: 'سرنجة معدنية لغسيل الأذن + حوض كلوي + إضاءة كشف',
-            consumables: 'محلول ملحي دافئ، قطن تنظيف معقم',
-            duration: '15 دقيقة',
-            doctor_commission_rate: 30,
-            fee: 180
-        },
-        {
-            code: 'PROC-ENT-02',
-            specialty: 'ent',
-            specialty_name: 'الأنف والأذن والحنجرة',
-            name: 'منظار أنف وأذن صلب تشخيصي (Rigid Diagnostic Nasal Endoscopy)',
-            equipment: 'منظار صلب بزاوية 0/30 درجة ومصدر ضوء بارد',
-            consumables: 'مخدر وموسع احتقان موضعي، مناديل معقمة',
-            duration: '15 دقيقة',
-            doctor_commission_rate: 40,
-            fee: 380
-        },
-        {
-            code: 'PROC-ENT-03',
-            specialty: 'ent',
-            specialty_name: 'الأنف والأذن والحنجرة',
-            name: 'تخطيط السمع وضغط طبلة الأذن (Pure Tone Audiometry & Tympanometry)',
-            equipment: 'جهاز تخطيط السمع ومعاوقة الطبلة داخل غرفة عازلة',
-            consumables: 'سدادات أذن معقمة، ورق رسم بياني للسمع',
-            duration: '25 دقيقة',
-            doctor_commission_rate: 35,
-            fee: 390
-        },
-
-        // --- العيون ---
-        {
-            code: 'PROC-OPH-01',
-            specialty: 'ophth',
-            specialty_name: 'طب وجراحة العيون',
-            name: 'فحص المصباح الشقي والقرنية الشامل (Slit Lamp Biomicroscopy)',
-            equipment: 'جهاز مصباح شقي متطور مع تكبير بصري عالي',
-            consumables: 'قطرات صبغة فلوريسين، كحول تعقيم للعدسة',
-            duration: '10 دقائق',
-            doctor_commission_rate: 30,
-            fee: 180
-        },
-        {
-            code: 'PROC-OPH-02',
-            specialty: 'ophth',
-            specialty_name: 'طب وجراحة العيون',
-            name: 'فحص قاع العين والشبكية بالقطرة الموسعة (Dilated Fundus Examination)',
-            equipment: 'منظار قاع عين غير مباشر + عدسة 20D/90D فحص',
-            consumables: 'قطرة توسيع حدقة (Mydriacyl / Tropicamide)',
-            duration: '20 دقيقة (تشمل وقت التوسيع)',
-            doctor_commission_rate: 35,
-            fee: 240
-        },
-        {
-            code: 'PROC-OPH-03',
-            specialty: 'ophth',
-            specialty_name: 'طب وجراحة العيون',
-            name: 'فحص مجال الإبصار الكمبيوتري لمتابعة الجلوكوما (Automated Visual Field)',
-            equipment: 'جهاز همفري لقياس مجال الإبصار الكمبيوتري',
-            consumables: 'كارت فحص، عدسات تصحيحية مطابقة',
-            duration: '30 دقيقة',
-            doctor_commission_rate: 35,
-            fee: 450
-        },
-
-        // --- النساء والتوليد ---
-        {
-            code: 'PROC-GYN-01',
-            specialty: 'obgyn',
-            specialty_name: 'النساء والتوليد',
-            name: 'تخطيط نبض الجنين وانقباضات الرحم (Non-Stress Test - NST / CTG)',
-            equipment: 'جهاز CTG لمراقبة دقات قلب الجنين والرحم',
-            consumables: 'أحزمة تثبيت، جل فحص، ورق تخطيط حراري',
-            duration: '20 دقيقة',
-            doctor_commission_rate: 30,
-            fee: 220
-        },
-        {
-            code: 'PROC-GYN-02',
-            specialty: 'obgyn',
-            specialty_name: 'النساء والتوليد',
-            name: 'مسحة عنق الرحم الوقائية (Cervical Pap Smear Screening)',
-            equipment: 'موسّع مهبلي معقم (Speculum) + إضاءة كشف',
-            consumables: 'فرشاة مسحة عنق الرحم (Cervex-Brush)، أنبوب سائل التثبيت',
-            duration: '10 دقائق',
-            doctor_commission_rate: 35,
-            fee: 290
-        },
-        {
-            code: 'PROC-GYN-03',
-            specialty: 'obgyn',
-            specialty_name: 'النساء والتوليد',
-            name: 'تركيب أو إزالة لولب منع الحمل (IUD Insertion / Removal)',
-            equipment: 'طقم تركيب لولب جراحي معقم',
-            consumables: 'لولب معتمد، بتادين مهبلي، شاش معقم، قطن',
-            duration: '20 دقيقة',
-            doctor_commission_rate: 40,
-            fee: 490
-        },
-
-        // --- الجلدية والجراحة الصغرى ---
-        {
-            code: 'PROC-DER-01',
-            specialty: 'derma',
-            specialty_name: 'الجلدية والجراحة الصغرى',
-            name: 'جلسة كي بالتبريد للزوائد والثآليل (Liquid Nitrogen Cryotherapy)',
-            equipment: 'جهاز رش النيتروجين السائل (Cryo-Gun) ومجسات نحاسية',
-            consumables: 'نيتروجين سائل (-196 C)، قطن معقم، مسحات كحولية',
-            duration: '10 دقائق',
-            doctor_commission_rate: 35,
-            fee: 280
-        },
-        {
-            code: 'PROC-DER-02',
-            specialty: 'derma',
-            specialty_name: 'الجلدية والجراحة الصغرى',
-            name: 'كي كهربائي واستئصال زوائد جلدية (Radiofrequency Electrocautery)',
-            equipment: 'جهاز كي جراحي كهربائي عالي التردد',
-            consumables: 'بنج موضعي ليدوكايين، إبرة كي معقمة، مرهم مضاد حيوي',
-            duration: '15 دقيقة',
-            doctor_commission_rate: 40,
-            fee: 350
-        },
-        {
-            code: 'PROC-DER-03',
-            specialty: 'derma',
-            specialty_name: 'الجلدية والجراحة الصغرى',
-            name: 'تنظيف وخياطة جرح سطحي بغرز تجميلية (Wound Suture & Dressing)',
-            equipment: 'طقم خياطة جراحي معقم (حامل إبرة، ملقاط، مقص غرز)',
-            consumables: 'خيوط جراحية Vicryl / Prolene، شاش معقم، بلاستر طبي',
-            duration: '20 دقيقة',
-            doctor_commission_rate: 40,
-            fee: 320
-        },
-        {
-            code: 'PROC-DER-04',
-            specialty: 'derma',
-            specialty_name: 'الجلدية والجراحة الصغرى',
-            name: 'فتح وتفريغ خراج مع غيار معقم (Abscess Incision & Drainage)',
-            equipment: 'مشرط جراحي معقم #11 + مسبار جراحي + جفت شرياني',
-            consumables: 'مخدر موضعي، محلول مطهر بتادين، شاش فازلين معقم، شريط تصريف',
-            duration: '20 دقيقة',
-            doctor_commission_rate: 40,
-            fee: 390
-        }
-    ],
-
-    // -------------------------------------------------------------------------
-    // 5. مراكز الأشعة والمعامل التخصصية والشريكة (Diagnostic Centers & Partners)
-    // -------------------------------------------------------------------------,
+    {
+        "code": "PROC-INT-01",
+        "specialty": "internal",
+        "specialty_name": "الباطنة والجهاز الهضمي",
+        "name": "رسم قلب كهربائي قياسي 12 قناة (12-Lead Electrocardiogram - ECG)",
+        "name_ar": "رسم قلب كهربائي قياسي 12 قناة مع التقرير الطبي",
+        "name_en": "Standard 12-Lead Electrocardiogram (ECG)",
+        "equipment": "جهاز تخطيط القلب الرقمي عالي الدقة 12 قناة + إلكترودات معقمة",
+        "consumables": "جل موصل لتخطيط القلب، إلكترودات لاصقة، ورق حراري معتمد",
+        "duration": "10 دقائق",
+        "doctor_commission_rate": 30,
+        "fee": 150,
+        "price": 150,
+        "cost": 150,
+        "indications": "آلام الصدر، خفقان القلب، ضيق التنفس، الفحص الدوري قبل العمليات الجراحية",
+        "prep": "الاستلقاء في وضع مريح، كشف منطقة الصدر والرسغين والكاحلين."
+    },
+    {
+        "code": "PROC-INT-02",
+        "specialty": "internal",
+        "specialty_name": "الباطنة والجهاز الهضمي",
+        "name": "جلسة استنشاق وتوسيع شعب هوائية بالنيبولايزر (Nebulizer Therapy)",
+        "name_ar": "جلسة رذاذ واستنشاق بالموجات فوق الصوتية لتوسيع الشعب",
+        "name_en": "Ultrasonic Medical Nebulizer Therapy Session",
+        "equipment": "جهاز رذاذ نيبولايزر طبي ميكروني للرئة",
+        "consumables": "ماسك استنشاق معقم ذو اتجاه واحد، أنبوبة أكسجين، أمبول فنتولين، أمبول بولميكورت ومحلول ملحي",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 25,
+        "fee": 120,
+        "price": 120,
+        "cost": 120,
+        "indications": "أزمات الربو الحادة، النزلات الشعبية الانسدادية، السعال الحاد المصحوب بضيق تنفس",
+        "prep": "الجلوس منتصباً والتنفس بعمق وهدوء عبر الفم."
+    },
+    {
+        "code": "PROC-INT-03",
+        "specialty": "internal",
+        "specialty_name": "الباطنة والجهاز الهضمي",
+        "name": "تركيب أنبوبة معدة أنفية للتغذية والغسيل (Nasogastric Tube NGT)",
+        "name_ar": "تركيب قسطرة أنفية معدية (رايل NGT) للتغذية وتفريغ المعدة",
+        "name_en": "Nasogastric Tube (NGT) Insertion & Stomach Decompression",
+        "equipment": "أنبوبة رايل مقاسات متعددة، سماعة طبية، سرنجة 50 مل كبرى للتغذية",
+        "consumables": "جل مخدر ليدوكايين، شاش معقم، بلاستر طبي لتثبيت الأنف، كيس جمع الإفرازات",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 250,
+        "price": 250,
+        "cost": 250,
+        "indications": "صعوبة البلع وفقدان الوعي، القيء المتكرر الحاد والانسداد المعوي، غسيل المعدة",
+        "prep": "الجلوس بزاوية 45 درجة، بلع رشفات ماء لتسهيل دخول الأنبوبة للمعدة."
+    },
+    {
+        "code": "PROC-INT-04",
+        "specialty": "internal",
+        "specialty_name": "الباطنة والجهاز الهضمي",
+        "name": "بذل سائل الاستسقاء البطني التشخيصي والتفريغي (Abdominal Paracentesis)",
+        "name_ar": "بزل وتفريغ سائل الاستسقاء بالبطن تحت توجيه السونار",
+        "name_en": "Diagnostic & Therapeutic Abdominal Paracentesis under US Guidance",
+        "equipment": "سونار بطن محمول لتحديد مكان البزل، كانيولا بزل طويلة معقمة صمام ثلاثي",
+        "consumables": "بنج موضعي ليدوكايين 2%، درنقة تصريف معقمة، زجاجات تجميع عينات للتحليل، محلول ألبومين بشري",
+        "duration": "30-45 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 450,
+        "price": 450,
+        "cost": 450,
+        "indications": "استسقاء البطن الشديد لمرضى تليف الكبد، الاشتباه في التهاب الغشاء البريتوني SBP",
+        "prep": "تفريغ المثانة قبل الإجراء، فحص وظائف الكبد وسيولة الدم INR حديث."
+    },
+    {
+        "code": "PROC-INT-05",
+        "specialty": "internal",
+        "specialty_name": "الباطنة والجهاز الهضمي",
+        "name": "منظار المعدة والاثني عشر التشخيصي وأخذ عينات (Upper GI Endoscopy OGD)",
+        "name_ar": "منظار تشخيصي على المريء والمعدة والاثني عشر مع أخذ عينات للأنسجة",
+        "name_en": "Esophagogastroduodenoscopy (Upper Endoscopy OGD with Biopsy)",
+        "equipment": "برج منظار هيدروليكي فائق الدقة HD مع نظام صبغ رقمي NBI، شاشة 4K، مصدر ضوء بارد زينون",
+        "consumables": "بخاخ مخدر موضعي للبلعوم (زيلوكايين)، مهدئ وريدي بروبوفول/ميدازولام، ملقاط عينات Biopsy معقم",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 1200,
+        "price": 1200,
+        "cost": 1200,
+        "indications": "عسر الهضم المستعصي، القيء الدموي والأنيميا غير المفسرة، قرحة المعدة، ارتداد المريء المزمن",
+        "prep": "صيام تام عن الطعام والشراب 8 ساعات ليلة الإجراء. اصطحاب مرافق بالغ."
+    },
+    {
+        "code": "PROC-INT-06",
+        "specialty": "internal",
+        "specialty_name": "الباطنة والجهاز الهضمي",
+        "name": "منظار القولون الكامل واستئصال الزوائد اللحمية (Colonoscopy & Polypectomy)",
+        "name_ar": "منظار القولون الضوئي المتقدم الكامل مع استئصال لحميات القولون",
+        "name_en": "Diagnostic & Therapeutic Colonoscopy with Snare Polypectomy",
+        "equipment": "منظار قولون مرن بتقنية تكبير مجهري وفلتر NBI، وحدة كي كهربي دقيق، جهاز نفخ غاز CO2",
+        "consumables": "أنشوطة استئصال الزوائد Snare، مشابك معدنية Hemoclips لوقف النزف، محلول تخدير واعي وريدي",
+        "duration": "35 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 1800,
+        "price": 1800,
+        "cost": 1800,
+        "indications": "النزيف الشرجي، المسح الدوري لزوائد وسرطان القولون بعد سن الخمسين، القولون التقرحي",
+        "prep": "تحضير وتفريغ القولون بالملينات وحمية سوائل نقية قبل المنظار بـ 24 ساعة."
+    },
+    {
+        "code": "PROC-INT-07",
+        "specialty": "internal",
+        "specialty_name": "الباطنة والجهاز الهضمي",
+        "name": "فحص النفس باليوريا كربون-13 لجرثومة المعدة (C-13 Urea Breath Test)",
+        "name_ar": "تحليل النفس الذري الكربوني لجرثومة المعدة الحلزونية (H. Pylori Breath Test)",
+        "name_en": "Helicobacter Pylori C-13 Urea Breath Test (Infrared Spectrometry)",
+        "equipment": "جهاز التحليل الطيفي بالأشعة تحت الحمراء لنظير الكربون-13، أكياس تنفس معيارية",
+        "consumables": "قرص كبسولة يوريا كربون-13 المعتمدة، محلول سترات التنشيط، أكياس زفير محكمة",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 30,
+        "fee": 350,
+        "price": 350,
+        "cost": 350,
+        "indications": "التأكد من الشفاء التام من جرثومة المعدة بعد الكورس العلاجي، آلام المعدة والحموضة",
+        "prep": "صيام 4 ساعات. التوقف عن المضادات الحيوية 4 أسابيع، ومثبطات الحموضة PPIs لمدة أسبوعين."
+    },
+    {
+        "code": "PROC-INT-08",
+        "specialty": "internal",
+        "specialty_name": "الباطنة والجهاز الهضمي",
+        "name": "قياس حموضة المريء المتصل لمدة 24 ساعة (24-Hour Esophageal pH Impedance)",
+        "name_ar": "قياس حموضة وممانعة المريء اللاسلكي المتصل على مدار 24 ساعة للارتجاع",
+        "name_en": "24-Hour Ambulatory Esophageal pH-Impedance Monitoring",
+        "equipment": "جهاز مسجل حموضة المريء المحمول بحجم الهاتف، كبسولة براڤو أو قسطرة ممانعة دقيقة",
+        "consumables": "قسطرة حموضة معقمة ذات 6 قنوات، أقطاب معايرة، محلول تنظيف، حزام تثبيت محمول",
+        "duration": "24 ساعة (التركيب 20 دقيقة)",
+        "doctor_commission_rate": 35,
+        "fee": 1400,
+        "price": 1400,
+        "cost": 1400,
+        "indications": "الارتجاع المريئي الحارق المقاوم لأدوية المعدة، الكحة المزمنة وألم الصدر غير القلبي",
+        "prep": "صيام 6 ساعات قبل تركيب القسطرة. ممارسة الأنشطة والوجبات اليومية العادية أثناء التسجيل."
+    },
+    {
+        "code": "PROC-PED-01",
+        "specialty": "pediatric",
+        "specialty_name": "طب الأطفال وحديثي الولادة",
+        "name": "جلسة نيبولايزر أطفال موسعة للشعب الهوائية (Pediatric Nebulizer)",
+        "name_ar": "جلسة استنشاق أطفال لطيفة للنزلات الشعبية والخانوق",
+        "name_en": "Pediatric Jet Nebulizer Aerosol Session",
+        "equipment": "جهاز رذاذ نيبولايزر أطفال صامت فائق الهدوء",
+        "consumables": "ماسك أطفال مقاس رضيع/طفل بأشكال كرتونية، فنتولين، نورمال سلاين، أتروفنت",
+        "duration": "10 دقائق",
+        "doctor_commission_rate": 25,
+        "fee": 100,
+        "price": 100,
+        "cost": 100,
+        "indications": "التهاب القصيبات الهوائية للرضع (Bronchiolitis)، حساسية الصدر، الخانوق Croup",
+        "prep": "تهدئة الطفل وحمله في حضن الأم أثناء الجلسة."
+    },
+    {
+        "code": "PROC-PED-02",
+        "specialty": "pediatric",
+        "specialty_name": "طب الأطفال وحديثي الولادة",
+        "name": "تنظيف السرة وكي النسيج الحبيبي بنترات الفضة (Umbilical Granuloma Cautery)",
+        "name_ar": "كي النسيج الحبيبي اللحمي بالسرة للرضع بأقلام نترات الفضة المعقمة",
+        "name_en": "Umbilical Granuloma Chemical Cauterization (Silver Nitrate)",
+        "equipment": "إضاءة طبية موضعية مكبرة، ملاقط جراحية دقيقة",
+        "consumables": "أقلام نترات الفضة الطبية 75%، قطن وشاش معقم، فازلين لحماية الجلد المحيط بالسرة",
+        "duration": "10 دقائق",
+        "doctor_commission_rate": 35,
+        "fee": 180,
+        "price": 180,
+        "cost": 180,
+        "indications": "إفرازات سُرّية مائية أو صفراء مستمرة ووجود نسيج لحمي وردي بارز بعد سقوط الحبل السري",
+        "prep": "تنظيف الجلد وتجفيف السرة جيداً قبل الكي دون ألم للرضيع."
+    },
+    {
+        "code": "PROC-PED-03",
+        "specialty": "pediatric",
+        "specialty_name": "طب الأطفال وحديثي الولادة",
+        "name": "قياس الصفراء عبر الجلد لحديثي الولادة دون وخز (Transcutaneous Bilirubin BiliCheck)",
+        "name_ar": "قياس صفراء المواليد غير التداخلي عبر الجلد بجهاز البيليروبين الضوئي المباشر",
+        "name_en": "Transcutaneous Bilirubinometry (TcB Non-Invasive Jaundice Screen)",
+        "equipment": "جهاز قياس الصفراء الضوئي الرقمي BiliCheck المعاير دولياً",
+        "consumables": "أطراف معايرة بصرية معقمة أحادية الاستخدام",
+        "duration": "5 دقائق",
+        "doctor_commission_rate": 25,
+        "fee": 90,
+        "price": 90,
+        "cost": 90,
+        "indications": "اصفرار جلد وبياض عين الرضيع في الأيام الأولى بعد الولادة وتحديد الحاجة للحضانة الضوئية",
+        "prep": "ملامسة طرف الجهاز لجبهة الرضيع أو عظمة الصدر 3 مرات دون أي وخز أو ألم."
+    },
+    {
+        "code": "PROC-PED-04",
+        "specialty": "pediatric",
+        "specialty_name": "طب الأطفال وحديثي الولادة",
+        "name": "إعطاء تطعيمات الأطفال والمتابعة الدورية (Pediatric Vaccination & Well-Child)",
+        "name_ar": "إعطاء التطعيمات الروتينية والإضافية للأطفال مع الفحص الطبي الشامل",
+        "name_en": "Pediatric Immunization Administration & Developmental Assessment",
+        "equipment": "ثلاجة تطعيمات طبية بدرجة حرارة 2-8 مئوية مجهزة بمقياس حرارة مستمر، شاشات وزن وطول رقمية",
+        "consumables": "طعم معتمد معقم بسلسلة تبريد، سرنجات أطفال دقيقة خالية من الألم، ضمادات ملونة للأطفال",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 30,
+        "fee": 150,
+        "price": 150,
+        "cost": 150,
+        "indications": "تطعيمات الروتا، المكورات الرئوية، الجديري، والإنفلونزا، وتقييم مؤشرات نمو الطفل",
+        "prep": "إحضار كارت التطعيمات، التأكد من عدم وجود حمى حادة وقت التطعيم."
+    },
+    {
+        "code": "PROC-PED-05",
+        "specialty": "pediatric",
+        "specialty_name": "طب الأطفال وحديثي الولادة",
+        "name": "تقييم التطور والنمو الحركي والذهني للأطفال (Developmental Milestone Screening)",
+        "name_ar": "فحص وتقييم النمو ومراحل التطور الذهني والحركي والنطقي (Denver II Developmental Scale)",
+        "name_en": "Standardized Pediatric Developmental Assessment (Denver II Screening)",
+        "equipment": "صندوق أدوات التقييم النمائي المعتمدة (مكعبات، جرس، أشكال هندسية، كرات ملونة)",
+        "consumables": "استمارات تقييم دنفر II المعتمدة ورسوم بيانية لمنظمة الصحة العالمية لنسب الوزن والطول ومحيط الرأس",
+        "duration": "30 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 250,
+        "price": 250,
+        "cost": 250,
+        "indications": "تأخر النطق والكلام، تأخر المشي والحركة، متابعة الأطفال الخدج والمبتسرين",
+        "prep": "حضور الوالدين، أن يكون الطفل شبعاناً ومرتاحاً أثناء الجلسة."
+    },
+    {
+        "code": "PROC-PED-06",
+        "specialty": "pediatric",
+        "specialty_name": "طب الأطفال وحديثي الولادة",
+        "name": "سحب عينات دم ومسحات حلق للأطفال الرضع (Pediatric Blood & Throat Sampling)",
+        "name_ar": "سحب عينات الدم الوريدي والمسحات من الرضع بواسطة طاقم تمريض أطفال متخصص",
+        "name_en": "Specialized Pediatric Phlebotomy & Nasopharyngeal Swabbing",
+        "equipment": "كاشف أوردة ضوئي بالأشعة تحت الحمراء Vein Finder، جهاز إضاءة موضعية",
+        "consumables": "فراشات سحب أطفال ميكرونية مقاس 25G، أنابيب سحب ميكرونية، مسحات دقيقة ناعمة",
+        "duration": "10 دقائق",
+        "doctor_commission_rate": 25,
+        "fee": 80,
+        "price": 80,
+        "cost": 80,
+        "indications": "فحوصات الدم والمزارع للرضع والأطفال قليلي الوزن ذوي الأوردة الدقيقة",
+        "prep": "تدفئة أطراف الرضيع وتوفير لهاية أو رضاعة جلوكوز خفيفة لتخفيف الألم."
+    },
+    {
+        "code": "PROC-CARD-01",
+        "specialty": "cardiology",
+        "specialty_name": "أمراض القلب والأوعية الدموية",
+        "name": "إيكو دوبلر ملون على القلب (Transthoracic Echocardiography - TTE)",
+        "name_ar": "فحص موجات صوتية ودوبلر ملون وأنسجة عالي الدقة على عضلة وصمامات القلب (Echo)",
+        "name_en": "Comprehensive Transthoracic Echocardiography (2D, M-Mode, Color & Tissue Doppler)",
+        "equipment": "جهاز إيكو قلبي مخصص مزود بمجس فيزيكال Sector متطور وتقنية Strain Imaging",
+        "consumables": "جل إيكو طبي، إلكترودات تخطيط تزامنية ECG، ورق طباعة تقارير حراري ملون",
+        "duration": "25 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 550,
+        "price": 550,
+        "cost": 550,
+        "indications": "قصور وصمامات القلب، ضعف الكسر القذفي EF، اعتلال عضلة القلب، ارتفاع ضغط الشريان الرئوي",
+        "prep": "الاستلقاء على الجانب الأيسر والتنفس بانتظام. لا يشترط الصيام."
+    },
+    {
+        "code": "PROC-CARD-02",
+        "specialty": "cardiology",
+        "specialty_name": "أمراض القلب والأوعية الدموية",
+        "name": "رسم قلب بالمجهود على السير الكهربائي (Stress ECG Treadmill Test)",
+        "name_ar": "اختبار رسم القلب الكهربائي أثناء الإجهاد والمجهود الرياضي (بروتوكول بروس)",
+        "name_en": "Exercise Stress Treadmill Test (Modified Bruce Protocol with Continuous 12-Lead ECG)",
+        "equipment": "سير مشي كهربائي طبي متدرج السرعة والانحدار، جهاز تخطيط قلب مجهود متزامن، جهاز صدمات طوارئ",
+        "consumables": "إلكترودات لاصقة مخصصة للعرق والمجهود، حزام تثبيت الأسلاك، أوراق تسجيل مستمرة",
+        "duration": "35 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 450,
+        "price": 450,
+        "cost": 450,
+        "indications": "آلام الصدر مع المجهود، تشخيص قصور وضيق الشرايين التاجية، قياس اللياقة القلبية",
+        "prep": "ارتداء حذاء وملابس رياضية مريحة، التوقف عن أدوية البيتا-بلوكر 24 ساعة بعد موافقة الطبيب، وجبة خفيفة قبل ساعتين."
+    },
+    {
+        "code": "PROC-CARD-03",
+        "specialty": "cardiology",
+        "specialty_name": "أمراض القلب والأوعية الدموية",
+        "name": "تركيب ومتابعة هولتر نبضات القلب 24-48 ساعة (24-48h Holter ECG Monitoring)",
+        "name_ar": "تركيب جهاز هولتر لتسجيل ضربات وكهرباء القلب المستمرة لمدة 24 أو 48 ساعة",
+        "name_en": "Ambulatory 24-48 Hour Continuous Holter ECG Arrhythmia Monitoring",
+        "equipment": "أجهزة هولتر رقمية خفيفة الوزن 3-12 قناة مزودة بذاكرة تسجيل عالية السعة، سوفت وير تحليل الذبذبات",
+        "consumables": "إلكترودات هولتر لاصقة طويلة الأمد 48 ساعة، بطاريات ليثيوم طبية، كتيب تسجيل الأعراض والأنشطة",
+        "duration": "24-48 ساعة (التركيب 15 دقيقة)",
+        "doctor_commission_rate": 35,
+        "fee": 500,
+        "price": 500,
+        "cost": 500,
+        "indications": "الخفقان المتقطع غير المفسر، نوبات الإغماء وفقدان الوعي، كشف الرجفان الأذيني الصامت AFib",
+        "prep": "الاستحمام قبل تركيب الجهاز (يمنع تبليل الجهاز بالماء أثناء فترة التسجيل)، وممارسة الأنشطة المعتادة."
+    },
+    {
+        "code": "PROC-CARD-04",
+        "specialty": "cardiology",
+        "specialty_name": "أمراض القلب والأوعية الدموية",
+        "name": "تركيب ومتابعة هولتر ضغط الدم المتنقل 24 ساعة (24h Ambulatory Blood Pressure ABPM)",
+        "name_ar": "تسجيل وقياس ضغط الدم الآلي على مدار 24 ساعة أثناء اليقظة والنوم (ABPM)",
+        "name_en": "24-Hour Ambulatory Blood Pressure Monitoring (ABPM Dipping Profile)",
+        "equipment": "جهاز قياس ضغط الدم المتنقل الصامت المزود بمضخة قياس دورية مبرمجة كل 20 دقيقة",
+        "consumables": "كفة ضغط ناعمة مضادة للحساسية مقاسات متعددة، حزام خصر جلدي للجهاز، بطاريات",
+        "duration": "24 ساعة (التركيب 15 دقيقة)",
+        "doctor_commission_rate": 35,
+        "fee": 400,
+        "price": 400,
+        "cost": 400,
+        "indications": "تشخيص ضغط المعطف الأبيض (White-coat hypertension)، تقييم هبوط الضغط الليلي (Non-dipping risk)",
+        "prep": "إبقاء الذراع في وضع مفرود ومسترخٍ عند إحساس المريض بنفخ الكفة التلقائي كل ثلث ساعة."
+    },
+    {
+        "code": "PROC-CARD-05",
+        "specialty": "cardiology",
+        "specialty_name": "أمراض القلب والأوعية الدموية",
+        "name": "فحص وبرمجة منظم ضربات القلب ومزيل الرجفان (Pacemaker / ICD Interrogation)",
+        "name_ar": "فحص كفاءة بطارية وبرمجة منظم ضربات القلب المزروع ومزيل الرجفان الآلي (ICD)",
+        "name_en": "Permanent Pacemaker & Implantable Cardioverter Defibrillator (ICD) Interrogation & Tuning",
+        "equipment": "جهاز المبرمج اللاسلكي المتعدد للشركات المعتمدة (Medtronic, Boston Scientific, Abbott, Biotronik)",
+        "consumables": "رأس استشعار لاسلكي معقم، طابعة تقارير كفاءة الأسلاك والبطارية",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 600,
+        "price": 600,
+        "cost": 600,
+        "indications": "المتابعة الدورية كل 6 أشهر لمرضى منظمات القلب، تقييم عمر البطارية ومقاومة الأسلاك والصدمات المسجلة",
+        "prep": "إحضار الكارت التعريفي لمنظم ضربات القلب."
+    },
+    {
+        "code": "PROC-DENT-01",
+        "specialty": "dental",
+        "specialty_name": "طب وجراحة الأسنان",
+        "name": "تنظيف وتلميع الأسنان وإزالة الجير بالموجات فوق الصوتية (Scaling & Polishing)",
+        "name_ar": "جلسة تنظيف الجير والتكلسات بالموجات فوق الصوتية وتلميع الأسنان بمعجون الفلورايد",
+        "name_en": "Ultrasonic Scaling & Prophylaxis Polishing",
+        "equipment": "وحدة أسنان شاملة مزودة بمقبض تنظيف بالموجات فوق الصوتية Ultrasonic Scaler ورؤوس تيتانيوم",
+        "consumables": "معجون تلميع أسنان بنكهة النعناع والفلورايد، أقماع مطاطية Prophy cups، مريلة ومصاصة لعاب معقمة",
+        "duration": "25 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 250,
+        "price": 250,
+        "cost": 250,
+        "indications": "رواسب وتكلسات الجير، نزيف اللثة والتهاب اللثة السطحي، تصبغات القهوة والتدخين",
+        "prep": "المضمضة بغسول كلورهيكسيدين معقم قبل البدء."
+    },
+    {
+        "code": "PROC-DENT-02",
+        "specialty": "dental",
+        "specialty_name": "طب وجراحة الأسنان",
+        "name": "حشو ضوئي تجميلي نانوي للأسنان (Nano-Hybrid Composite Restoration)",
+        "name_ar": "حشو كمبوزيت ليزري ضوئي تجميلي متطابق مع لون الأسنان الطبيعي",
+        "name_en": "Direct Light-Cured Nano-Hybrid Composite Dental Filling",
+        "equipment": "جهاز بلمرة وتصليد ضوئي LED Curing Light فائق الكثافة، مقبض توربين هوائي مائي",
+        "consumables": "مادة تخريش حمض الفوسفوريك 37%، سائل لاصق Bond، كمبوزيت نانوي متعدد الدرجات اللونية (A1, A2, A3)",
+        "duration": "30 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 350,
+        "price": 350,
+        "cost": 350,
+        "indications": "تسوس الأسنان السطحي والمتوسط، كسور الأسنان الأمامية التجميلية، استبدال حشوات الأملجم القديمة",
+        "prep": "عزل السن بحواجز قطنية أو الحاجز المطاطي (Rubber Dam)."
+    },
+    {
+        "code": "PROC-DENT-03",
+        "specialty": "dental",
+        "specialty_name": "طب وجراحة الأسنان",
+        "name": "علاج جذور وعصب السن بجهاز الروتاري ومحدد القمة (Rotary Endodontic Therapy)",
+        "name_ar": "علاج وسحب عصب وجذور الضرس الآلي الروتاري بجلسة واحدة وحشو الجذور",
+        "name_en": "Single-Visit Rotary Endodontic Root Canal Therapy with Apex Locator",
+        "equipment": "موتور روتاري آلي دقيق لبرد القنوات، جهاز محدد قمة الجذر الرقمي Electronic Apex Locator",
+        "consumables": "إبر ومبارد روتاري نيكل تيتانيوم NiTi معقمة، أقماع جوتابيركا Gutta-percha، سيلر إحكام طبي، صوديوم هيبوكلوريت",
+        "duration": "45 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 650,
+        "price": 650,
+        "cost": 650,
+        "indications": "ألم الأسنان الحاد المستمر مع الساخن والبارد، التهاب عصب السن وموت العصب، خراج قمة الجذر",
+        "prep": "تخدير موضعي عميق وتصوير أشعة سينية رقمية تشخيصية للجذور."
+    },
+    {
+        "code": "PROC-DENT-04",
+        "specialty": "dental",
+        "specialty_name": "طب وجراحة الأسنان",
+        "name": "خلع ضرس بسيط تحت بنج موضعي (Simple Tooth Extraction)",
+        "name_ar": "خلع سن أو ضرس بسيط متهدم تحت تأثير التخدير الموضعي",
+        "name_en": "Simple Exodontia / Tooth Extraction under Local Infiltration",
+        "equipment": "أطقم روافع وملاقط خلع جراحية مخصصة للفك العلوي والسفلي",
+        "consumables": "كاربولات بنج موضعي مع مادة قابضة للأوعية، شاش جراحي معقم مع الضغط الموضعي",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 200,
+        "price": 200,
+        "cost": 200,
+        "indications": "تسوس الأسنان الشديد غير القابل للترميم، تخلخل الأسنان الشديد الناتج عن تآكل العظام",
+        "prep": "التأكد من عدم وجود حساسية للتخدير وقياس ضغط الدم لمرضى الضغط المرتفع."
+    },
+    {
+        "code": "PROC-DENT-05",
+        "specialty": "dental",
+        "specialty_name": "طب وجراحة الأسنان",
+        "name": "خلع جراحي لضرس العقل المدفون مع شق وخياطة (Surgical Impacted Wisdom Extraction)",
+        "name_ar": "خلع جراحي دقيق لضرس العقل المدفون كلياً أو جزئياً بالعظم مع خياطة تجميلية",
+        "name_en": "Surgical Extraction of Impacted Wisdom Tooth with Mucoperiosteal Flap & Suture",
+        "equipment": "مقبض جراحي مستقيم عالي العزم جراحي، أزاميل دقيقة، أدوات جراحة الفم والفكين",
+        "consumables": "خيوط جراحية Vicryl أو Silk 3-0، مادة مرقئة للنزف السنخي السليلوزية الجيلفوم، مسكن ومضاد للوذمة",
+        "duration": "45 دقيقة",
+        "doctor_commission_rate": 45,
+        "fee": 850,
+        "price": 850,
+        "cost": 850,
+        "indications": "ضرس العقل المنحشر أفقياً أو مائلاً الضاغط على الضرس المجاور، نوبات التهاب حوائط التاج Pericoronitis",
+        "prep": "إحضار أشعة بانوراما رقمية OPG أو مقطعية CBCT حديثة لتحديد المسافة بين الجذر وعصب الفك السفلي."
+    },
+    {
+        "code": "PROC-DENT-06",
+        "specialty": "dental",
+        "specialty_name": "طب وجراحة الأسنان",
+        "name": "جلسة تبييض الأسنان بالليزر والضوء البارد (In-Office Laser Teeth Whitening)",
+        "name_ar": "تبييض الأسنان الاحترافي بالعيادة بجهاز الضوء الأزرق البارد والبيروكسيد",
+        "name_en": "In-Office Professional Dental Bleaching (Hydrogen Peroxide with Cold-Light Laser Activation)",
+        "equipment": "جهاز تبييض أسنان احترافي بقوة LED زرقاء باردة، نظارات واقية للمريض والطبيب",
+        "consumables": "جل بيروكسيد الهيدروجين 35-40% الطبي، حاجز لثة ضوئي واقٍ Gingival Barrier، موسع شفاه مريح",
+        "duration": "45 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 950,
+        "price": 950,
+        "cost": 950,
+        "indications": "اصفرار وتصبغات الأسنان العميقة، تبييض الأسنان قبل المناسبات وحفلات الزفاف",
+        "prep": "إجراء جلسة تنظيف الجير قبل التبييض بـ 3 أيام. تجنب الشاي والقهوة والتدخين لمدة 48 ساعة بعد الجلسة."
+    },
+    {
+        "code": "PROC-DENT-07",
+        "specialty": "dental",
+        "specialty_name": "طب وجراحة الأسنان",
+        "name": "تركيب تاج زيركون تجميلي دائم (High-Translucency Zirconia Crown)",
+        "name_ar": "تحضير وبرد وأخذ مقاس وتركيب طربوش زيركونيا عالي الشفافية خالي من المعادن",
+        "name_en": "Full Contour High-Translucency Monolithic Zirconia Crown Placement",
+        "equipment": "مقبض توربين هوائي ماسي للبرد الدقيق، ماسح ضوئي رقمي ثلاثي الأبعاد للأسنان Intraoral Scanner",
+        "consumables": "معجون مقاس سيليكون مطاطي دقيق Addition Silicone، أسمنت تثبيت زجاجي دائم RelyX Luting Cement",
+        "duration": "جلستان (30 دقيقة للتحضير + 20 دقيقة للتركيب)",
+        "doctor_commission_rate": 40,
+        "fee": 1100,
+        "price": 1100,
+        "cost": 1100,
+        "indications": "حماية الضرس بعد سحب العصب من الكسر، تعويض الأسنان المتآكلة، تجميل الابتسامة",
+        "prep": "علاج العصب والتأكد من هدوء السن التام قبل وضع التاج النهائي."
+    },
+    {
+        "code": "PROC-DENT-08",
+        "specialty": "dental",
+        "specialty_name": "طب وجراحة الأسنان",
+        "name": "حشوة وقائية لشقوق أسنان الأطفال (Pit & Fissure Sealant per Tooth)",
+        "name_ar": "تطبيق حشوة الشقوق الوقائية لضروس الأطفال اللبنية والدائمة لمنع التسوس",
+        "name_en": "Pediatric Preventive Pit & Fissure Resin Sealant Application",
+        "equipment": "جهاز التصليد الضوئي، فرشاة تنظيف دوارة دقيقة",
+        "consumables": "حمض تخريش دقيق، مادة الراتنج السائلة الشفافة Sealant المفرزة للفلورايد",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 30,
+        "fee": 150,
+        "price": 150,
+        "cost": 150,
+        "indications": "حماية ضروس الأطفال حديثة البزوغ (الضرس السادس الدائم) من تجمع بقايا الطعام والتسوس",
+        "prep": "إجراء غير مؤلم نهائياً بدون أي برد أو حفر بالأسنان."
+    },
+    {
+        "code": "PROC-DENT-09",
+        "specialty": "dental",
+        "specialty_name": "طب وجراحة الأسنان",
+        "name": "جلسة فلورايد موضعي مكثف لحماية الأسنان (Topical Fluoride Varnish)",
+        "name_ar": "تطبيق ورنيش الفلورايد المركز لحماية الأسنان من التسوس وعلاج حساسية الأسنان",
+        "name_en": "High-Concentration Topical Fluoride Varnish Application (5% Sodium Fluoride)",
+        "equipment": "فرش دقيقة للاستخدام الموضعي",
+        "consumables": "ورنيش فلورايد الصوديوم 5% المعتمد عالمياً بنكهات الفواكه المحببة للأطفال",
+        "duration": "10 دقائق",
+        "doctor_commission_rate": 30,
+        "fee": 120,
+        "price": 120,
+        "cost": 120,
+        "indications": "الوقاية من تسوس الأسنان عند الأطفال، علاج حساسية الأسنان الباردة والساخنة للبالغين",
+        "prep": "تنظيف الأسنان، الامتناع عن الأكل والشرب والمضمضة لمدة 30 دقيقة بعد الجلسة."
+    },
+    {
+        "code": "PROC-ORTH-01",
+        "specialty": "orthopedic",
+        "specialty_name": "جراحة العظام والعمود الفقري",
+        "name": "جبيرة جبسية أو فايبر جلاس لتثبيت الكسور (Fiberglass / Plaster Cast)",
+        "name_ar": "تثبيت كسور الأطراف والشروخ بجبيرة فايبر جلاس خفيفة الوزن أو جبس طبي مع المتابعة",
+        "name_en": "Immobilization by Lightweight Fiberglass / Plaster of Paris Cast",
+        "equipment": "منشار جبس كهربائي متذبذب آمن ضد جروح الجلد، أحواض ترطيب الجبس",
+        "consumables": "لفائف فايبر جلاس طبية ملونة ومقاومة للماء، قطن بطانة طبي عازل، باندج مطاطي مرن",
+        "duration": "25 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 280,
+        "price": 280,
+        "cost": 280,
+        "indications": "كسور الساعد، الرسغ، الكاحل، شروخ العظام، التواء المفاصل الشديد",
+        "prep": "رد الكسر إن لزم الأمر وعمل أشعة سينية قبل وبعد التجبير للتأكد من المحاذاة التامة للعظام."
+    },
+    {
+        "code": "PROC-ORTH-02",
+        "specialty": "orthopedic",
+        "specialty_name": "جراحة العظام والعمود الفقري",
+        "name": "حقن بلازما غنية بالصفائح الدموية بالركبة والمفاصل (PRP Joint Injection)",
+        "name_ar": "فصل وحقن البلازما الغنية بالصفائح الدموية (PRP) لتجديد غضاريف الركبة والأوتار",
+        "name_en": "Autologous Platelet-Rich Plasma (PRP) Intra-Articular / Tendon Injection",
+        "equipment": "جهاز طرد مركزي طبي معتمد لفصل البلازما (Centrifuge)، أنابيب جل فصل البلازما المتخصصة",
+        "consumables": "كانيولا سحب دم معقمة، أنابيب PRP سيترات صوديوم مخصصة، إبر حقن مفاصل طويلة معقمة مقاس 21G",
+        "duration": "30 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 750,
+        "price": 750,
+        "cost": 750,
+        "indications": "خشونة وتآكل مفصل الركبة من الدرجة الأولى والثانية، التهاب وتر أكيليس، كوع التنس، قطع أوتار الكتف الجزئي",
+        "prep": "شرب سوائل وافرة قبل السحب، التوقف عن المسكنات المضادة للالتهاب (NSAIDs) قبل الحقن بأسبوع لضمان نشاط الصفائح."
+    },
+    {
+        "code": "PROC-ORTH-03",
+        "specialty": "orthopedic",
+        "specialty_name": "جراحة العظام والعمود الفقري",
+        "name": "حقن كورتيزون موضعي داخل المفصل والأوتار (Intra-Articular Steroid Injection)",
+        "name_ar": "حقن كورتيزون موضعي عالي النقاء مضاد للالتهاب لآلام المفاصل والشوكة العظمية",
+        "name_en": "Intra-Articular & Soft Tissue Corticosteroid Injection under Aseptic Technique",
+        "equipment": "إضاءة طبية موضعية، سونار لتوجيه الحقن بدقة إن تطلب الأمر",
+        "consumables": "أمبول ديبروفوس أو كينالوج (تريامسينولون)، بنج موضعي ليدوكايين 2%، سرنجات معقمة وكحول طبي",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 250,
+        "price": 250,
+        "cost": 250,
+        "indications": "التهاب المفاصل الروماتويدي الحاد، الشوكة العظمية بالكعب، متلازمة انحشار أوتار الكتف، الإبهام الأكزنكي",
+        "prep": "الراحة لمدة 24 ساعة بعد الحقن وتطبيق كمادات باردة عند اللزوم."
+    },
+    {
+        "code": "PROC-ORTH-04",
+        "specialty": "orthopedic",
+        "specialty_name": "جراحة العظام والعمود الفقري",
+        "name": "حقن مادة زيتية هيدروليكية داخل الركبة (Hyaluronic Acid Viscosupplementation)",
+        "name_ar": "حقن سائل الهيالورونيك الزيتي الهيدروليكي التعويضي لتليين حركة مفصل الركبة",
+        "name_en": "High Molecular Weight Hyaluronic Acid Viscosupplementation Injection",
+        "equipment": "سرنجات جاهزة معبأة مسبقاً بالمصنع معقمة",
+        "consumables": "أمبول هيالورونات الصوديوم المعقم، مسحات كحولية ومخدر موضعي موضعي",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 900,
+        "price": 900,
+        "cost": 900,
+        "indications": "خشونة الركبة المتوسطة والمتقدمة، تآكل السائل المفصلي وصعوبة ثني الركبة وصعود الدرج",
+        "prep": "تعقيم ركبة المريض جيداً، وحقن المادة داخل التجويف الزليلي دون أي ألم."
+    },
+    {
+        "code": "PROC-ORTH-05",
+        "specialty": "orthopedic",
+        "specialty_name": "جراحة العظام والعمود الفقري",
+        "name": "بذل وتفريغ ارتشاح السائل من المفصل المتورم (Joint Arthrocentesis & Aspiration)",
+        "name_ar": "سحب وتفريغ السائل الزليلي المتجمع بالمفصل لتخفيف الضغط وإرساله للتحليل",
+        "name_en": "Therapeutic & Diagnostic Knee/Joint Arthrocentesis & Fluid Aspiration",
+        "equipment": "سرنجات سحب ذات سعة 20-50 مل، إبر سحب سميكة مقاس 18G/20G",
+        "consumables": "أنابيب تحليل سوائل المفصل (EDTA + Plain) لفحص بلورات النقرس والمزرعة، ضمادة ضاغطة مرنة",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 280,
+        "price": 280,
+        "cost": 280,
+        "indications": "ارتشاح وتورم الركبة المفاجئ، الاشتباه في التهاب المفصل الصديدي Septic Arthritis، انصباب الدم بالمفصل بعد إصابة الرباط",
+        "prep": "تعقيم جراحي كامل للجلد المحيط بالمفصل."
+    },
+    {
+        "code": "PROC-ORTH-06",
+        "specialty": "orthopedic",
+        "specialty_name": "جراحة العظام والعمود الفقري",
+        "name": "رد خلع مفصل الكتف أو المرفق تحت تخدير موضعي وتسكين (Closed Reduction of Dislocation)",
+        "name_ar": "رد خلع مفصل الكتف أو الكوع بالطرق التحفظية والمناورات المعتمدة دون جراحة",
+        "name_en": "Closed Reduction of Glenohumeral / Elbow Dislocation under Analgesia",
+        "equipment": "سرير فحص مريح، حبال ومثبتات الشد الطبي، حمالة ذراع طبية سلينج للكتف",
+        "consumables": "مسكنات وريدية قوية ومضادات للتقلصات، شاش وباندج تثبيت الذراع على الصدر",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 400,
+        "price": 400,
+        "cost": 400,
+        "indications": "الخلع الحاد لمفصل الكتف الأمامي أو مفصل الكوع بعد السقوط أو إصابات الرياضيين",
+        "prep": "عمل أشعة سينية قبل الرد للتأكد من عدم وجود كسور مصاحبة، وإعادة الأشعة بعد الرد للتأكد من استقرار المفصل."
+    },
+    {
+        "code": "PROC-ORTH-07",
+        "specialty": "orthopedic",
+        "specialty_name": "جراحة العظام والعمود الفقري",
+        "name": "إزالة غرز جراحية ودبابيس معدنية مع الغيار المعقم (Suture & Staple Removal)",
+        "name_ar": "فك وإزالة الغرز الجراحية والدبابيس المعدنية بعد عمليات العظام وتطهير الجرح",
+        "name_en": "Surgical Suture & Skin Staple Removal with Sterile Dressing",
+        "equipment": "أداة فك الدبابيس الجراحية المتخصصة Staple Remover، مقص غرز دقيق وملاقط معقمة",
+        "consumables": "شاش معقم غير لاصق، مطهر بوفيدون يودين، شرائط إغلاق الجلد Steri-Strips",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 30,
+        "fee": 120,
+        "price": 120,
+        "cost": 120,
+        "indications": "التئام الجروح الجراحية بعد 10-14 يوماً من عمليات العظام والشرائح والمسامير",
+        "prep": "تطهير خط الجرح وفك الدبابيس برفق دون شد الجلد."
+    },
+    {
+        "code": "PROC-GYN-01",
+        "specialty": "obgyn",
+        "specialty_name": "أمراض النساء والتوليد",
+        "name": "سونار نسائي مهبلي عالي الدقة (Transvaginal Sonography - TVS)",
+        "name_ar": "موجات صوتية مهبلية عالية التردد لفحص بطانة ومبايض وعنق الرحم",
+        "name_en": "High-Resolution Transvaginal Pelvic Ultrasound (TVS)",
+        "equipment": "جهاز سونار نسائي متطور مزود بمجس مهبلي عالي التردد (5-9 MHz) ودوبلر ملون",
+        "consumables": "واقي مجس مهبلي معقم أحادي الاستخدام، جل سونار طبي معقم",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 300,
+        "price": 300,
+        "cost": 300,
+        "indications": "النزيف الرحمي غير المنتظم، تكيسات المبايض PCOS، بطانة الرحم المهاجرة، متابعة الحمل المبكر وأكياس المبيض",
+        "prep": "تفريغ المثانة تماماً قبل الفحص مباشرة."
+    },
+    {
+        "code": "PROC-GYN-02",
+        "specialty": "obgyn",
+        "specialty_name": "أمراض النساء والتوليد",
+        "name": "تركيب لولب رحمي لمنع الحمل (IUD Insertion - Copper / Mirena)",
+        "name_ar": "تركيب لولب نحاسي أو هرموني لمنع الحمل تحت تعقيم كامل وتأكيد الموضع بالسونار",
+        "name_en": "Intrauterine Device (IUD) Insertion under Sterile Speculum Technique",
+        "equipment": "منظار مهبلي معقم كاسكو، ملقط بوزيكولوم لتثبيت عنق الرحم، مقياس عمق الرحم Uterine Sound",
+        "consumables": "لولب نحاسي T380A أو هرموني ميرينا معقم، شاش ومطهر بتادين نسائي، مسكن موضعي",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 450,
+        "price": 450,
+        "cost": 450,
+        "indications": "تنظيم الأسرة ومنع الحمل طويل الأمد، علاج غزارة الطمث باللولب الهرموني",
+        "prep": "يفضل التركيب في اليوم الأخير من الدورة الشهرية حيث يكون عنق الرحم متسعاً طبيعياً مع استبعاد الحمل."
+    },
+    {
+        "code": "PROC-GYN-03",
+        "specialty": "obgyn",
+        "specialty_name": "أمراض النساء والتوليد",
+        "name": "إزالة أو استبدال اللولب الرحمي (IUD Removal / Replacement)",
+        "name_ar": "سحب وإزالة اللولب الرحمي المنتهي أو المسبب لآلام ونزيف",
+        "name_en": "Intrauterine Device (IUD) Removal / String Retrieval",
+        "equipment": "منظار مهبلي معقم، ملقط خيوط اللولب التمساحي Crocodile Forceps",
+        "consumables": "مطهر طبي، مسحات وشاش معقم",
+        "duration": "10 دقائق",
+        "doctor_commission_rate": 35,
+        "fee": 200,
+        "price": 200,
+        "cost": 200,
+        "indications": "انتهاء مدة اللولب (5-10 سنوات)، الرغبة في الإنجاب، وجود التهابات أو انزياح اللولب",
+        "prep": "إجراء سهل وبسيط وسريع في العيادة."
+    },
+    {
+        "code": "PROC-GYN-04",
+        "specialty": "obgyn",
+        "specialty_name": "أمراض النساء والتوليد",
+        "name": "أخذ مسحة عنق الرحم للكشف المبكر للأورام (Pap Smear & Liquid-Based LBC)",
+        "name_ar": "أخذ مسحة سائلة من خلايا عنق الرحم للكشف المبكر عن فيروس HPV والتغيرات الخلوية",
+        "name_en": "Cervical Cancer Screening Pap Smear (Liquid-Based Cytology LBC)",
+        "equipment": "منظار مهبلي معقم أحادي الاستخدام، فرشاة أخذ خلايا عنق الرحم المعتمدة Cervex-Brush",
+        "consumables": "زجاجة سائل التثبيت الخلوي ThinPrep / SurePath، استمارة الفحص الباثولوجي",
+        "duration": "10 دقائق",
+        "doctor_commission_rate": 35,
+        "fee": 350,
+        "price": 350,
+        "cost": 350,
+        "indications": "المسح الدوري السنوي لعنق الرحم للسيدات المتزوجات، الإفرازات المهبلية المزمنة، نزيف ما بعد الجماع",
+        "prep": "الامتناع عن الجماع واستخدام التشطيف المهبلي أو التحاميل المهبلية لمدة 48 ساعة قبل الفحص."
+    },
+    {
+        "code": "PROC-GYN-05",
+        "specialty": "obgyn",
+        "specialty_name": "أمراض النساء والتوليد",
+        "name": "كي قرحة عنق الرحم بالتبريد (Cervical Cryotherapy)",
+        "name_ar": "علاج قرحة وإفرازات عنق الرحم المزمنة بالكي بالتبريد بغاز أكسيد النيتروز",
+        "name_en": "Cervical Cryocauterization for Chronic Cervicitis & Ectropion",
+        "equipment": "جهاز كي بالتبريد متطور Cryosurgical Gun مزود برؤوس تبريد معدنية مطابقة لعنق الرحم واسطوانة غاز N2O",
+        "consumables": "غاز تبريد طبي مضغوط، محاليل تطهير، مسكن موضعي",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 450,
+        "price": 450,
+        "cost": 450,
+        "indications": "قرحة عنق الرحم الواسعة المسببة لنزيف بعد الجماع، الإفرازات المهبلية الصديدية المقاومة للتحاميل",
+        "prep": "التأكد من سلبية مسحة عنق الرحم للسرطان (Pap Smear) قبل إجراء الكي."
+    },
+    {
+        "code": "PROC-GYN-06",
+        "specialty": "obgyn",
+        "specialty_name": "أمراض النساء والتوليد",
+        "name": "تخطيط نبض الجنين وانقباضات الرحم (Cardiotocography - CTG Non-Stress Test)",
+        "name_ar": "رسم وتخطيط قلب الجنين ونبضاته وحركته وتقلصات الرحم (اختبار الإجهاد المريح NST)",
+        "name_en": "Cardiotocography (CTG / Non-Stress Test NST for Fetal Well-Being)",
+        "equipment": "جهاز تخطيط نبض الجنين والتقلصات الرحمية الرقمي المزود بمجسين دوبلر ومجس ضغط التوكو",
+        "consumables": "أحزمة تثبيت قماشية مرنة للبطن، جل موصل للألتراساوند، ورق تخطيط بياني مستمر",
+        "duration": "30 دقيقة",
+        "doctor_commission_rate": 30,
+        "fee": 220,
+        "price": 220,
+        "cost": 220,
+        "indications": "متابعة الشهور الأخيرة للحمل، قلة حركة الجنين، الحمل عالي الخطورة (السكري وضغط الحمل)، تأخر موعد الولادة",
+        "prep": "تناول وجبة أو عصير فاكهة خفيف قبل الفحص بـ 30 دقيقة لتنشيط حركة الجنين."
+    },
+    {
+        "code": "PROC-GYN-07",
+        "specialty": "obgyn",
+        "specialty_name": "أمراض النساء والتوليد",
+        "name": "متابعة نمو وحجم البويضات بالسونار التسلسلي (Folliculometry Monitoring)",
+        "name_ar": "سونار مهبلي تسلسلي دقيق لقياس نمو حويصلات التبويض وتحديد موعد إبرة التفجير",
+        "name_en": "Serial Folliculometry & Ovulation Tracking for Infertility",
+        "equipment": "سونار مهبلي عالي الدقة مع قياس الأقطار المزدوجة بالمليمتر",
+        "consumables": "واقي مجس معقم، جل فحص، جدول تسجيل بياني لأيام الدورة",
+        "duration": "10 دقائق",
+        "doctor_commission_rate": 30,
+        "fee": 180,
+        "price": 180,
+        "cost": 180,
+        "indications": "تأخر الإنجاب، تنشيط التبويض بالكلوميد أو حقن الهرمونات، تحديد الموعد المثالي للجماع أو الحقن المجهري",
+        "prep": "المتابعة ابتداءً من اليوم العاشر أو الثاني عشر للدورة الشهرية."
+    },
+    {
+        "code": "PROC-ENT-01",
+        "specialty": "ent",
+        "specialty_name": "الأنف والأذن والحنجرة",
+        "name": "غسيل وتنظيف الأذن وإزالة الشمع المتصلب (Ear Irrigation & Syringing)",
+        "name_ar": "غسيل الأذن بالمحلول الدافئ لتفريغ الشمع المتراكم وتحسين السمع",
+        "name_en": "Ear Wax Irrigation & Mechanical Syringing",
+        "equipment": "سرنجة غسيل أذن معدنية معقمة أو جهاز الغسيل النبضي الإلكتروني، وعاء كلوي للتصريف",
+        "consumables": "محلول ماء دافئ معقم بدرجة حرارة الجسم (37 مئوية) لمنع الدوار، قطرات مذيبة للشمع",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 30,
+        "fee": 150,
+        "price": 150,
+        "cost": 150,
+        "indications": "انسداد الأذن وطنين السمع الناتج عن تراكم الشمع الصملاخي، ضعف السمع التوصيلي",
+        "prep": "وضع نقط مذيبة لشمع الأذن (كارمايد بيروكسيد) لمدة يومين قبل الغسيل لتليين الشمع."
+    },
+    {
+        "code": "PROC-ENT-02",
+        "specialty": "ent",
+        "specialty_name": "الأنف والأذن والحنجرة",
+        "name": "شفط وتنظيف إفرازات الأذن بالميكروسكوب والشفاط الطبي (Ear Microsuction)",
+        "name_ar": "تنظيف وشفط صديد وشمع الأذن المجهري الجاف لمرضى ثقب الطبلة",
+        "name_en": "Operating Microscope-Guided Ear Microsuction Toilet",
+        "equipment": "ميكروسكوب فحص الأذن الجراحي، جهاز شفط طبي جراحي بقوة معايرة، قنيات شفط دقيقة مقاسات زولنر",
+        "consumables": "أقماع فحص أذن معقمة، قطرات مضاد حيوي موضعي، ميكرو دريسنج",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 250,
+        "price": 250,
+        "cost": 250,
+        "indications": "تنظيف الأذن لمرضى ثقب طبلة الأذن (يمنع الغسيل بالماء)، فطريات الأذن Otomycosis، تسوس الأذن المزمن",
+        "prep": "فحص آمن 100% دون استخدام أي مياه."
+    },
+    {
+        "code": "PROC-ENT-03",
+        "specialty": "ent",
+        "specialty_name": "الأنف والأذن والحنجرة",
+        "name": "منظار الألياف الضوئية المرن للأنف والبلعوم والحنجرة (Flexible Nasopharyngolaryngoscopy)",
+        "name_ar": "منظار تشخيصي مرن عالي الدقة لفحص تجويف الأنف واللحمية والأحبال الصوتية",
+        "name_en": "Flexible Fiberoptic Nasopharyngolaryngoscopy with HD Video Documentation",
+        "equipment": "منظار ألياف ضوئية فايبروبتيك مرن دقيق القطر (2.8 مم)، كاميرا عالية الدقة HD، مصدر ضوء ليد بارد",
+        "consumables": "بخاخ مخدر ومزيل للاحتقان أنفي (ليدوكايين مع زايلوميتازولين)، شيت تعقيم المنظار",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 400,
+        "price": 400,
+        "cost": 400,
+        "indications": "بحة الصوت المستمرة أكثر من أسبوعين، لحميات الأنف، تضخم لحمية البلعوم الأنفي، صعوبة البلع، اشتباه أورام الحنجرة",
+        "prep": "لا يشترط الصيام، تخدير موضعي بسيط ببخاخ الأنف دون ألم."
+    },
+    {
+        "code": "PROC-ENT-04",
+        "specialty": "ent",
+        "specialty_name": "الأنف والأذن والحنجرة",
+        "name": "كي الشعيرات الدموية النازفة بالأنف لوقف الرعاف (Chemical / Electrical Epistaxis Cautery)",
+        "name_ar": "كي شعيرات حاجز الأنف النازفة بنترات الفضة أو الكي الكهربائي لوقف نزيف الأنف المتكرر",
+        "name_en": "Chemical Silver Nitrate / Bipolar Cautery for Recurrent Epistaxis (Kiesselbach's Plexus)",
+        "equipment": "منظار أنفي معدني، مصدر إضاءة رأسي قوي، جهاز كي كهربي ثنائي القطب Bipolar",
+        "consumables": "أقلام نترات الفضة الطبية، حشوات مخدرة موضعي مبللة بالليدوكايين والأدرينالين، مرهم ترطيب مضاد حيوي",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 220,
+        "price": 220,
+        "cost": 220,
+        "indications": "نزيف ورعاف الأنف المتكرر خاصة عند الأطفال والشباب من منطقة كيسلباخ الوعائية",
+        "prep": "الضغط على جانبي الأنف قبل الفحص، والامتناع عن تنظيف الأنف العنيف أو حك الأنف لمدة أسبوع بعد الكي."
+    },
+    {
+        "code": "PROC-ENT-05",
+        "specialty": "ent",
+        "specialty_name": "الأنف والأذن والحنجرة",
+        "name": "وضع فتيل أنفي أمامي معقم لوقف النزيف الحاد (Anterior Nasal Packing - Merocel)",
+        "name_ar": "تركيب فتيل أنفي مضغوط متمدد (ميروسيل Merocel) لوقف نزيف الأنف الحاد الطارئ",
+        "name_en": "Emergency Anterior Nasal Packing with Expandable Merocel Tamponade",
+        "equipment": "ملقط بايونيت أنفي معقم، ضوء أمامي، شافطة إفرازات طبية",
+        "consumables": "فتيل ميروسيل أنفي معقم متمدد بالخيط، مرهم مضاد حيوي موضعي، شاش وبلاستر تثبيت",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 280,
+        "price": 280,
+        "cost": 280,
+        "indications": "نزيف الأنف الحاد المستمر الذي لم يستجب للضغط الموضعي والكي",
+        "prep": "إبقاء الفتيل لمدة 48 ساعة تحت الملاحظة ثم إزالته بأمان بالعيادة."
+    },
+    {
+        "code": "PROC-ENT-06",
+        "specialty": "ent",
+        "specialty_name": "الأنف والأذن والحنجرة",
+        "name": "فحص السمع وضغط الأذن بالكمبيوتر (Pure Tone Audiometry & Tympanometry)",
+        "name_ar": "مخطط السمع العصبي والنغمات النقية وقياس ضغط وتذبذب طبلة الأذن بالكمبيوتر",
+        "name_en": "Comprehensive Pure Tone Audiometry (PTA) & Acoustic Impedance Tympanometry",
+        "equipment": "كابينة عزل صوتي معيارية معتمدة، جهاز قياس السمع الرقمي للترددات العالية، جهاز ضغط الأذن Tympanometer",
+        "consumables": "سدادات مجس قياس ضغط الطبلة معقمة مقاسات متعددة، كروت تخطيط بياني للسمع",
+        "duration": "25 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 300,
+        "price": 300,
+        "cost": 300,
+        "indications": "ضعف السمع، ارتشاح ماء خلف طبلة الأذن عند الأطفال Glue Ear، طنين الأذن، دوار مينيير",
+        "prep": "تنظيف الأذن من الشمع قبل الفحص لضمان دقة استجابة طبلة الأذن للموجات الصوتية."
+    },
+    {
+        "code": "PROC-EYE-01",
+        "specialty": "ophthalmology",
+        "specialty_name": "طب وجراحة العيون",
+        "name": "فحص قاع العين بالمصباح الشقي والعدسة المكبرة (Slit-Lamp Dilated Fundus Exam)",
+        "name_ar": "فحص وتصوير قاع العين والشبكية والعصب البصري وتوسيع الحدقة",
+        "name_en": "Slit-Lamp Biomicroscopy with Dilated Funduscopy (Volk 90D/78D Lens)",
+        "equipment": "مصباح شقي عالي الدقة Slit-Lamp، عدسة فولك 90D مكبرة غير تلامسية، منظار قاع العين المباشر",
+        "consumables": "قطرات توسيع حدقة العين (ميدرياسيل / سيكلوبنتولات)، قطرات ترطيب العين",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 200,
+        "price": 200,
+        "cost": 200,
+        "indications": "اعتلال الشبكية السكري، ارتفاع ضغط الدم، ضعف البصر المفاجئ، رؤية وميض أو ذبابة طائرة",
+        "prep": "وضع قطرة التوسيع قبل الفحص بـ 20 دقيقة. عدم قيادة السيارة لـ 3 ساعات بعد الفحص لزغللة الرؤية المؤقتة."
+    },
+    {
+        "code": "PROC-EYE-02",
+        "specialty": "ophthalmology",
+        "specialty_name": "طب وجراحة العيون",
+        "name": "قياس ضغط العين بجهاز الجولدمان التلامسي الدقيق (Goldmann Applanation Tonometry)",
+        "name_ar": "قياس ضغط العين المعياري بجهاز جولدمان التلامسي للاكتشاف المبكر للمياه الزرقاء (الجلوكوما)",
+        "name_en": "Goldmann Applanation Tonometry (IOP Measurement for Glaucoma)",
+        "equipment": "رأس مقياس ضغط العين جولدمان المعاير، مرشح ضوء أزرق كوبالت بالمصباح الشقي",
+        "consumables": "أشرطة صبغة الفلوريسين الصفراء المعقمة، قطرات تخدير موضعي للعين (بنوكسينات)",
+        "duration": "10 دقائق",
+        "doctor_commission_rate": 30,
+        "fee": 150,
+        "price": 150,
+        "cost": 150,
+        "indications": "الفحص الدوري للجلوكوما والمياه الزرقاء، صداع العين والزغللة، متابعة قطرات خفض ضغط العين",
+        "prep": "نزع العدسات اللاصقة قبل الفحص. إجراء غير مؤلم نهائياً بفضل قطرة التخدير الموضعي."
+    },
+    {
+        "code": "PROC-EYE-03",
+        "specialty": "ophthalmology",
+        "specialty_name": "طب وجراحة العيون",
+        "name": "قياس حدة الإبصار وتحديد مقاس النظارة بالكمبيوتر (Autorefraction & Visual Acuity)",
+        "name_ar": "كشف وتحديد مقاسات النظر وقوة القرنية بالكمبيوتر ولوحة العلامات الرقمية",
+        "name_en": "Computerized Autorefraction & Subjective Refraction for Eyeglasses",
+        "equipment": "جهاز كمبيوتر قياس النظر الآلي Auto-Refractometer، لوحة فحص العلامات الرقمية LED LCD Chart",
+        "consumables": "نظارة تجربة العدسات المتدرجة Trial Frame & Lenses، كارت كشف النظارة الطبي المعتمد",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 30,
+        "fee": 120,
+        "price": 120,
+        "cost": 120,
+        "indications": "قصر النظر، طول النظر، الاستجماتيزم، ضعف القراءة لكبار السن (Presbyopia)",
+        "prep": "إحضار النظارة الطبية الحالية إن وجدت لمقارنة المقاسات الجديدة."
+    },
+    {
+        "code": "PROC-EYE-04",
+        "specialty": "ophthalmology",
+        "specialty_name": "طب وجراحة العيون",
+        "name": "تصوير مقطعي لشبكية العين والعصب البصري (Optical Coherence Tomography - OCT)",
+        "name_ar": "أشعة مقطعية ضوئية بالليزر (OCT) لمركز الإبصار والشبكية وألياف العصب البصري",
+        "name_en": "Optical Coherence Tomography (OCT Macula & Glaucoma RNFL Protocol)",
+        "equipment": "جهاز تصوير مقطعي للعين Spectral-Domain OCT فائق السرعة والدقة الميكرومترية",
+        "consumables": "ورق طباعة مقاطع الشبكية بالألوان ثلاثية الأبعاد وسمك طبقات الشبكية",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 450,
+        "price": 450,
+        "cost": 450,
+        "indications": "ارتشاح مركز الإبصار السكري DME، التنكس البقعي الشيخوخي AMD، ضمور العصب البصري في الجلوكوما",
+        "prep": "فحص سريع بدون ملامسة للعين وبدون أي ألم أو وميض مجهد."
+    },
+    {
+        "code": "PROC-EYE-05",
+        "specialty": "ophthalmology",
+        "specialty_name": "طب وجراحة العيون",
+        "name": "تصوير تضاريس القرنية الملون البنتاكام (Pentacam Corneal Topography)",
+        "name_ar": "خريطة القرنية الطوبوغرافية الملونة البنتاكام لفحوصات الليزك والقرنية المخروطية",
+        "name_en": "Pentacam HR Rotating Scheimpflug Corneal Tomography & Pachymetry",
+        "equipment": "جهاز بنتاكام HR عالي الدقة المزود بكاميرا شايمبلوج ثلاثية الأبعاد للدوران بزاوية 360 درجة",
+        "consumables": "تقرير ملون ثلاثي الأبعاد لسمك القرنية وانحناء السطح الأمامي والخلفي ومؤشر بيلاين كوينتوس",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 500,
+        "price": 500,
+        "cost": 500,
+        "indications": "تقييم أهلية عمليات تصحيح الإبصار بالليزك والفيمتوليزك، تشخيص ومتابعة القرنية المخروطية Keratoconus",
+        "prep": "نزع العدسات اللاصقة اللينة قبل الفحص بـ 3 أيام، والعدسات الصلبة قبل الفحص بأسبوعين."
+    },
+    {
+        "code": "PROC-EYE-06",
+        "specialty": "ophthalmology",
+        "specialty_name": "طب وجراحة العيون",
+        "name": "إزالة جسم غريب سطحي من القرنية أو الملتحمة (Corneal Foreign Body Removal)",
+        "name_ar": "إزالة رايش حديدي أو جسم غريب سطحي من قرنية العين بالميكروسكوب",
+        "name_en": "Microscopic Removal of Corneal / Conjunctival Foreign Body & Rust Ring Burring",
+        "equipment": "مصباح شقي عالي التكبير، إبرة أو أداة إزالة الأجسام الغريبة الميكرونية، مثقاب إزالة حلقة الصدأ",
+        "consumables": "قطرات تخدير موضعي، أشرطة فلوريسين لفحص خدوش القرنية، مرهم مضاد حيوي موضعي وغطاء عين معقم",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 250,
+        "price": 250,
+        "cost": 250,
+        "indications": "دخول رايش حديد أثناء اللحام أو التقطيع، دخول ذرات تراب أو رمل عالقة بالقرنية",
+        "prep": "تخدير فوري للعين بقطرة ليدوكايين بدون ألم، ووضع غطاء واقٍ للعين لمدة 24 ساعة."
+    },
+    {
+        "code": "PROC-EYE-07",
+        "specialty": "ophthalmology",
+        "specialty_name": "طب وجراحة العيون",
+        "name": "تسليك وغسيل مجرى القناة الدمعية (Lacrimal Duct Syringing & Probing)",
+        "name_ar": "تسليك القناة الدمعية وغسيل مجرى الدمع بالمحلول الملحي لكشف الانسداد",
+        "name_en": "Diagnostic Lacrimal Sac Syringing & Probing for Epiphora",
+        "equipment": "موسع الفتحة الدمعية الدقيق Lacrimal Dilator، كانيولا غسيل مجرى الدمع ذات الطرف الكروي غير الجارح",
+        "consumables": "محلول ملحي معقم مضاف إليه قطرة ملونة أو مخدر، قطرات تخدير موضعي للعين",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 220,
+        "price": 220,
+        "cost": 220,
+        "indications": "تدميع العين المستمر، التهاب كيس الدمع الصديدي، انسداد القناة الأنفية الدمعية",
+        "prep": "استلقاء المريض بهدوء وشعوره بطعم المحلول في الحلق يؤكد سالكية القناة الدمعية إلى الأنف."
+    },
+    {
+        "code": "PROC-DERM-01",
+        "specialty": "dermatology",
+        "specialty_name": "الأمراض الجلدية والتجميل والليزر",
+        "name": "الكي بالتبريد بالنيتروجين السائل للسنط والثآليل (Cryotherapy with Liquid Nitrogen)",
+        "name_ar": "جلسة تجميد وكي بالنيتروجين السائل (-196 مئوية) لعين السمكة والزوائد الجلدية",
+        "name_en": "Liquid Nitrogen Cryosurgical Ablation for Warts & Seborrheic Keratoses",
+        "equipment": "مسدس الرش بالنيتروجين السائل الطبي Cryo-Gun المزود بفوهات رذاذ دقيقة",
+        "consumables": "نيتروجين سائل طبي معتمد (-196°C)، أعواد قطنية معقمة، كريم مهدئ ومرمم للبشرة",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 200,
+        "price": 200,
+        "cost": 200,
+        "indications": "عين السمكة وثآليل القدم واليدين (Verruca)، الزوائد الجلدية، التقران الدهني، المليساء المعدية",
+        "prep": "تنظيف الجلد، وتجميد الآفة لثوانٍ معدودة حتى تتقشر طبيعياً وتسقط خلال أيام."
+    },
+    {
+        "code": "PROC-DERM-02",
+        "specialty": "dermatology",
+        "specialty_name": "الأمراض الجلدية والتجميل والليزر",
+        "name": "الكي الكهربائي الدقيق للزوائد والسنط الجلدي (Electrocautery of Skin Lesions)",
+        "name_ar": "إزالة وتبخير الزوائد الجلدية والسنط بجهاز الكي والتردد الحراري الدقيق تحت بنج موضعي",
+        "name_en": "Precision Radiofrequency / Electrocautery for Skin Tags & Dermatosis",
+        "equipment": "جهاز الكي الجلدي والتردد الحراري Radiofrequency Electrocautery المزود بإبر ميكرونية",
+        "consumables": "كريم مخدر موضعي بريلوكايين/ليدوكايين (إملا)، شاش معقم، مرهم مضاد حيوي فيوسيدين",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 250,
+        "price": 250,
+        "cost": 250,
+        "indications": "الزوائد الجلدية بالرقبة والإبطين (Acrochordons)، النمش الشمسي، الأورام الحبيبية القيحية",
+        "prep": "وضع كريم التخدير الموضعي قبل الإجراء بنصف ساعة لتفادي أي ألم."
+    },
+    {
+        "code": "PROC-DERM-03",
+        "specialty": "dermatology",
+        "specialty_name": "الأمراض الجلدية والتجميل والليزر",
+        "name": "جلسة ديرمابن ميزوثيرابي لنضارة البشرة والندبات (Dermapen Microneedling with Mesotherapy)",
+        "name_ar": "جلسة الوخز الدقيق بالديرمابن مع سيروم الميزوثيرابي والفيتامينات والهيالورونيك",
+        "name_en": "Automated Microneedling (Dermapen 4) with Rejuvenating Mesotherapy Cocktails",
+        "equipment": "جهاز ديرمابن 4 الاحترافي الآلي المتدرج العمق (0.25 - 2.5 مم)",
+        "consumables": "رؤوس وخز معقمة 16-36 إبرة نانوية أحادية الاستخدام، كوكتيل ميزوثيرابي معقم (فيتامينات، أحماض أمينية، HA)",
+        "duration": "35 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 500,
+        "price": 500,
+        "cost": 500,
+        "indications": "ندبات وآثار حب الشباب، المسام الواسعة، شحوب البشرة وفقدان النضارة، التصبغات السطحية",
+        "prep": "تخدير موضعي بكريم إملا لمدة 25 دقيقة. الامتناع عن وضع المكياج والتعرض للشمس لـ 24 ساعة بعد الجلسة."
+    },
+    {
+        "code": "PROC-DERM-04",
+        "specialty": "dermatology",
+        "specialty_name": "الأمراض الجلدية والتجميل والليزر",
+        "name": "جلسة ليزر فراكشنال كربوني لعلاج آثار الحفر والندبات (Fractional CO2 Laser Resurfacing)",
+        "name_ar": "صنفرة وتجديد البشرة بالليزر الكربوني الفراكشنال لندبات حب الشباب العميقة والتجاعيد",
+        "name_en": "Fractional CO2 Laser Skin Resurfacing for Atrophic Acne Scars & Anti-Aging",
+        "equipment": "جهاز ليزر ثاني أكسيد الكربون الفراكشنال المعتمد FDA المزود بنظام تبريد هوائي متزامن",
+        "consumables": "كريم مخدر قوي، جل تبريد معقم، مرهم ترميم البشرة وحروق الليزر (ميبو/سيكالفات)",
+        "duration": "40 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 900,
+        "price": 900,
+        "cost": 900,
+        "indications": "حفر وندبات حب الشباب الغائرة (Ice-pick & Boxcar Scars)، الخطوط التعبيرية الدقيقة، علامات التمدد",
+        "prep": "تجنب التسمير والتان قبل أسبوعين. استخدام واقي شمس ومرطب بانتظام لمدة أسبوع بعد الجلسة."
+    },
+    {
+        "code": "PROC-DERM-05",
+        "specialty": "dermatology",
+        "specialty_name": "الأمراض الجلدية والتجميل والليزر",
+        "name": "حقن البوتوكس التجميلي لتجاعيد الجبهة وحول العين (Cosmetic Botox Injection)",
+        "name_ar": "حقن سم البوتولينوم (البوتوكس) لعلاج تجاعيد الجبهة وخطوط العبوس وحول العينين (Crow's Feet)",
+        "name_en": "Botulinum Toxin Type A (Botox / Dysport) Upper Face Dynamic Wrinkle Injection",
+        "equipment": "سرنجات أنسولين دقيقة للغاية مقاس 31G معقمة خالية من الألم",
+        "consumables": "فيال بوتوكس أصلي معتمد (Allergan / Dysport)، محلول ملحي معقم للحل والتحضير، كمادات ثلج",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 1400,
+        "price": 1400,
+        "cost": 1400,
+        "indications": "تجاعيد الجبهة الأفقية، خطوط بين الحاجبين (111 lines)، تجاعيد زاوية العين، رفع الحواجب التجميلي",
+        "prep": "تجنب الانحناء أو النوم مستلقياً أو فرك الوجه لمدة 4 ساعات بعد الحقن لضمان ثبات الدواء في العضلات المستهدفة."
+    },
+    {
+        "code": "PROC-DERM-06",
+        "specialty": "dermatology",
+        "specialty_name": "الأمراض الجلدية والتجميل والليزر",
+        "name": "حقن الفيلر التجميلي بحمض الهيالورونيك (Hyaluronic Acid Dermal Filler 1mL)",
+        "name_ar": "حقن فيلر الهيالورونيك لتحديد وملء الشفاه والخدود وخطوط الابتسامة",
+        "name_en": "Cross-Linked Hyaluronic Acid Dermal Filler Injection (1 mL Syringe)",
+        "equipment": "كانيولا تجميلية كروية غير جارحة مقاس 25G/27G، سرنجات تخدير دقيقة",
+        "consumables": "سرنجة فيلر هيالورونيك معبأة معقمة معتمدة (Juvederm / Restylane) 1 مل، ثلج موضعي، كريم مضاد للتورم",
+        "duration": "30 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 1800,
+        "price": 1800,
+        "cost": 1800,
+        "indications": "تكبير وتحديد الشفاه (Russian Lips)، ملء الخدود الغائرة، تعبئة خطوط الحزن والابتسامة Nasolabial folds",
+        "prep": "التوقف عن الأسبرين وفيتامين E ومسيلات الدم قبل الحقن بـ 3 أيام لتجنب الكدمات."
+    },
+    {
+        "code": "PROC-DERM-07",
+        "specialty": "dermatology",
+        "specialty_name": "الأمراض الجلدية والتجميل والليزر",
+        "name": "جلسة ليزر كيو-سويتشد للتصبغات والوشم والتشقير (Q-Switched Nd:YAG Laser)",
+        "name_ar": "علاج التصبغات والنمش والوشم وتشقير الحواجب بالليزر الكربوني كيو-سويتش",
+        "name_en": "Q-Switched Nd:YAG Laser (1064nm / 532nm) for Pigmentation & Tattoo Removal",
+        "equipment": "جهاز ليزر كيو سويتش متقدم بتقنية الموجة القصيرة بالنانوثانية",
+        "consumables": "نظارات حماية العيون من أشعة الليزر، ماسك ترطيب، كريم واقي شمس مهدئ",
+        "duration": "25 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 450,
+        "price": 450,
+        "cost": 450,
+        "indications": "تصبغات الكلف العميق، النمش، إزالة التاتو والوشم غير المرغوب فيه، تشقير الشعر الوبري للوجه",
+        "prep": "تنظيف البشرة من أي مساحيق تجميل قبل الجلسة."
+    },
+    {
+        "code": "PROC-DERM-08",
+        "specialty": "dermatology",
+        "specialty_name": "الأمراض الجلدية والتجميل والليزر",
+        "name": "أخذ عينة جلدية بالبانش للتشخيص الباثولوجي (Diagnostic Punch Skin Biopsy)",
+        "name_ar": "أخذ خزعة جلدية دائرية (Punch Biopsy 3-4 mm) مع الخياطة التجميلية للتحليل الباثولوجي",
+        "name_en": "Diagnostic Punch Skin Biopsy (3-4 mm) with Monofilament Cosmetic Suture",
+        "equipment": "أداة خزعة الجلد الدائرية المعقمة Punch مقاس 3-4 مم، مقصات جراحية وملاقط أنسجة دقيقة",
+        "consumables": "بنج موضعي ليدوكايين، خيط تجميلي نايلون 5-0، عبوة حفظ العينة بمحلول الفورمالين 10%",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 350,
+        "price": 350,
+        "cost": 350,
+        "indications": "تشخيص الطفح الجلدي غير المستجيب، الصدفية، الحزاز الجلدي، والاشتباه في أورام الجلد وسرطان الخلايا القاعدية",
+        "prep": "تخدير موضعي للجلد، وفك الغرزة بعد 7-10 أيام."
+    },
+    {
+        "code": "PROC-DERM-09",
+        "specialty": "dermatology",
+        "specialty_name": "الأمراض الجلدية والتجميل والليزر",
+        "name": "جلسة تقشير كيميائي تجميلي للبشرة (Superficial & Medium Chemical Peel)",
+        "name_ar": "تقشير كيميائي طبي بأحماض الفواكه (TCA / Glycolic / Salicylic) لآثار الحبوب والتصبغات",
+        "name_en": "Dermatological Chemical Peeling (Glycolic Acid / Salicylic / TCA 15-20%)",
+        "equipment": "مروحة هوائية تبريدية، مؤقت إلكتروني بالدقائق لمراقبة التفاعل",
+        "consumables": "محلول حمض التقشير الطبي المعاير، محلول معادل قاعدي Neutralizer، شاش معقم وفازلين للعين والشفتين",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 380,
+        "price": 380,
+        "cost": 380,
+        "indications": "تصبغات الكلف السطحي، حب الشباب النشط والرؤوس السوداء، تقشير الأكواع والركب الداكنة",
+        "prep": "عدم تقشير الجلد باليد عند بدء ظهور القشور، والترطيب المستمر مع واقي شمس إلزامي."
+    },
+    {
+        "code": "PROC-SURG-01",
+        "specialty": "surgery",
+        "specialty_name": "الجراحة العامة والمسالك",
+        "name": "فتح وتفريغ خراج سطحي مع الغيار والتصريف (Incision & Drainage of Abscess)",
+        "name_ar": "فتح جراحي وتفريغ صديد الخراج السطحي مع الغسيل المعقم وتصريف الدرنقة",
+        "name_en": "Incision & Drainage (I&D) of Subcutaneous Abscess with Packing",
+        "equipment": "مشرط جراحي رقم 11 معقم، ملاقط جراحية، مقصات تسليك الأنسجة، أحواض تطهير",
+        "consumables": "بنج موضعي ليدوكايين، شاش فازلين معقم للفتيل الداخلي، محلول ملح مطهر ومحلول هيدروجين بيروكسيد",
+        "duration": "25 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 280,
+        "price": 280,
+        "cost": 280,
+        "indications": "الخراريج الجلدية المتجمعة بالظهر والفخذ والوجه والصديد الحاد",
+        "prep": "تخدير موضعي للأنسجة المحيطة بالخراج مع عمل غيار معقم يومي بعد الفتح."
+    },
+    {
+        "code": "PROC-SURG-02",
+        "specialty": "surgery",
+        "specialty_name": "الجراحة العامة والمسالك",
+        "name": "استئصال كيس دهني أو ورم شحمي بالبنج الموضعي (Excision of Sebaceous Cyst / Lipoma)",
+        "name_ar": "استئصال جراحي كامل لكيس دهني بكبسولته أو ورم دهني حميد وخياطة الجرح تجميلياً",
+        "name_en": "Complete Surgical Excision of Sebaceous / Epidermoid Cyst & Lipoma under Local Anesthesia",
+        "equipment": "طقم جراحة صغرى معقم (مشارط، مقصات، ملاقط أنسجة، حوامل إبر)",
+        "consumables": "بنج موضعي ليدوكايين وأدرينالين، خيوط جراحية تجميلية نايلون، غيار معقم، زجاجة فورمالين للتحليل",
+        "duration": "30 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 450,
+        "price": 450,
+        "cost": 450,
+        "indications": "الأكياس الدهنية الملتهبة أو المتضخمة بالرأس والرقبة والظهر، الأورام الشحمية السطحية",
+        "prep": "استئصال جدار الكيس بالكامل لمنع ارتداده مستقبلاً، وفك الغرز بعد 10 أيام."
+    },
+    {
+        "code": "PROC-SURG-03",
+        "specialty": "surgery",
+        "specialty_name": "الجراحة العامة والمسالك",
+        "name": "استئصال ظفر غائر جزئي مع كي مهد الظفر (Ingrown Toenail Wedge Resection)",
+        "name_ar": "استئصال وتعديل الظفر الغائر باللحم جراحياً مع كي مهد الظفر بالفينول لمنع عودته",
+        "name_en": "Partial Nail Avulsion with Chemical Matrix Phenolization (Wedge Resection)",
+        "equipment": "أداة رفع الظفر الدقيقة، مقصات أظافر جراحية طولية، تورنيكيه إصبع رقمي",
+        "consumables": "بنج موضعي تخدير موضعي للأعصاب (Digital Nerve Block)، محلول فينول 80% الطبي، كحول 70%",
+        "duration": "25 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 350,
+        "price": 350,
+        "cost": 350,
+        "indications": "الظفر الغائر المؤلم المصحوب بصديد والتهاب مستمر في إبهام القدم",
+        "prep": "تخدير جذعي كامل للإصبع خالي تماماً من الألم. غيار معقم مع المشي المريح بعد الإجراء."
+    },
+    {
+        "code": "PROC-SURG-04",
+        "specialty": "surgery",
+        "specialty_name": "الجراحة العامة والمسالك",
+        "name": "خياطة جروح قطعية تجميلية سطحية وعميقة (Cosmetic Wound Laceration Suturing)",
+        "name_ar": "تنظيف وخياطة الجروح القطعية الرضية بطبقات تجميلية دقيقة لتقليل الأثر والندبات",
+        "name_en": "Layered Closure of Complex Lacerations with Cosmetic Monofilament Sutures",
+        "equipment": "طقم جراحة تجميل صغرى دقيق، شاشات تكبير ضوئية",
+        "consumables": "بنج موضعي، خيوط فيكريل للطبقات الداخلية وخيوط نايلون 5-0/6-0 للجلد، مطهرات ومضاد تيتانوس",
+        "duration": "30 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 300,
+        "price": 300,
+        "cost": 300,
+        "indications": "الجروح القطعية الناتجة عن الزجاج أو الآلات الحادة أو السقوط، جروح الوجه واليدين",
+        "prep": "غسيل وتنظيف الجرح جيداً بمحلول ملحي معقم واستئصال الحواف المتهتكة Debridement قبل الخياطة."
+    },
+    {
+        "code": "PROC-SURG-05",
+        "specialty": "surgery",
+        "specialty_name": "الجراحة العامة والمسالك",
+        "name": "ختان الذكور للأطفال حديثي الولادة (Pediatric Male Circumcision)",
+        "name_ar": "عملية ختان وطهارة الذكور للأطفال الرضع بالحلقة البلاستيكية (Plastibell) أو الكي الجراحي",
+        "name_en": "Neonatal & Infant Male Circumcision (Plastibell Ring / Surgical Sleeve Method)",
+        "equipment": "حلقات بلاستيبيل معقمة مقاسات متعددة (1.1 - 1.5)، ملاقط شق جراحية",
+        "consumables": "كريم مخدر ومخدر موضعي جذعي لقاعدة العضو، خيوط ربط بلاستيبيل قوية، شاش فازلين مرطب ومطهر",
+        "duration": "20 دقيقة",
+        "doctor_commission_rate": 45,
+        "fee": 450,
+        "price": 450,
+        "cost": 450,
+        "indications": "الختان الروتيني للأطفال الذكور، ضيق فتحة القلفة Phimosis",
+        "prep": "التأكد من سلامة فتحة البول وعدم وجود إحليل سفلي (Hypospadias) وتناول الرضيع للرضاعة قبل ساعتين."
+    },
+    {
+        "code": "PROC-SURG-06",
+        "specialty": "surgery",
+        "specialty_name": "الجراحة العامة والمسالك",
+        "name": "تركيب قسطرة بولية معقمة فولي (Urinary Foley Catheter Insertion)",
+        "name_ar": "تركيب أو استبدال قسطرة بولية سيليكونية ثنائية أو ثلاثية معقمة مع كيس جمع البول",
+        "name_en": "Sterile Urethral Foley Catheterization (Silicone / Latex with Urine Drainage Bag)",
+        "equipment": "مجموعات قساطر بولية مقاسات متعددة (14-18 Fr)، سرنجة ماء مقطر لنفخ البالون",
+        "consumables": "جل مخدر ومزلق ليدوكايين معقم داخل مجرى البول، كيس جمع بول مدرج معقم مع صمام مضاد للارتجاع",
+        "duration": "15 دقيقة",
+        "doctor_commission_rate": 30,
+        "fee": 150,
+        "price": 150,
+        "cost": 150,
+        "indications": "احتباس البول الحاد، تضخم البروستاتا الشديد، متابعة كمية البول لمرضى العناية وما بعد الجراحة",
+        "prep": "تعقيم منطقة مجرى البول بالكامل وحقن الجل المخدر قبل إدخال القسطرة بلطف."
+    },
+    {
+        "code": "PROC-SURG-07",
+        "specialty": "surgery",
+        "specialty_name": "الجراحة العامة والمسالك",
+        "name": "غيار جراحي معقم متقدم لقرح الفراش والقدم السكري (Advanced Diabetic Foot Wound Dressing)",
+        "name_ar": "تنظيف وإزالة الأنسجة الميتة والغيار المعقم بالضمادات الفضية لقرح القدم السكري",
+        "name_en": "Diabetic Foot Ulcer Debridement with Advanced Silver / Hydrocolloid Dressings",
+        "equipment": "مشارط كشط مجهرية لإزالة الأنسجة الميتة Necrotic Tissue، أدوات قياس عمق القرحة ومسبار فحص العظم",
+        "consumables": "ضمادات رغوية فضية مضادة للبكتيريا Silver Foam، جل هيدروجيل مرطب، شاش وباندج ضاغط مخصص",
+        "duration": "30 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 250,
+        "price": 250,
+        "cost": 250,
+        "indications": "قرح القدم السكري المزمنة، قرح الفراش وقرح الضغط العصبي، الجروح المزمنة بطيئة الالتئام",
+        "prep": "تنظيف الجرح بمحلول ملحي معقم وتفريغ الضغط عن منطقة القرحة بحذاء تفريغ طبي."
+    },
+    {
+        "code": "PROC-NEUR-01",
+        "specialty": "neurology",
+        "specialty_name": "المخ والأعصاب والطب النفسي",
+        "name": "رسم مخ كهربائي رقمي متقدم (Digital Electroencephalography - EEG)",
+        "name_ar": "رسم وتخطيط كهرباء المخ الرقمي بالكمبيوتر مع الحرمان من النوم ومثيرات الضوء للصرع",
+        "name_en": "Standard & Sleep-Deprived Digital Video EEG Recording (21-Channel 10-20 System)",
+        "equipment": "جهاز رسم مخ رقمي متقدم 32 قناة مع شاشة فيديو تزامنية وكاميرا مراقبة النوبات ومصدر ضوء ومضي Photic",
+        "consumables": "قبعة رسم مخ شبكية معقمة، معجون إلكترودات موصل عالي الحساسية نوبست، قطن كحولي لتنظيف الفروة",
+        "duration": "45 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 450,
+        "price": 450,
+        "cost": 450,
+        "indications": "نوبات الصرع والتشنجات، نوبات فقدان الوعي والإغماء، التشتت واضطرابات النوم، تقييم كفاءة أدوية الصرع",
+        "prep": "غسيل شعر الرأس بالشامبو وتجفيفه جيداً دون وضع أي زيوت أو كريمات. السهر والحرمان الجزئي من النوم إن طلب الطبيب."
+    },
+    {
+        "code": "PROC-NEUR-02",
+        "specialty": "neurology",
+        "specialty_name": "المخ والأعصاب والطب النفسي",
+        "name": "رسم عضلات وسرعة توصيل أعصاب الطرفين (EMG & Nerve Conduction Studies NCV)",
+        "name_ar": "تخطيط كهربية العضلات ورسم سرعة توصيل الأعصاب الحركية والحسية للذراعين أو الساقين",
+        "name_en": "Electromyography (EMG Needle Exam) & Motor/Sensory Nerve Conduction Velocity (NCV)",
+        "equipment": "جهاز تخطيط أعصاب وعضلات 4 قنوات مع محفز كهربي نبضي وسماعة صوت استجابة الألياف العضلية",
+        "consumables": "إبر فحص عضلات دقيقة أحادية الاستخدام متحدة المركز Concentric EMG Needles، أقطاب لاصقة وسطحية",
+        "duration": "40 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 550,
+        "price": 550,
+        "cost": 550,
+        "indications": "التهاب الأعصاب الطرفية لمرضى السكري، اختناق العصب الأوسط بالرسغ، الانزلاق الغضروفي وضغط جذور الأعصاب، الوهن العضلي Myasthenia",
+        "prep": "تدفئة الأطراف، عدم وضع كريمات أو دهانات مرطبة على الأطراف يوم الفحص."
+    },
+    {
+        "code": "PROC-NEUR-03",
+        "specialty": "neurology",
+        "specialty_name": "المخ والأعصاب والطب النفسي",
+        "name": "فحص الجهد المثار البصري والحسي (Visual Evoked Potentials - VEP & SSEP)",
+        "name_ar": "تخطيط استجابة العصب البصري والمسارات الحسية الدماغية لكشف التصلب المتعدد MS",
+        "name_en": "Pattern-Reversal Visual Evoked Potentials (VEP) & Somatosensory Evoked Potentials (SSEP)",
+        "equipment": "شاشة تحفيز بصري شطرنجية متقلبة، أقطاب تسجيل فوق الفص القذالي، نظام تسجيل الجهد المثار",
+        "consumables": "أقطاب قرصية مطلية بالذهب، معجون توصيل، قطن تنظيف معقم",
+        "duration": "30 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 400,
+        "price": 400,
+        "cost": 400,
+        "indications": "التهاب العصب البصري، الاكتشاف المبكر لمرض التصلب اللويحي المتعدد Multiple Sclerosis، اعتلال المسارات الحسية",
+        "prep": "ارتداء النظارة الطبية لمن يرتدي نظارة أثناء الفحص البصري."
+    },
+    {
+        "code": "PROC-NEUR-04",
+        "specialty": "neurology",
+        "specialty_name": "المخ والأعصاب والطب النفسي",
+        "name": "بذل السائل النخاعي الشوكي التشخيصي (Diagnostic Lumbar Puncture with Manometer)",
+        "name_ar": "بزل السائل النخاعي أسفل الظهر مع قياس ضغط السائل الشوكي بالمانوميتر",
+        "name_en": "Diagnostic Lumbar Puncture (LP) with Opening CSF Pressure Measurement",
+        "equipment": "إبرة بزل شوكي دقيقة غير قاطعة مقاس 22G/24G Atraumatic Pencil-Point، عمود قياس ضغط المانوميتر",
+        "consumables": "بنج موضعي ليدوكايين، أنابيب حفظ سائل النخاع المعقمة، شاش ولاصق جراحي معقم",
+        "duration": "30 دقيقة",
+        "doctor_commission_rate": 45,
+        "fee": 550,
+        "price": 550,
+        "cost": 550,
+        "indications": "الاشتباه في التهاب السحايا، ارتفاع ضغط المخ الحميد، نزيف تحت العنكبوتية، تشخيص التصلب اللويحي وحزم الأوليجوكلونال",
+        "prep": "فحص قاع العين مسبقاً لاستبعاد ارتشاح العصب البصري، والاستلقاء منبسطاً لمدة ساعتين بعد الإجراء لتجنب الصداع."
+    },
+    {
+        "code": "PROC-NEUR-05",
+        "specialty": "neurology",
+        "specialty_name": "المخ والأعصاب والطب النفسي",
+        "name": "حقن البوتوكس العلاجي للصداع النصفي المزمن (Botox for Chronic Migraine - PREEMPT)",
+        "name_ar": "بروتوكول حقن البوتوكس العلاجي لمرضى الصداع النصفي المزمن المقاوم للأدوية (31 نقطة)",
+        "name_en": "Therapeutic OnabotulinumtoxinA (PREEMPT Protocol 155 Units across 31 Injection Sites)",
+        "equipment": "سرنجات حقن ميكرونية فائقة الدقة مقاس 30G/31G",
+        "consumables": "فيالين بوتوكس طبي معتمد (155-200 وحدة)، محلول ملحي معقم، كحول طبي وكمادات ثلج",
+        "duration": "30 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 2200,
+        "price": 2200,
+        "cost": 2200,
+        "indications": "الصداع النصفي المزمن (أكثر من 15 يوم صداع شهرياً) غير المستجيب للمسكنات والوقائيات",
+        "prep": "يتم الحقن في 31 نقطة محددة بالجبهة والصدغين وأعلى الرقبة والكتفين بجرعات دقيقة تخفف الصداع لأشهر."
+    },
+    {
+        "code": "PROC-NEUR-06",
+        "specialty": "neurology",
+        "specialty_name": "المخ والأعصاب والطب النفسي",
+        "name": "حقن البوتوكس العلاجي للتشنج العضلي بعد الجلطات (Botox for Post-Stroke Spasticity)",
+        "name_ar": "حقن البوتوكس الموجه لتصلب وتيبس عضلات الذراع أو الساق بعد الشلل النصفي والجلطات الدماغية",
+        "name_en": "Electromyography / Ultrasound-Guided Botox Injection for Upper/Lower Limb Spasticity",
+        "equipment": "جهاز تنبيه عضلي أو سونار لتحديد بطون العضلات المتشنجة بدقة",
+        "consumables": "بوتوكس علاجي عالي التركيز، سرنجات حقن عضلية معقمة، محاليل تحضير",
+        "duration": "30 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 1800,
+        "price": 1800,
+        "cost": 1800,
+        "indications": "التشنج وتيبس عضلات اليد والساعد وثني الأصابع بعد السكتات الدماغية، الشلل الدماغي للأطفال CP",
+        "prep": "يساعد على بسط اليد وتسهيل العلاج الطبيعي والتأهيلي ومنع تشوه الأوتار الدائم."
+    },
+    {
+        "code": "PROC-PULM-01",
+        "specialty": "pulmonology",
+        "specialty_name": "الأمراض الصدرية والحساسية",
+        "name": "اختبار وظائف التنفس وسعة الرئتين بالكمبيوتر (Computerized Spirometry with Reversibility)",
+        "name_ar": "فحص قياس وظائف وسعة الرئتين بالكمبيوتر قبل وبعد موسع الشعب لتشخيص الربو والسدة الرئوية",
+        "name_en": "Computerized Spirometry (FVC, FEV1, FEV1/FVC Ratio) with Pre/Post Bronchodilator Reversibility",
+        "equipment": "جهاز قياس كفاءة الرئة الرقمي Spirometer مزود بحساس تدفق توربيني عالي الدقة وشاشة رسوم بيانية",
+        "consumables": "فلاتر بكتيرية وفيروسية معقمة أحادية الاستخدام، مشبك أنف بلاستيكي، بخاخ موسع فنتولين",
+        "duration": "25 دقيقة",
+        "doctor_commission_rate": 35,
+        "fee": 250,
+        "price": 250,
+        "cost": 250,
+        "indications": "تشخيص الربو الشعبي، السدة الرئوية المزمنة COPD للمدخنين، تقييم ضيق التنفس، فحص كفاءة الرئة قبل العمليات",
+        "prep": "تجنب التدخين قبل الفحص بـ 4 ساعات، والتوقف عن بخاخات توسيع الشعب السريعة قبل الفحص بـ 6 ساعات."
+    },
+    {
+        "code": "PROC-PULM-02",
+        "specialty": "pulmonology",
+        "specialty_name": "الأمراض الصدرية والحساسية",
+        "name": "اختبار حساسية الجلد بالوخز لـ 40 مسبباً بيئياً وغذائياً (Skin Prick Allergy Test 40)",
+        "name_ar": "اختبار وخز الجلد الفوري السريع لـ 40 مسبب حساسية (حبيبات اللقاح، الغبار، الفطريات، والأطعمة)",
+        "name_en": "Standardized Skin Prick Testing (SPT) for 40 Aeroallergens & Food Allergens with Controls",
+        "equipment": "مسطرة قياس تفاعل التورم بالمليمتر، صواني ترتيب أمبولات المستخلصات المعقمة",
+        "consumables": "مستخلصات مسببات الحساسية المعايرة، وخازات بلاستيكية دقيقة غير مؤلمة أحادية الاستخدام، محلول هستامين ضابط",
+        "duration": "30 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 550,
+        "price": 550,
+        "cost": 550,
+        "indications": "حساسية الأنف والجيوب الموسمية، الربو التحسسي، الأكزيما، حساسية الأطعمة (الفول، الحليب، البيض)",
+        "prep": "التوقف التام عن تناول مضادات الهيستامين وأدوية الحساسية لمدة 5 إلى 7 أيام قبل الاختبار لضمان دقة الاستجابة الجلدية."
+    },
+    {
+        "code": "PROC-PULM-03",
+        "specialty": "pulmonology",
+        "specialty_name": "الأمراض الصدرية والحساسية",
+        "name": "بذل وتفريغ السائل البلوري الصدري (Diagnostic & Therapeutic Thoracentesis)",
+        "name_ar": "بزل وتفريغ ارتشاح الغشاء البلوري للرئة تحت توجيه السونار وفحص السائل معملياً",
+        "name_en": "Ultrasound-Guided Diagnostic & Therapeutic Thoracentesis with Fluid Evacuation",
+        "equipment": "جهاز سونار صدري محمول لتحديد مكان التجمع بدقة، إبرة بزل صدري صمام أمان ثلاثي",
+        "consumables": "بنج موضعي ليدوكايين، كيس تصريف سوائل مفرغ معقم، عبوات تحليل سائل البلورا (بروتين، سكر، مزرعة، وخلايا سرطانية)",
+        "duration": "35 دقيقة",
+        "doctor_commission_rate": 40,
+        "fee": 500,
+        "price": 500,
+        "cost": 500,
+        "indications": "تجمع مياه وارتشاح الغشاء البلوري للرئة، صعوبة وضيق التنفس الناتج عن انضغاط الرئة، الاشتباه في درن أو أورام الغشاء البلوري",
+        "prep": "الجلوس مع الانحناء للأمام فوق وسادة، وتجنب السعال أو الحركة المفاجئة أثناء إدخال الإبرة."
+    },
+    {
+        "code": "PROC-PULM-04",
+        "specialty": "pulmonology",
+        "specialty_name": "الأمراض الصدرية والحساسية",
+        "name": "قياس أكسيد النيتريك في هواء الزفير لتقييم التهاب الربو (FeNO Breath Test)",
+        "name_ar": "تحليل أكسيد النيتريك في هواء الزفير (FeNO) لقياس درجة التهاب مجرى الهواء التأتبي في الربو",
+        "name_en": "Fractional Exhaled Nitric Oxide (FeNO) Testing for Eosinophilic Airway Inflammation",
+        "equipment": "جهاز قياس FeNO الرقمي المحمول المتخصص بمستشعرات كهروكيميائية دقيقة",
+        "consumables": "فلاتر تنفس بكتيرية معقمة أحادية الاستخدام",
+        "duration": "10 دقائق",
+        "doctor_commission_rate": 35,
+        "fee": 350,
+        "price": 350,
+        "cost": 350,
+        "indications": "تشخيص الربو الإيوزيني، تحديد مدى الحاجة لبخاخات الكورتيزون الاستنشاقية ومدى التزام المريض بالعلاج",
+        "prep": "الامتناع عن الأكل والشرب والتدخين والتمارين لمدة ساعة واحدة قبل الفحص."
+    },
+    {
+        "code": "PROC-PULM-05",
+        "specialty": "pulmonology",
+        "specialty_name": "الأمراض الصدرية والحساسية",
+        "name": "تسجيل ومراقبة تشبع الأكسجين ونبضات القلب الليلي (Nocturnal Pulse Oximetry Study)",
+        "name_ar": "تسجيل تشبع الأكسجين المستمر طوال الليل لكشف متلازمة انقطاع النفس الانسدادي أثناء النوم OSA",
+        "name_en": "Continuous Overnight Nocturnal Pulse Oximetry & Desaturation Index (ODI)",
+        "equipment": "جهاز تسجيل نبض وأكسجين معصمي طبي محمول يسجل 8 ساعات متواصلة بدقة عالية",
+        "consumables": "مستشعر إصبع سيليكوني مريح، كابل نقل بيانات التقرير الطبي ومؤشر نزول الأكسجين ODI",
+        "duration": "ليلة كاملة (8 ساعات)",
+        "doctor_commission_rate": 35,
+        "fee": 400,
+        "price": 400,
+        "cost": 400,
+        "indications": "الشخير المرتفع، انقطاع النفس أثناء النوم، الصداع الصباحي، النعاس والتعب النهاري المفرط",
+        "prep": "ارتداء الجهاز باليد أثناء النوم بالمنزل في الوضع المعتاد وإعادته صباحاً للمركز لقراءة التقرير."
+    }
+],
 
     // 5. شبكة مراكز الأشعة والمعامل المرجعية
     diagnosticCenters: [
-        {
-            id: 'center_lab_inhouse',
-            name: 'معمل الوجيه المركزي المؤتمت (In-House Central Automated Lab)',
-            type: 'in_house_lab',
-            type_label: 'معمل مركزي داخلي',
-            location: 'الطابق الأرضي - مبنى العيادات الرئيسي',
-            status: 'active',
-            lead_specialist: 'د. هاني عثمان (استشاري باثولوجيا إكلينيكية وتحاليل)',
-            equipment_highlights: 'Sysmex XN-1000 • Roche Cobas e411 • Mindray BS-480',
-            operating_hours: '24 ساعة / 7 أيام',
-            avg_tat: '60 دقيقة للتحاليل العاجلة',
-            daily_capacity: 500
-        },
-        {
-            id: 'center_rad_inhouse',
-            name: 'مركز الوجيه للأشعة والتصوير المتطور (In-House Advanced Radiology Hub)',
-            type: 'in_house_radiology',
-            type_label: 'مركز أشعة داخلي',
-            location: 'الطابق السفلي - جناح التصوير الطبي المتقدم',
-            status: 'active',
-            lead_specialist: 'د. مروان البدري (استشاري أشعة تشخيصية وتداخلية)',
-            equipment_highlights: 'Siemens Magnetom 1.5T • GE Revolution 64-Slice CT • GE Voluson 4D',
-            operating_hours: '08:00 ص إلى 12:00 منتصف الليل',
-            avg_tat: 'ساعتان لكتابة التقرير الرسمي',
-            daily_capacity: 150
-        },
-        {
-            id: 'partner_mokhtabar',
-            name: 'معمل المختبر الشريك (Al Mokhtabar Labs - Outsource Partner)',
-            type: 'partner_lab',
-            type_label: 'معمل خارجي شريك (B2B)',
-            location: 'شبكة فروع ومعامل مرجعية مركزية',
-            status: 'active',
-            lead_specialist: 'تنسيق التحاليل المرجعية والجينات',
-            equipment_highlights: 'Genetic Sequencing • Mass Spectrometry • Advanced Histopathology',
-            b2b_discount: 35,
-            operating_hours: 'تجميع يومي الساعة 12 ظهراً و 6 مساءً',
-            avg_tat: '24 إلى 48 ساعة للتحاليل الجينية النادرة',
-            daily_capacity: 100
-        },
-        {
-            id: 'partner_borg',
-            name: 'معمل البرج للتحاليل الطبية (Al Borg Diagnostic Labs)',
-            type: 'partner_lab',
-            type_label: 'معمل خارجي شريك (B2B)',
-            location: 'معامل مرجعية متخصصة',
-            status: 'active',
-            lead_specialist: 'خدمات الفحص الفيروسي والمناعي المتقدم',
-            equipment_highlights: 'Real-Time PCR • Flow Cytometry • Autoimmune Blotting',
-            b2b_discount: 30,
-            operating_hours: 'تجميع مسائي يومي',
-            avg_tat: '24 ساعة',
-            daily_capacity: 100
-        },
-        {
-            id: 'partner_cairo_scan',
-            name: 'مركز كايرو سكان للأشعة (Cairo Scan Diagnostic Center)',
-            type: 'partner_radiology',
-            type_label: 'مركز أشعة خارجي شريك (B2B)',
-            location: 'فروع القاهرة الكبرى التخصصية',
-            status: 'active',
-            lead_specialist: 'أشعة المسح الذري البوزيتروني PET-CT والتصوير النووي',
-            equipment_highlights: 'PET-CT Scan • 3.0 Tesla MRI • Digital Gamma Camera',
-            b2b_discount: 25,
-            operating_hours: 'حجز ومواعيد محولة مسبقاً',
-            avg_tat: '24 ساعة للتقرير والـ CD',
-            daily_capacity: 40
-        },
-        {
-            id: 'partner_alfa_scan',
-            name: 'مركز ألفا سكان للأشعة التداخلية (Alfa Scan Imaging Partner)',
-            type: 'partner_radiology',
-            type_label: 'مركز أشعة خارجي شريك (B2B)',
-            location: 'فروع الرنين والأشعة التخصصية',
-            status: 'active',
-            lead_specialist: 'قسطرة الشرايين التداخلية وفحوصات القلب المقطعية',
-            equipment_highlights: '320-Slice Cardiac CT • Dynamic Liver MRI',
-            b2b_discount: 25,
-            operating_hours: 'تحويل مباشر بأكواد تعاقد',
-            avg_tat: '24 ساعة',
-            daily_capacity: 40
-        }
-    ]
+    {
+        "id": "partner_al_borg",
+        "name": "معامل البرج المركزية المرجعية (Al Borg Laboratories Partner)",
+        "type": "partner_lab",
+        "type_label": "معمل تحاليل مرجعي خارجي (B2B)",
+        "location": "فروع القاهرة الكبرى والجيزة",
+        "status": "active",
+        "lead_specialist": "أ.د. استشاري التحاليل الإكلينيكية والمناعية",
+        "equipment_highlights": "Cobas 8000 Modular • Sysmex XN-9000 • Abbott Alinity",
+        "b2b_discount": 30,
+        "operating_hours": "24 ساعة / 7 أيام",
+        "avg_tat": "6 - 24 ساعة",
+        "daily_capacity": 500
+    },
+    {
+        "id": "partner_al_mokhtabar",
+        "name": "معامل المختبر الطبية المرجعية (Al Mokhtabar Labs Partner)",
+        "type": "partner_lab",
+        "type_label": "معمل تحاليل مرجعي خارجي (B2B)",
+        "location": "شبكة فروع الجمهورية",
+        "status": "active",
+        "lead_specialist": "أ.د. استشاري الوراثة الجزيئية والميكروبيولوجي",
+        "equipment_highlights": "Roche LightCycler 480 • Bio-Rad Bio-Plex 200 • MALDI-TOF",
+        "b2b_discount": 30,
+        "operating_hours": "24 ساعة / 7 أيام",
+        "avg_tat": "12 - 24 ساعة",
+        "daily_capacity": 450
+    },
+    {
+        "id": "partner_cairo_scan",
+        "name": "مركز كايرو سكان للأشعة التخصصية (Cairo Scan Imaging Partner)",
+        "type": "partner_radiology",
+        "type_label": "مركز أشعة خارجي شريك (B2B)",
+        "location": "فروع المهندسين ومصر الجديدة والمعادي",
+        "status": "active",
+        "lead_specialist": "أ.د. استشاري الأشعة التشخيصية والتداخلية",
+        "equipment_highlights": "Siemens SOMATOM Force 384 • GE SIGNA Voyager 1.5T MRI",
+        "b2b_discount": 25,
+        "operating_hours": "08:00 ص - 12:00 منتصف الليل",
+        "avg_tat": "2 - 4 ساعات",
+        "daily_capacity": 80
+    },
+    {
+        "id": "partner_techno_scan",
+        "name": "مركز تكنوسكان للأشعة التشخيصية (TechnoScan Imaging Partner)",
+        "type": "partner_radiology",
+        "type_label": "مركز أشعة خارجي شريك (B2B)",
+        "location": "فروع الدقي ومدينة نصر وشبرا",
+        "status": "active",
+        "lead_specialist": "أ.د. استشاري رنين القلب والرنين العصبي",
+        "equipment_highlights": "Philips Ingenia 3.0T Digital MRI • Dual-Source CT",
+        "b2b_discount": 25,
+        "operating_hours": "08:00 ص - 11:00 م",
+        "avg_tat": "3 - 5 ساعات",
+        "daily_capacity": 70
+    },
+    {
+        "id": "partner_nile_scan",
+        "name": "مركز النيل للأشعة والتحاليل (Nile Scan & Lab Partner)",
+        "type": "partner_radiology",
+        "type_label": "مركز أشعة وتحاليل متكامل شريك (B2B)",
+        "location": "فروع فيصل والدقي والهرم",
+        "status": "active",
+        "lead_specialist": "أ.د. استشاري تصوير المرأة وأورام الثدي",
+        "equipment_highlights": "Hologic 3D Mammography • Toshiba Aquilion ONE 640",
+        "b2b_discount": 20,
+        "operating_hours": "09:00 ص - 11:00 م",
+        "avg_tat": "4 - 6 ساعات",
+        "daily_capacity": 60
+    },
+    {
+        "id": "partner_alfa_scan",
+        "name": "مركز ألفا سكان للأشعة التداخلية (Alfa Scan Imaging Partner)",
+        "type": "partner_radiology",
+        "type_label": "مركز أشعة خارجي شريك (B2B)",
+        "location": "فروع الرنين والأشعة التخصصية",
+        "status": "active",
+        "lead_specialist": "قسطرة الشرايين التداخلية وفحوصات القلب المقطعية",
+        "equipment_highlights": "320-Slice Cardiac CT • Dynamic Liver MRI",
+        "b2b_discount": 25,
+        "operating_hours": "تحويل مباشر بأكواد تعاقد",
+        "avg_tat": "24 ساعة",
+        "daily_capacity": 40
+    }
+]
 };
 
 // ==========================================
@@ -14535,12 +20031,17 @@ MedicalCatalog.getRadiologyExam = function(keyOrCode) {
 };
 
 /**
- * البحث في فحوصات الأشعة مع تصفية حسب الجهاز (Modality)
+ * البحث في فحوصات الأشعة مع تصفية حسب الجهاز وحالة الصبغة
  */
-MedicalCatalog.searchRadiologyExams = function(query, modality) {
+MedicalCatalog.searchRadiologyExams = function(query, modality, contrastOnly) {
     let results = MedicalCatalog.radiologyExams;
     if (modality && modality !== 'all') {
         results = results.filter(r => r.modality === modality || r.category === modality);
+    }
+    if (contrastOnly === true) {
+        results = results.filter(r => r.contrast === true);
+    } else if (contrastOnly === false) {
+        results = results.filter(r => r.contrast === false);
     }
     if (query && query.trim()) {
         const q = query.trim().toLowerCase();
@@ -14603,12 +20104,37 @@ MedicalCatalog.getClinicProcedure = function(code) {
 };
 
 /**
- * إحصائيات عامة عن الكتالوج الطبي
+ * البحث في إجراءات العيادات حسب التخصص والاسم
+ */
+MedicalCatalog.searchProcedures = function(query, specialty) {
+    let results = MedicalCatalog.clinicProcedures;
+    if (specialty && specialty !== 'all') {
+        results = results.filter(p => p.specialty === specialty);
+    }
+    if (query && query.trim()) {
+        const q = query.trim().toLowerCase();
+        results = results.filter(p => 
+            (p.name && p.name.toLowerCase().includes(q)) ||
+            (p.name_ar && p.name_ar.toLowerCase().includes(q)) ||
+            (p.name_en && p.name_en.toLowerCase().includes(q)) ||
+            (p.code && p.code.toLowerCase().includes(q)) ||
+            (p.specialty_name && p.specialty_name.toLowerCase().includes(q))
+        );
+    }
+    return results;
+};
+
+/**
+ * إحصائيات عامة عن الكتالوج الطبي الموسوعي
  */
 MedicalCatalog.getStats = function() {
+    const contrastExamsCount = MedicalCatalog.radiologyExams.filter(r => r.contrast).length;
+    const plainExamsCount = MedicalCatalog.radiologyExams.filter(r => !r.contrast).length;
     return {
         totalLabTests: MedicalCatalog.labTests.length,
         totalRadiologyExams: MedicalCatalog.radiologyExams.length,
+        contrastRadiologyExams: contrastExamsCount,
+        plainRadiologyExams: plainExamsCount,
         totalMedications: MedicalCatalog.medications.length,
         totalClinicProcedures: MedicalCatalog.clinicProcedures.length,
         totalDiagnosticCenters: MedicalCatalog.diagnosticCenters.length,
