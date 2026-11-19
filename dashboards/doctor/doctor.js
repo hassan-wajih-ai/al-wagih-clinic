@@ -289,14 +289,49 @@ const DoctorApp = {
     submitOrderLab() {
         if (!this.activeAppointment) return;
         const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
+        const patientPhone = this.activeAppointment.patient?.phone || this.activeAppointment.patient_phone || '';
         const testSelect = document.getElementById('doc-lab-test-select');
-        const testName = testSelect.options[testSelect.selectedIndex]?.text || 'تحليل طبي';
+        const testVal = testSelect.value;
+        const testItem = window.MedicalCatalog ? MedicalCatalog.getLabTest(testVal) : null;
+        const testName = testItem ? (testItem.name_ar + ' (' + testItem.name_en + ')') : (testSelect.options[testSelect.selectedIndex]?.text || 'تحليل طبي');
         const notes = document.getElementById('doc-lab-notes').value.trim();
 
+        // 1. تحديث نص الروشتة الحالية
         const currentRx = document.getElementById('prescription-input').value;
         document.getElementById('prescription-input').value = (currentRx ? currentRx + '\n' : '') + `[طلب فحص معملي]: ${testName} ${notes ? '(' + notes + ')' : ''}`;
 
-        Utils.showToast(`تم إرسال طلب التحليل (${testName}) للمختبر وتوثيقه بالروشتة 🧪`, 'success');
+        // 2. تسجيل أمر فحص مخبري منظم في التخزين المحلي لسحب العينات
+        const newLabOrder = {
+            id: 'LAB-' + Date.now(),
+            patient_id: this.activeAppointment.patient_id || this.activeAppointment.id,
+            patient_name: patientName,
+            patient_phone: patientPhone,
+            doctor_name: this.doctor ? (this.doctor.full_name || 'طبيب الكشف') : 'طبيب الكشف',
+            clinic_name: this.doctor ? (this.doctor.clinic_name || 'العيادة التخصصية') : 'العيادة التخصصية',
+            test_key: testVal,
+            test_name: testItem ? testItem.name_ar : testName,
+            test_name_en: testItem ? testItem.name_en : '',
+            test_code: testItem ? testItem.code : 'LAB-REQ',
+            tube: testItem ? testItem.tube : 'أنبوبة معملية',
+            tube_name_ar: testItem ? testItem.tube_name_ar : 'أنبوبة فحص',
+            tube_color: testItem ? testItem.tube_color : 'purple',
+            fasting_hours: testItem ? (testItem.fasting_hours || 0) : 0,
+            prep: testItem ? (testItem.prep || testItem.prep_notes_ar) : '',
+            cost: testItem ? (testItem.cost || testItem.price) : 150,
+            status: 'pending_sampling',
+            sample_barcode: 'SMP-' + Math.floor(100000 + Math.random() * 900000),
+            notes: notes,
+            created_at: new Date().toISOString()
+        };
+
+        try {
+            const stored = localStorage.getItem('alwagih_lab_orders');
+            let list = stored ? JSON.parse(stored) : [];
+            list.unshift(newLabOrder);
+            localStorage.setItem('alwagih_lab_orders', JSON.stringify(list));
+        } catch(e) {}
+
+        Utils.showToast(`تم إرسال طلب التحليل (${newLabOrder.test_name}) لمركز سحب العينات والمختبر 🧪`, 'success');
         document.getElementById('doctor-lab-modal').classList.add('hidden');
     },
 
@@ -306,16 +341,26 @@ const DoctorApp = {
 
         const allExams = (window.MedicalCatalog && MedicalCatalog.radiologyExams) ? MedicalCatalog.radiologyExams : [];
         const mod = selectedMod || (document.getElementById('doc-rad-mod-select')?.value || 'all');
-        const list = allExams.filter(e => mod === 'all' || e.modality === mod);
+        const contrastFilter = this.currentRadContrastFilter || 'all';
+
+        let list = allExams;
+        if (mod !== 'all') {
+            list = list.filter(e => e.modality === mod || e.category === mod);
+        }
+        if (contrastFilter === 'contrast') {
+            list = list.filter(e => e.contrast === true);
+        } else if (contrastFilter === 'plain') {
+            list = list.filter(e => e.contrast === false);
+        }
 
         if (list.length === 0) {
-            select.innerHTML = '<option value="">لا توجد فحوصات في هذا الجهاز</option>';
+            select.innerHTML = '<option value="">لا توجد فحوصات مطابقة للبحث أو الفلتر المحدد</option>';
             return;
         }
 
         select.innerHTML = list.map(e => `
-            <option value="${e.key || e.id}" data-contrast="${e.contrast ? '1' : '0'}" data-cost="${e.cost}" data-duration="${e.duration_min}" data-prep="${e.prep_notes_ar || ''}">
-                [${e.modality}] ${e.name_ar} - ${e.name_en} (${Utils.formatCurrency(e.cost)})
+            <option value="${e.key || e.id}" data-contrast="${e.contrast ? '1' : '0'}" data-cost="${e.cost || e.price}" data-duration="${e.duration_mins || 15}" data-prep="${e.prep_notes_ar || e.prep || ''}">
+                ${e.contrast ? '⚠️ [بالصبغة] ' : '[عادي] '} [${e.modality}] ${e.name_ar} - ${e.name_en} (${Utils.formatCurrency(e.cost || e.price)})
             </option>
         `).join('');
 
@@ -323,6 +368,12 @@ const DoctorApp = {
     },
 
     onDocRadModalityChanged() {
+        const mod = document.getElementById('doc-rad-mod-select')?.value || 'all';
+        this.populateDocRadCatalog(mod);
+    },
+
+    onDocRadContrastFilterChanged(filter) {
+        this.currentRadContrastFilter = filter || 'all';
         const mod = document.getElementById('doc-rad-mod-select')?.value || 'all';
         this.populateDocRadCatalog(mod);
     },
@@ -335,7 +386,7 @@ const DoctorApp = {
         if (!opt) return;
 
         const hasContrast = opt.getAttribute('data-contrast') === '1';
-        const cost = opt.getAttribute('data-cost') || '250';
+        const cost = opt.getAttribute('data-cost') || '300';
         const prep = opt.getAttribute('data-prep') || '';
 
         const contrastEl = document.getElementById('doc-rad-contrast-preview');
@@ -343,10 +394,10 @@ const DoctorApp = {
         const costEl = document.getElementById('doc-rad-cost-preview');
 
         if (contrastEl) {
-            contrastEl.textContent = hasContrast ? '⚠️ بالصبغة (Contrast)' : 'بدون صبغة (Plain)';
-            contrastEl.className = hasContrast ? 'font-black text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-300';
+            contrastEl.textContent = hasContrast ? '⚠️ بالصبغة (Contrast Required - وظائف كلى)' : 'بدون صبغة (Plain)';
+            contrastEl.className = hasContrast ? 'font-black text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-300 font-bold';
         }
-        if (prepEl) prepEl.textContent = prep || (hasContrast ? 'فحص وظائف كلى وصيام 4-6 ساعات' : 'بدون تحضير خاص');
+        if (prepEl) prepEl.textContent = prep || (hasContrast ? 'فحص وظائف كلى حديث وصيام 4-6 ساعات' : 'بدون تحضير خاص');
         if (costEl) costEl.textContent = `${Utils.formatCurrency(parseFloat(cost))}`;
     },
 
@@ -357,6 +408,7 @@ const DoctorApp = {
         }
         const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
         document.getElementById('doc-rad-patient-name').value = patientName;
+        this.currentRadContrastFilter = 'all';
         this.populateDocRadCatalog('all');
         document.getElementById('doctor-rad-modal').classList.remove('hidden');
     },
@@ -364,14 +416,48 @@ const DoctorApp = {
     submitOrderRad() {
         if (!this.activeAppointment) return;
         const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
+        const patientPhone = this.activeAppointment.patient?.phone || this.activeAppointment.patient_phone || '';
         const examSelect = document.getElementById('doc-rad-exam-select');
-        const examName = examSelect.options[examSelect.selectedIndex]?.text || 'فحص أشعة';
+        const examVal = examSelect.value;
+        const examItem = window.MedicalCatalog ? MedicalCatalog.getRadiologyExam(examVal) : null;
+        const examName = examItem ? (examItem.name_ar + ' (' + examItem.name_en + ')') : (examSelect.options[examSelect.selectedIndex]?.text || 'فحص أشعة');
         const notes = document.getElementById('doc-rad-notes').value.trim();
 
+        // 1. تحديث نص الروشتة الحالية
         const currentRx = document.getElementById('prescription-input').value;
-        document.getElementById('prescription-input').value = (currentRx ? currentRx + '\n' : '') + `[طلب أشعة]: ${examName} ${notes ? '(الدواعي: ' + notes + ')' : ''}`;
+        document.getElementById('prescription-input').value = (currentRx ? currentRx + '\n' : '') + `[طلب فحص أشعة]: ${examName} ${notes ? '(الدواعي: ' + notes + ')' : ''}`;
 
-        Utils.showToast(`تم إرسال طلب الأشعة (${examName}) لقسم الأشعة وتوثيقه بالروشتة 🩻`, 'success');
+        // 2. تسجيل أمر أشعة منظم
+        const newRadOrder = {
+            id: 'RAD-' + Date.now(),
+            patient_id: this.activeAppointment.patient_id || this.activeAppointment.id,
+            patient_name: patientName,
+            patient_phone: patientPhone,
+            doctor_name: this.doctor ? (this.doctor.full_name || 'طبيب الكشف') : 'طبيب الكشف',
+            clinic_name: this.doctor ? (this.doctor.clinic_name || 'العيادة التخصصية') : 'العيادة التخصصية',
+            exam_key: examVal,
+            exam_name: examItem ? examItem.name_ar : examName,
+            exam_name_en: examItem ? examItem.name_en : '',
+            exam_code: examItem ? examItem.code : 'RAD-REQ',
+            modality: examItem ? examItem.modality : 'X-Ray',
+            contrast: examItem ? examItem.contrast : false,
+            contrast_type: examItem ? examItem.contrast_type : 'None',
+            body_part: examItem ? (examItem.body_part_ar || examItem.body_part) : 'عام',
+            prep: examItem ? (examItem.prep || examItem.prep_notes_ar) : '',
+            cost: examItem ? (examItem.cost || examItem.price) : 300,
+            status: 'scheduled',
+            notes: notes,
+            created_at: new Date().toISOString()
+        };
+
+        try {
+            const stored = localStorage.getItem('alwagih_rad_orders');
+            let list = stored ? JSON.parse(stored) : [];
+            list.unshift(newRadOrder);
+            localStorage.setItem('alwagih_rad_orders', JSON.stringify(list));
+        } catch(e) {}
+
+        Utils.showToast(`تم إرسال طلب الأشعة (${newRadOrder.exam_name}) لقسم الأشعة وتوثيقه بالروشتة 🩻`, 'success');
         document.getElementById('doctor-rad-modal').classList.add('hidden');
     },
 
@@ -390,8 +476,8 @@ const DoctorApp = {
         }
 
         select.innerHTML = list.map(p => `
-            <option value="${p.id}" data-fee="${p.fee}" data-comm="${p.doctor_commission_rate}" data-duration="${p.duration_min}" data-room="${p.room || 'غرفة كشف'}">
-                ${p.name_ar} - ${p.name_en} (${Utils.formatCurrency(p.fee)})
+            <option value="${p.code || p.id}" data-fee="${p.fee || p.price}" data-comm="${p.doctor_commission_rate}" data-duration="${p.duration || '15 دقيقة'}" data-room="${p.equipment || 'غرفة كشف تخصصية'}">
+                [${p.specialty_name || p.specialty}] ${p.name_ar || p.name} (${Utils.formatCurrency(p.fee || p.price)})
             </option>
         `).join('');
 
@@ -412,7 +498,7 @@ const DoctorApp = {
 
         const fee = parseFloat(opt.getAttribute('data-fee') || '250');
         const commRate = parseFloat(opt.getAttribute('data-comm') || '35');
-        const duration = opt.getAttribute('data-duration') || '15';
+        const duration = opt.getAttribute('data-duration') || '15 دقيقة';
         const room = opt.getAttribute('data-room') || 'غرفة كشف تخصصية';
 
         const commVal = Math.round(fee * (commRate / 100));
@@ -424,7 +510,7 @@ const DoctorApp = {
 
         if (feeEl) feeEl.textContent = `${Utils.formatCurrency(fee)}`;
         if (commEl) commEl.textContent = `${commRate}% (${Utils.formatCurrency(commVal)})`;
-        if (durEl) durEl.textContent = `المدة: ${duration} دقيقة`;
+        if (durEl) durEl.textContent = `المدة: ${duration}`;
         if (roomEl) roomEl.textContent = room;
     },
 
@@ -441,18 +527,46 @@ const DoctorApp = {
 
     submitOrderProcedure() {
         if (!this.activeAppointment) return;
+        const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
         const select = document.getElementById('doc-proc-select');
-        const procName = select.options[select.selectedIndex]?.text || 'إجراء طبي';
+        const procVal = select.value;
+        const procItem = window.MedicalCatalog ? MedicalCatalog.getClinicProcedure(procVal) : null;
+        const procName = procItem ? procItem.name_ar : (select.options[select.selectedIndex]?.text || 'إجراء طبي');
         const notes = document.getElementById('doc-proc-notes').value.trim();
 
+        // 1. تحديث نص الروشتة الحالية
         const currentRx = document.getElementById('prescription-input').value;
         document.getElementById('prescription-input').value = (currentRx ? currentRx + '\n' : '') + `[إجراء طبي مُنجز بالعيادة]: ${procName} ${notes ? '(' + notes + ')' : ''}`;
+
+        // 2. تسجيل الإجراء المنفذ في سجل الإجراءات لحساب عمولة الطبيب
+        const newPerformedProc = {
+            id: 'PROC-' + Date.now(),
+            patient_id: this.activeAppointment.patient_id || this.activeAppointment.id,
+            patient_name: patientName,
+            doctor_name: this.doctor ? (this.doctor.full_name || 'طبيب الكشف') : 'طبيب الكشف',
+            procedure_code: procItem ? procItem.code : procVal,
+            procedure_name: procName,
+            specialty: procItem ? procItem.specialty : 'general',
+            specialty_name: procItem ? procItem.specialty_name : 'عام',
+            fee: procItem ? (procItem.fee || procItem.price) : 250,
+            doctor_commission_rate: procItem ? procItem.doctor_commission_rate : 35,
+            doctor_commission_amount: procItem ? Math.round((procItem.fee || procItem.price) * (procItem.doctor_commission_rate / 100)) : 85,
+            notes: notes,
+            created_at: new Date().toISOString()
+        };
+
+        try {
+            const stored = localStorage.getItem('alwagih_performed_procedures');
+            let list = stored ? JSON.parse(stored) : [];
+            list.unshift(newPerformedProc);
+            localStorage.setItem('alwagih_performed_procedures', JSON.stringify(list));
+        } catch(e) {}
 
         Utils.showToast(`تم توثيق الإجراء الطبي (${procName}) واحتساب عمولة الطبيب بنجاح 🩺`, 'success');
         document.getElementById('doctor-procedure-modal').classList.add('hidden');
     },
 
-    openPatientHistoryResultsModal() {
+        openPatientHistoryResultsModal() {
         if (!this.activeAppointment) {
             Utils.showToast('يرجى استدعاء مريض أولاً لاستعراض ملفه ونتائجه السابقة', 'warning');
             return;
@@ -1234,6 +1348,509 @@ const DoctorApp = {
             Utils.showToast(`✓ تم اعتماد وتوثيق العملية الجراحية (#${newSurgery.surgery_code}) بنجاح`, 'success');
         } catch (e) {
             console.error('Failed to save surgery:', e);
+        }
+    },
+
+    // =========================================================================
+    // محرك طباعة الروشتة الطبية الرسمية والإيصال الحراري (Prescription Printing Engine)
+    // =========================================================================
+    currentRxPrintFormat: 'a4',
+
+    openPrintPrescriptionModal(format) {
+        if (!this.activeAppointment) {
+            Utils.showToast('يرجى استدعاء مريض أولاً لمعاينة وطباعة الروشتة', 'warning');
+            return;
+        }
+        this.currentRxPrintFormat = format || 'a4';
+        this.switchRxPrintFormat(this.currentRxPrintFormat);
+        const modal = document.getElementById('doctor-prescription-print-modal');
+        if (modal) modal.classList.remove('hidden');
+    },
+
+    closePrintPrescriptionModal() {
+        const modal = document.getElementById('doctor-prescription-print-modal');
+        if (modal) modal.classList.add('hidden');
+    },
+
+    switchRxPrintFormat(format) {
+        this.currentRxPrintFormat = format || 'a4';
+        const btnA4 = document.getElementById('rx-format-btn-a4');
+        const btnThermal = document.getElementById('rx-format-btn-thermal');
+        if (btnA4 && btnThermal) {
+            if (this.currentRxPrintFormat === 'a4') {
+                btnA4.className = 'px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 shadow-sm transition';
+                btnThermal.className = 'px-3 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 transition';
+            } else {
+                btnThermal.className = 'px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 shadow-sm transition';
+                btnA4.className = 'px-3 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 transition';
+            }
+        }
+        const box = document.getElementById('rx-live-preview-box');
+        if (box) {
+            box.innerHTML = this.renderRxPreviewHTML(this.currentRxPrintFormat);
+        }
+    },
+
+    renderRxPreviewHTML(format) {
+        const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
+        const patientPhone = this.activeAppointment.patient?.phone || this.activeAppointment.patient_phone || '010XXXXXXXX';
+        const docName = this.doctor ? (this.doctor.full_name || 'د. استشاري الكشف الطبي') : 'د. استشاري الكشف الطبي';
+        const clinicName = this.doctor ? (this.doctor.clinic_name || 'العيادة التخصصية') : 'عيادة الكشف العام والتخصصي';
+        const diagnosis = document.getElementById('diagnosis-input')?.value.trim() || 'كشف ومتابعة طبية عامة';
+        const freeRxText = document.getElementById('prescription-input')?.value.trim() || '';
+        const notes = document.getElementById('notes-input')?.value.trim() || '';
+        const dateStr = new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+        const timeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        const rxNumber = 'RX-' + Math.floor(100000 + Math.random() * 900000);
+
+        const items = this.currentPrescriptionItems || [];
+
+        if (format === 'thermal') {
+            // نمط إيصال حراري فوري 80mm
+            return `
+            <div class="max-w-[360px] mx-auto p-4 bg-white text-slate-900 font-mono text-xs rounded-xl shadow border border-slate-200">
+                <div class="text-center pb-2 border-b-2 border-dashed border-slate-300 space-y-1">
+                    <div class="text-base font-black tracking-wider">مجمع الواجح الطبي التخصصي</div>
+                    <div class="text-[11px] font-bold text-slate-600">${clinicName}</div>
+                    <div class="text-[10px] text-slate-500">${docName} — ترخيص مزاولة: 94812</div>
+                    <div class="text-[9px] text-slate-400">رقم الروشتة: ${rxNumber}</div>
+                </div>
+
+                <div class="py-2 border-b border-dashed border-slate-300 space-y-1 text-[11px]">
+                    <div><span class="font-bold">المريض:</span> ${patientName}</div>
+                    <div><span class="font-bold">الهاتف:</span> ${patientPhone}</div>
+                    <div><span class="font-bold">التاريخ:</span> ${dateStr} - ${timeStr}</div>
+                    <div><span class="font-bold">التشخيص:</span> ${diagnosis}</div>
+                </div>
+
+                <div class="py-2.5 border-b-2 border-dashed border-slate-300 space-y-2">
+                    <div class="font-black text-sm text-center">℞ قائمة العلاج الدوائي</div>
+                    ${items.length > 0 ? items.map((it, i) => `
+                        <div class="p-1.5 bg-slate-50 rounded border border-slate-200">
+                            <div class="font-bold text-[11px] text-slate-900">${i + 1}. ${it.drug_name}</div>
+                            <div class="text-[10px] text-slate-700">${it.dosage || 'جرعة قياسية'}</div>
+                            <div class="text-[9px] text-purple-700 font-semibold">${it.instructions || 'حسب إرشادات الطبيب'}</div>
+                        </div>
+                    `).join('') : `<div class="text-[11px] p-2 bg-slate-50 rounded">${freeRxText || 'العلاج الموصوف مدون بواسطة الطبيب'}</div>`}
+                </div>
+
+                ${freeRxText && items.length > 0 ? `
+                <div class="py-2 border-b border-dashed border-slate-300 text-[10px] text-slate-700">
+                    <span class="font-bold block">فحوصات وتوجيهات إضافية:</span>
+                    ${freeRxText.replace(/\n/g, '<br>')}
+                </div>` : ''}
+
+                <div class="pt-3 text-center space-y-1.5">
+                    <div class="text-[10px] text-slate-500">تمنياتنا لكم بالشفاء العاجل 🌸</div>
+                    <div class="text-[9px] font-mono text-slate-400">للصرف الفوري من صيدلية المجمع — خط ساخن: 19821</div>
+                    <div class="h-6 flex items-center justify-center font-mono text-[9px] tracking-widest text-slate-400">||| |||| || ||||| |||| ||</div>
+                </div>
+            </div>`;
+        }
+
+        // نمط روشتة A4 الطبي الرسمي المعتمد
+        return `
+        <div class="max-w-[700px] mx-auto p-6 bg-white text-slate-900 rounded-2xl shadow border border-slate-300 space-y-4">
+            <!-- ترويسة الروشتة الرسمية -->
+            <div class="flex items-center justify-between pb-4 border-b-2 border-purple-600">
+                <div class="text-right space-y-1">
+                    <h2 class="text-lg font-black text-purple-900">مجمع عيادات الواجح الطبي التخصصي</h2>
+                    <h3 class="text-xs font-bold text-slate-700">${clinicName}</h3>
+                    <p class="text-[11px] text-slate-500 font-medium">${docName} — استشاري التخصص</p>
+                    <p class="text-[10px] text-slate-400 font-mono">ترخيص وزارة الصحة: 94812/2026</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-black text-2xl shadow-md mx-auto">و</div>
+                    <span class="text-[9px] text-purple-700 font-black block mt-1">AL WAGIH CLINIC</span>
+                </div>
+                <div class="text-left space-y-1 font-mono text-xs">
+                    <div class="font-bold text-slate-800">التاريخ: ${dateStr}</div>
+                    <div class="text-slate-500">الوقت: ${timeStr}</div>
+                    <div class="px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 font-bold text-[10px]">كود: ${rxNumber}</div>
+                </div>
+            </div>
+
+            <!-- بيانات المريض والعلامات الحيوية -->
+            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <div><span class="text-slate-400 block text-[10px]">اسم المريض:</span><span class="font-bold text-slate-900">${patientName}</span></div>
+                <div><span class="text-slate-400 block text-[10px]">الهاتف:</span><span class="font-mono text-slate-700">${patientPhone}</span></div>
+                <div><span class="text-slate-400 block text-[10px]">التشخيص السريري:</span><span class="font-bold text-purple-800">${diagnosis}</span></div>
+                <div><span class="text-slate-400 block text-[10px]">العلامات الحيوية:</span><span class="font-mono text-slate-700">BP: 120/80 • Pulse: 75</span></div>
+            </div>
+
+            <!-- علامة وقائمة الأدوية ℞ -->
+            <div class="space-y-3 pt-2">
+                <div class="flex items-center gap-2 border-b border-purple-200 pb-1">
+                    <span class="text-2xl font-black text-purple-700 font-serif">℞</span>
+                    <span class="text-xs font-bold text-slate-800">الوصفة الدوائية الرسمية (Prescription Items)</span>
+                </div>
+
+                ${items.length > 0 ? `
+                <table class="w-full text-right text-xs border border-slate-200 rounded-xl overflow-hidden">
+                    <thead class="bg-purple-50/70 text-purple-900 font-bold text-[11px]">
+                        <tr>
+                            <th class="py-2 px-3">م</th>
+                            <th class="py-2 px-3">اسم الدواء والمستحضر</th>
+                            <th class="py-2 px-3">الجرعة المحددة</th>
+                            <th class="py-2 px-3">تعليمات وطريقة الاستخدام</th>
+                            <th class="py-2 px-3 text-center">الكمية</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 font-medium">
+                        ${items.map((it, i) => `
+                            <tr class="hover:bg-slate-50">
+                                <td class="py-2 px-3 text-slate-400">${i + 1}</td>
+                                <td class="py-2 px-3 font-bold text-slate-900">${it.drug_name}</td>
+                                <td class="py-2 px-3 text-slate-700 font-mono">${it.dosage || 'جرعة قياسية'}</td>
+                                <td class="py-2 px-3 text-purple-700">${it.instructions || 'حسب إرشادات الطبيب'}</td>
+                                <td class="py-2 px-3 text-center font-bold text-slate-800">${it.quantity || 1}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>` : `<div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-700 whitespace-pre-line">${freeRxText || 'العلاج الطبي الموصوف مدون من قبل الطبيب'}</div>`}
+            </div>
+
+            ${freeRxText && items.length > 0 ? `
+            <div class="p-3 bg-purple-50/40 rounded-xl border border-purple-100 text-xs space-y-1">
+                <span class="font-bold text-purple-900 block text-[11px]">فحوصات وتحاليل واستشارات إضافية:</span>
+                <p class="text-slate-700 whitespace-pre-line">${freeRxText}</p>
+            </div>` : ''}
+
+            ${notes ? `
+            <div class="text-[11px] text-slate-600 bg-amber-50/40 p-2.5 rounded-lg border border-amber-200">
+                <span class="font-bold text-amber-900">نصائح وإرشادات المتابعة:</span> ${notes}
+            </div>` : ''}
+
+            <!-- تذييل الروشتة والتوقيع وخاتم العيادة -->
+            <div class="pt-6 border-t border-slate-200 flex items-end justify-between text-xs">
+                <div class="space-y-1 text-[10px] text-slate-500 font-mono">
+                    <div>مجمع عيادات الواجح التخصصي — رعاية طبية متكاملة</div>
+                    <div>العنوان: شارع النيل، الدور الثالث • خط ساخن: 19821 • واتساب: 01000000000</div>
+                    <div class="text-[9px] text-slate-400">رمز التحقق الإلكتروني: ${rxNumber} — صالحة لمدة 7 أيام</div>
+                </div>
+                <div class="text-center space-y-2">
+                    <div class="w-36 border-b-2 border-slate-400 pb-1 font-bold text-slate-900 text-xs">توقيع وخاتم الطبيب المعالج</div>
+                    <span class="text-[10px] text-purple-700 font-bold block">${docName}</span>
+                </div>
+            </div>
+        </div>`;
+    },
+
+    printCurrentPrescription() {
+        const printArea = document.getElementById('print-area');
+        if (!printArea) return;
+        printArea.innerHTML = this.renderRxPreviewHTML(this.currentRxPrintFormat);
+        window.print();
+    },
+
+    saveAndPrintPrescription() {
+        // التحقق من وجود روشتة
+        const form = document.getElementById('consultation-form');
+        if (form) {
+            this.handleConsultationSubmit(new Event('submit'));
+        }
+        setTimeout(() => {
+            this.openPrintPrescriptionModal('a4');
+        }, 300);
+    },
+
+    // =========================================================================
+    // مركز سحب العينات وباركود الأنابيب المعملية (Specimen Sampling & Tube Barcode Hub)
+    // =========================================================================
+    openSamplingHubModal() {
+        if (!this.activeAppointment) {
+            Utils.showToast('يرجى استدعاء مريض أولاً لإدارة سحب العينات والأنابيب', 'warning');
+            return;
+        }
+        const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
+        const docName = this.doctor ? (this.doctor.full_name || 'طبيب الكشف') : 'د. استشاري الكشف';
+        
+        document.getElementById('sampling-patient-name').textContent = patientName;
+        document.getElementById('sampling-doctor-name').textContent = docName;
+        document.getElementById('sampling-timestamp').textContent = new Date().toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' });
+
+        this.renderSamplingOrders();
+        document.getElementById('doctor-sampling-hub-modal').classList.remove('hidden');
+    },
+
+    getStoredLabOrders() {
+        try {
+            const stored = localStorage.getItem('alwagih_lab_orders');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            }
+        } catch(e) {}
+
+        // إذا لم توجد طلبات مخبرية سابقة، ننشئ طلبات نموذجية للمريض الحالي لعرض قوة النظام
+        const patientName = this.activeAppointment ? (this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name) : 'المريض الحالي';
+        const sampleOrders = [
+            {
+                id: 'LAB-' + (Date.now() - 10000),
+                patient_name: patientName,
+                doctor_name: 'د. استشاري الكشف',
+                test_code: 'HEM-001',
+                test_name: 'صورة دم كاملة (Complete Blood Count - CBC)',
+                tube: 'أنبوبة موف EDTA معقمة 🟣',
+                tube_color: 'purple',
+                tube_name_ar: 'أنبوبة موف EDTA',
+                fasting_hours: 0,
+                cost: 160,
+                status: 'pending_sampling',
+                sample_barcode: 'SMP-891240',
+                created_at: new Date().toISOString()
+            },
+            {
+                id: 'LAB-' + (Date.now() - 5000),
+                patient_name: patientName,
+                doctor_name: 'د. استشاري الكشف',
+                test_code: 'BIO-019',
+                test_name: 'صورة الدهون الكاملة (Lipid Profile Panel)',
+                tube: 'أنبوبة صفراء جل 🟡',
+                tube_color: 'yellow',
+                tube_name_ar: 'أنبوبة سيروم صفراء جل',
+                fasting_hours: 12,
+                cost: 260,
+                status: 'pending_sampling',
+                sample_barcode: 'SMP-891241',
+                created_at: new Date().toISOString()
+            },
+            {
+                id: 'LAB-' + Date.now(),
+                patient_name: patientName,
+                doctor_name: 'د. استشاري الكشف',
+                test_code: 'END-001',
+                test_name: 'تحليل هرمون المنبه للدرقية (TSH Ultra-sensitive)',
+                tube: 'أنبوبة صفراء جل 🟡',
+                tube_color: 'yellow',
+                tube_name_ar: 'أنبوبة سيروم صفراء جل',
+                fasting_hours: 0,
+                cost: 190,
+                status: 'pending_sampling',
+                sample_barcode: 'SMP-891242',
+                created_at: new Date().toISOString()
+            }
+        ];
+        localStorage.setItem('alwagih_lab_orders', JSON.stringify(sampleOrders));
+        return sampleOrders;
+    },
+
+    renderSamplingOrders() {
+        const container = document.getElementById('sampling-orders-list-container');
+        if (!container) return;
+
+        const allOrders = this.getStoredLabOrders();
+        const patientName = this.activeAppointment ? (this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name) : '';
+        const patientOrders = allOrders.filter(o => !patientName || o.patient_name === patientName || o.patient_name.includes(patientName.split(' ')[0]));
+
+        const listToRender = patientOrders.length > 0 ? patientOrders : allOrders.slice(0, 5);
+
+        const badgeCount = document.getElementById('sampling-tests-count-badge');
+        if (badgeCount) badgeCount.textContent = `${listToRender.length} فحوصات مطلوبة`;
+
+        if (listToRender.length === 0) {
+            container.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 bg-slate-50 dark:bg-slate-950 rounded-2xl">لا توجد تحاليل مطلوبة حالياً لهذا المريض. يمكنك طلب فحص بالضغط على زر "طلب تحاليل طبية".</div>`;
+            return;
+        }
+
+        const tubeColorsMap = {
+            purple: { bg: 'bg-purple-100 dark:bg-purple-950/70', text: 'text-purple-800 dark:text-purple-300', border: 'border-purple-300 dark:border-purple-800', icon: '🟣' },
+            yellow: { bg: 'bg-amber-100 dark:bg-amber-950/70', text: 'text-amber-800 dark:text-amber-300', border: 'border-amber-300 dark:border-amber-800', icon: '🟡' },
+            blue: { bg: 'bg-sky-100 dark:bg-sky-950/70', text: 'text-sky-800 dark:text-sky-300', border: 'border-sky-300 dark:border-sky-800', icon: '🔵' },
+            green: { bg: 'bg-emerald-100 dark:bg-emerald-950/70', text: 'text-emerald-800 dark:text-emerald-300', border: 'border-emerald-300 dark:border-emerald-800', icon: '🟢' },
+            red: { bg: 'bg-rose-100 dark:bg-rose-950/70', text: 'text-rose-800 dark:text-rose-300', border: 'border-rose-300 dark:border-rose-800', icon: '🔴' }
+        };
+
+        container.innerHTML = listToRender.map(o => {
+            const isCollected = o.status === 'sample_collected' || o.status === 'completed';
+            const tubeInfo = tubeColorsMap[o.tube_color] || tubeColorsMap.purple;
+
+            return `
+            <div class="p-3.5 rounded-2xl border ${isCollected ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'} flex flex-wrap items-center justify-between gap-3 transition">
+                <div class="flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-2xl ${tubeInfo.bg} ${tubeInfo.text} flex items-center justify-center text-lg font-black border ${tubeInfo.border}">
+                        ${tubeInfo.icon}
+                    </span>
+                    <div>
+                        <div class="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-2">
+                            <span>${o.test_name}</span>
+                            <span class="font-mono text-[10px] text-slate-400">#${o.test_code || 'LAB'}</span>
+                        </div>
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-3 mt-0.5">
+                            <span class="font-bold ${tubeInfo.text}">${o.tube_name_ar || o.tube || 'أنبوبة فحص'}</span>
+                            <span>•</span>
+                            <span>${(o.fasting_hours && o.fasting_hours > 0) ? ('صيام ' + o.fasting_hours + ' ساعة ⏱️') : 'بدون صيام'}</span>
+                            <span>•</span>
+                            <span class="font-mono text-purple-600 font-bold">${Utils.formatCurrency(o.cost || 150)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="text-left font-mono text-[10px] pl-2 border-l border-slate-200 dark:border-slate-800">
+                        <span class="text-slate-400 block">باركود العينة:</span>
+                        <span class="font-bold text-slate-900 dark:text-white tracking-widest">${o.sample_barcode || 'SMP-891240'}</span>
+                    </div>
+
+                    ${isCollected ? `
+                        <span class="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-bold flex items-center gap-1 border border-emerald-300 dark:border-emerald-800">
+                            <span>✓</span>
+                            <span>تم السحب</span>
+                        </span>
+                    ` : `
+                        <button type="button" onclick="DoctorApp.collectSample('${o.id}')" class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition flex items-center gap-1 shadow-sm">
+                            <span>🩸</span>
+                            <span>تأكيد سحب العينة</span>
+                        </button>
+                    `}
+
+                    <button type="button" onclick="DoctorApp.printTubeLabel('${o.id}')" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1" title="طباعة لاصق باركود للأنبوبة 50x30 مم">
+                        <span>🏷️</span>
+                        <span>طباعة اللاصق</span>
+                    </button>
+                </div>
+            </div>`;
+        }).join('');
+    },
+
+    collectSample(orderId) {
+        try {
+            const stored = localStorage.getItem('alwagih_lab_orders');
+            let list = stored ? JSON.parse(stored) : [];
+            const idx = list.findIndex(o => o.id === orderId);
+            if (idx !== -1) {
+                list[idx].status = 'sample_collected';
+                list[idx].collected_at = new Date().toISOString();
+                list[idx].collector_name = this.doctor ? (this.doctor.full_name || 'فني سحب العينات') : 'فني سحب العينات';
+                localStorage.setItem('alwagih_lab_orders', JSON.stringify(list));
+                this.renderSamplingOrders();
+                Utils.showToast(`✓ تم تأكيد سحب العينة بنجاح وربط الباركود (${list[idx].sample_barcode})`, 'success');
+            }
+        } catch(e) {}
+    },
+
+    collectAllSamplesForActivePatient() {
+        try {
+            const stored = localStorage.getItem('alwagih_lab_orders');
+            let list = stored ? JSON.parse(stored) : [];
+            const patientName = this.activeAppointment ? (this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name) : '';
+            
+            list.forEach(o => {
+                if (!patientName || o.patient_name === patientName || o.patient_name.includes(patientName.split(' ')[0])) {
+                    o.status = 'sample_collected';
+                    o.collected_at = new Date().toISOString();
+                    o.collector_name = this.doctor ? (this.doctor.full_name || 'فني سحب العينات') : 'فني سحب العينات';
+                }
+            });
+            localStorage.setItem('alwagih_lab_orders', JSON.stringify(list));
+            this.renderSamplingOrders();
+            Utils.showToast('✓ تم تأكيد سحب كافة العينات المعملية المطلوبة للمريض بنجاح', 'success');
+        } catch(e) {}
+    },
+
+    printTubeLabel(orderId) {
+        const stored = localStorage.getItem('alwagih_lab_orders');
+        const list = stored ? JSON.parse(stored) : [];
+        const order = list.find(o => o.id === orderId) || list[0];
+        if (!order) return;
+
+        const patientName = order.patient_name || (this.activeAppointment?.patient?.full_name || 'المريض');
+        const barcode = order.sample_barcode || ('SMP-' + Math.floor(100000 + Math.random() * 900000));
+        const testCode = order.test_code || 'LAB';
+        const tube = order.tube_name_ar || order.tube || 'EDTA';
+        const dateStr = new Date().toLocaleDateString('ar-EG');
+        const timeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+
+        const labelHTML = `
+        <div style="width: 50mm; height: 30mm; padding: 2mm; font-family: monospace; font-size: 8pt; line-height: 1.2; text-align: right; direction: rtl; border: 1px dashed #ccc; box-sizing: border-box; background: #fff; color: #000;">
+            <div style="font-weight: bold; font-size: 8.5pt; border-bottom: 1px solid #000; padding-bottom: 1mm; margin-bottom: 1mm; display: flex; justify-content: space-between;">
+                <span>مجمع الواجح</span>
+                <span>${tube}</span>
+            </div>
+            <div style="font-size: 8pt; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${patientName}
+            </div>
+            <div style="font-size: 7.5pt; color: #333;">
+                فحص: ${testCode} • ${order.test_name?.split('(')[0] || 'تحليل'}
+            </div>
+            <div style="text-align: center; font-weight: bold; letter-spacing: 2px; font-size: 9pt; margin: 1mm 0;">
+                *${barcode}*
+            </div>
+            <div style="font-size: 6.5pt; display: flex; justify-content: space-between; color: #555;">
+                <span>${dateStr} ${timeStr}</span>
+                <span>${barcode}</span>
+            </div>
+        </div>`;
+
+        const printArea = document.getElementById('print-area');
+        if (printArea) {
+            printArea.innerHTML = labelHTML;
+            window.print();
+        }
+    },
+
+    printLabRequisitionSlip() {
+        const stored = localStorage.getItem('alwagih_lab_orders');
+        const list = stored ? JSON.parse(stored) : [];
+        const patientName = this.activeAppointment ? (this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name) : 'المريض';
+        const patientOrders = list.filter(o => !patientName || o.patient_name === patientName || o.patient_name.includes(patientName.split(' ')[0]));
+        const ordersToPrint = patientOrders.length > 0 ? patientOrders : list.slice(0, 5);
+
+        const slipHTML = `
+        <div style="max-width: 650px; margin: 0 auto; padding: 20px; font-family: system-ui, sans-serif; direction: rtl; text-align: right; background: #fff; color: #000; border: 1px solid #ddd; border-radius: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0284c7; padding-bottom: 10px; margin-bottom: 15px;">
+                <div>
+                    <h2 style="margin: 0; color: #0369a1; font-size: 16pt;">مجمع عيادات الواجح الطبي — إذن تحويل المختبر وسحب العينات</h2>
+                    <p style="margin: 3px 0 0; font-size: 9pt; color: #666;">LIS Laboratory Diagnostic Requisition & Specimen Manifest</p>
+                </div>
+                <div style="text-align: left; font-size: 9pt;">
+                    <div>التاريخ: ${new Date().toLocaleDateString('ar-EG')}</div>
+                    <div>الوقت: ${new Date().toLocaleTimeString('ar-EG')}</div>
+                </div>
+            </div>
+
+            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 9pt; display: flex; justify-content: space-between;">
+                <div><strong>المريض:</strong> ${patientName}</div>
+                <div><strong>الطبيب المحول:</strong> ${this.doctor?.full_name || 'د. استشاري الكشف'}</div>
+                <div><strong>العيادة:</strong> ${this.doctor?.clinic_name || 'الباطنة العامة'}</div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 9pt; margin-bottom: 15px;">
+                <thead>
+                    <tr style="background: #e0f2fe; color: #0369a1; text-align: right;">
+                        <th style="padding: 8px; border: 1px solid #bae6fd;">م</th>
+                        <th style="padding: 8px; border: 1px solid #bae6fd;">اسم الفحص المخبري</th>
+                        <th style="padding: 8px; border: 1px solid #bae6fd;">الكود</th>
+                        <th style="padding: 8px; border: 1px solid #bae6fd;">نوع الأنبوبة والعينة</th>
+                        <th style="padding: 8px; border: 1px solid #bae6fd;">شروط الصيام</th>
+                        <th style="padding: 8px; border: 1px solid #bae6fd;">باركود العينة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${ordersToPrint.map((o, i) => `
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #e2e8f0;">${i + 1}</td>
+                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-weight: bold;">${o.test_name}</td>
+                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace;">${o.test_code || 'LAB'}</td>
+                            <td style="padding: 8px; border: 1px solid #e2e8f0;">${o.tube_name_ar || o.tube || 'سيروم'}</td>
+                            <td style="padding: 8px; border: 1px solid #e2e8f0;">${(o.fasting_hours && o.fasting_hours > 0) ? ('صيام ' + o.fasting_hours + ' ساعة') : 'بدون صيام'}</td>
+                            <td style="padding: 8px; border: 1px solid #e2e8f0; font-family: monospace; font-weight: bold;">${o.sample_barcode || 'SMP-891240'}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; padding-top: 20px; font-size: 9pt;">
+                <div>توقيع فني سحب العينات: ...........................</div>
+                <div>توقيع الطبيب المحول: ...........................</div>
+                <div>خاتم المختبر المعتمد</div>
+            </div>
+        </div>`;
+
+        const printArea = document.getElementById('print-area');
+        if (printArea) {
+            printArea.innerHTML = slipHTML;
+            window.print();
         }
     }
 };
