@@ -2853,44 +2853,50 @@ const ClinicAdminApp = {
 
         const modBadges = {
             'X-Ray': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">🦴 أشعة سينية</span>',
+            'Fluoroscopy': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">📽️ فلوروسكوبي</span>',
             'Ultrasound': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300">📡 سونار ودوبلر</span>',
             'CT': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">🌀 مقطعية CT</span>',
             'MRI': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">🧲 رنين MRI</span>',
+            'Nuclear Medicine': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300">☢️ طب نووي</span>',
+            'PET-CT': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">🔬 بي إي تي PET-CT</span>',
+            'Mammography': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-pink-100 text-pink-800 dark:bg-pink-950 dark:text-pink-300">🎀 ماموجرام</span>',
+            'DEXA': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">📊 ديكسا</span>',
+            'Dental X-Ray': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300">🦷 أسنان CBCT</span>',
             'Specialized': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">✨ متخصصة</span>'
         };
 
         tbody.innerHTML = list.map(exam => {
             const modBadge = modBadges[exam.modality] || `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100">${exam.modality}</span>`;
             const contrastBadge = exam.contrast 
-                ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">بالصبغة (Contrast)</span>'
+                ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 block">⚠️ بالصبغة (Contrast)</span><span class="text-[9px] text-rose-500 block mt-0.5">${(exam.contrast_type || '').split('(')[0]}</span>`
                 : '<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">بدون صبغة (Plain)</span>';
 
             return `
                 <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
                     <td class="py-3 px-3">
-                        <span class="font-mono font-bold text-indigo-700 dark:text-indigo-400 text-xs">${exam.key ? exam.key.toUpperCase() : exam.id}</span>
+                        <span class="font-mono font-bold text-indigo-700 dark:text-indigo-400 text-xs">${exam.code || (exam.key ? exam.key.toUpperCase() : exam.id)}</span>
                     </td>
                     <td class="py-3 px-3">
-                        <div class="font-bold text-slate-900 dark:text-white">${exam.name_ar}</div>
-                        <div class="text-[11px] text-slate-400 font-mono">${exam.name_en}</div>
+                        <div class="font-bold text-slate-900 dark:text-white">${exam.name_ar || exam.name}</div>
+                        <div class="text-[11px] text-slate-400 font-mono">${exam.name_en || ''}</div>
                     </td>
                     <td class="py-3 px-3">
                         ${modBadge}
                     </td>
                     <td class="py-3 px-3 text-xs text-slate-700 dark:text-slate-300">
-                        ${exam.body_region || 'عام'}
+                        ${exam.body_part_ar || exam.body_part || exam.body_region || 'عام'}
                     </td>
                     <td class="py-3 px-3">
                         ${contrastBadge}
                     </td>
                     <td class="py-3 px-3 text-xs text-slate-600 dark:text-slate-400">
-                        ${exam.prep_notes_ar || (exam.fasting_hours ? 'صيام ' + exam.fasting_hours + ' ساعات' : 'بدون تحضير')}
+                        ${exam.prep_notes_ar || exam.prep || (exam.fasting_hours ? 'صيام ' + exam.fasting_hours + ' ساعات' : 'بدون تحضير خاص')}
                     </td>
                     <td class="py-3 px-3 font-mono text-slate-600 dark:text-slate-400 text-xs">
-                        ⏱️ ${exam.duration_min ? exam.duration_min + ' دقيقة' : '15 دقيقة'}
+                        ⏱️ ${exam.duration_mins ? exam.duration_mins + ' دقيقة' : (exam.duration || '20 دقيقة')}
                     </td>
                     <td class="py-3 px-3 font-mono font-bold text-emerald-600 dark:text-emerald-400 text-xs">
-                        ${Utils.formatCurrency(exam.cost)}
+                        ${Utils.formatCurrency(exam.cost || exam.price || 300)}
                     </td>
                 </tr>
             `;
@@ -3984,13 +3990,22 @@ const ClinicAdminApp = {
         }
 
         const specBadges = {
-            internal: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">باطنة وصدرية</span>',
-            cardio: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">أمراض القلب</span>',
-            ortho: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">عظام ومفاصل</span>',
-            ent: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">أنف وأذن</span>',
-            ophth: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300">طب العيون</span>',
+            internal: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">باطنة ومناظير</span>',
+            pediatric: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">أطفال وحديثي ولادة</span>',
+            cardiology: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">أمراض القلب</span>',
+            cardio: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">أمراض القلب</span>',
+            dental: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300">طب وجراحة الأسنان</span>',
+            orthopedic: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">عظام ومفاصل</span>',
+            ortho: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">عظام ومفاصل</span>',
             obgyn: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-pink-100 text-pink-800 dark:bg-pink-950 dark:text-pink-300">نساء وتوليد</span>',
-            derma: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">جلدية وجراحة صغرى</span>'
+            ent: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">أنف وأذن وحنجرة</span>',
+            ophthalmology: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300">طب وجراحة العيون</span>',
+            ophth: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300">طب وجراحة العيون</span>',
+            dermatology: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">جلدية وتجميل</span>',
+            derma: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">جلدية وتجميل</span>',
+            surgery: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">جراحة عامة ومسالك</span>',
+            neurology: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300">مخ وأعصاب</span>',
+            pulmonology: '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">صدرية وحساسية</span>'
         };
 
         // Update KPIs
