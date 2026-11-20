@@ -351,7 +351,8 @@ const ClinicAdminApp = {
         const select = document.getElementById('wa-patient-select');
         if (!select || !select.value) return;
 
-        const opt = select.options[select.selectedIndex];
+        const opt = (select.selectedIndex >= 0 && select.options) ? select.options[select.selectedIndex] : null;
+        if (!opt) return;
         const phone = opt.getAttribute('data-phone') || '';
         const phoneInput = document.getElementById('wa-phone-input');
         if (phoneInput) phoneInput.value = phone;
@@ -984,11 +985,13 @@ const ClinicAdminApp = {
         if (penaltyForm && penaltyModal) {
             penaltyForm.onsubmit = (e) => {
                 e.preventDefault();
-                const empName = document.getElementById('penalty-emp-select').value;
-                const type = document.getElementById('penalty-type-select').value;
-                const days = document.getElementById('penalty-days-input').value || 1;
-                const amount = document.getElementById('penalty-amount-input').value || 100;
-                const reason = document.getElementById('penalty-reason-input').value.trim();
+                const empName = document.getElementById('penalty-emp-select') ? document.getElementById('penalty-emp-select').value : 'موظف';
+                const type = document.getElementById('penalty-type-select') ? document.getElementById('penalty-type-select').value : 'days';
+                const days = (document.getElementById('penalty-days-input') && document.getElementById('penalty-days-input').value) || 1;
+                const amountEl = document.getElementById('penalty-amount-input');
+                const amount = amountEl ? (amountEl.value || 100) : (type === 'amount' ? days : days * 250);
+                const reasonEl = document.getElementById('penalty-reason-input');
+                const reason = reasonEl ? reasonEl.value.trim() : 'مخالفة إدارية';
 
                 this.penalties.unshift({
                     id: 'pen_' + Date.now(),
@@ -1952,7 +1955,7 @@ const ClinicAdminApp = {
         const tbody = document.getElementById('lab-orders-table-body');
         if (!tbody) return;
 
-        const list = customList || this.labOrders;
+        const list = (Array.isArray(customList) ? customList : null) || this.labOrders || [];
         if (!list || list.length === 0) {
             tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-xs text-slate-400">لا توجد عينات أو تحاليل مسجلة حالياً.</td></tr>`;
             return;
@@ -3979,7 +3982,7 @@ const ClinicAdminApp = {
             ? this.clinicProcedures
             : ((window.MedicalCatalog && MedicalCatalog.clinicProcedures) ? MedicalCatalog.clinicProcedures : []);
 
-        const list = customList || allProcs.filter(p => {
+        const list = (Array.isArray(customList) ? customList : null) || allProcs.filter(p => {
             if (this.selectedProcSpecialty === 'all') return true;
             return p.specialty === this.selectedProcSpecialty;
         });
@@ -5141,4 +5144,10 @@ const ClinicAdminApp = {
 };
 
 window.ClinicAdminApp = ClinicAdminApp;
-document.addEventListener('DOMContentLoaded', () => ClinicAdminApp.init());
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => ClinicAdminApp.init());
+    } else {
+        ClinicAdminApp.init();
+    }
+}
