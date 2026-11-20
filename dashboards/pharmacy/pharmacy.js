@@ -552,7 +552,7 @@ const PharmacyApp = {
         const totalDisplay = document.getElementById('otc-total-display');
         if (!select || !totalDisplay) return;
 
-        const opt = select.selectedOptions[0];
+        const opt = (select.selectedOptions && select.selectedOptions[0]) ? select.selectedOptions[0] : (select.options && select.selectedIndex >= 0 ? select.options[select.selectedIndex] : null);
         const price = opt ? parseFloat(opt.getAttribute('data-price')) || 0 : 0;
         const total = price * qty;
         totalDisplay.textContent = Utils.formatCurrency(total);
@@ -998,4 +998,10 @@ const PharmacyApp = {
 };
 
 window.PharmacyApp = PharmacyApp;
-document.addEventListener('DOMContentLoaded', () => PharmacyApp.init());
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => PharmacyApp.init());
+    } else {
+        PharmacyApp.init();
+    }
+}
