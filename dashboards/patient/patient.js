@@ -605,23 +605,26 @@ const PatientApp = {
     },
 
     showBookingSuccessBanner(apt, customMsg) {
+        const item = apt || { id: 'apt_' + Date.now(), doctor_name: 'د. أحمد الشناوي', date: new Date().toISOString().split('T')[0] };
         const banner = document.getElementById('patient-booking-success-banner');
         const msgEl = document.getElementById('patient-booking-success-msg');
         const btn = document.getElementById('patient-banner-whatsapp-btn');
         if (!banner) return;
 
         if (msgEl) {
-            msgEl.textContent = customMsg || `تم تأكيد حجزك برقم #${apt.id.slice(-6)} مع ${apt.doctor_name} بتاريخ ${apt.date}. يمكنك إرسال تفاصيل الموعد عبر الواتساب بالضغط على الزر أدناه.`;
+            msgEl.textContent = customMsg || `تم تأكيد حجزك برقم #${(item.id || '').slice(-6)} مع ${item.doctor_name || 'الطبيب'} بتاريخ ${item.date || ''}. يمكنك إرسال تفاصيل الموعد عبر الواتساب بالضغط على الزر أدناه.`;
         }
 
         if (btn) {
             btn.onclick = () => {
-                this.openWhatsAppConfirm(apt.id);
+                this.openWhatsAppConfirm(item.id);
             };
         }
 
         banner.classList.remove('hidden');
-        banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (typeof banner.scrollIntoView === 'function') {
+            banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     },
 
     renderMedicalPackages() {
@@ -935,4 +938,10 @@ const PatientApp = {
 };
 
 window.PatientApp = PatientApp;
-document.addEventListener('DOMContentLoaded', () => PatientApp.init());
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => PatientApp.init());
+    } else {
+        PatientApp.init();
+    }
+}
