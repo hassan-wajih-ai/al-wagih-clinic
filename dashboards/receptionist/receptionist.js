@@ -55,7 +55,7 @@ const ReceptionistApp = {
 
     async loadContractsList() {
         try {
-            if (window.db && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
+            if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.db) {
                 const { data } = await window.db.from('corporate_contracts').select('*').eq('status', 'active');
                 this.contracts = data || [];
             } else {
@@ -98,7 +98,7 @@ const ReceptionistApp = {
         tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">جاري تحميل كشوفات اليوم...</td></tr>`;
 
         try {
-            if (window.db && window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
+            if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.db) {
                 const { data, error } = await window.db
                     .from('appointments')
                     .select('*, patient:users_profiles!patient_id(full_name, phone), doctor:users_profiles!doctor_id(full_name), corporate_contracts(name, discount_percentage)')
@@ -188,7 +188,7 @@ const ReceptionistApp = {
 
     async updateStatus(apptId, newStatus) {
         try {
-            if (window.db && window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
+            if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.db) {
                 await window.db.from('appointments').update({ status: newStatus }).eq('id', apptId);
             }
             const item = this.appointments.find(a => a.id === apptId);
@@ -397,4 +397,10 @@ const ReceptionistApp = {
 };
 
 window.ReceptionistApp = ReceptionistApp;
-document.addEventListener('DOMContentLoaded', () => ReceptionistApp.init());
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => ReceptionistApp.init());
+    } else {
+        ReceptionistApp.init();
+    }
+}
