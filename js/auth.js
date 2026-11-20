@@ -85,13 +85,16 @@ const Auth = {
 
         const normalizedEmail = email.toLowerCase().trim();
 
-        // 1. المحاولة الأولى: عبر Supabase إذا كانت مفاتيح الاتصال مهيأة
-        if (window.db && window.SUPABASE_CONFIG && !window.SUPABASE_CONFIG.url.includes('xyzcompany')) {
+        // 1. المحاولة الأولى: عبر Supabase إذا كانت مفاتيح الاتصال مهيأة فعلياً
+        if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.db) {
             try {
-                const { data, error } = await window.db.auth.signInWithPassword({
+                // مهلة زمنية 3 ثوانٍ لمنع تعليق واجهة المستخدم عند بطء الاتصال
+                const loginPromise = window.db.auth.signInWithPassword({
                     email: normalizedEmail,
                     password
                 });
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Auth Timeout')), 3000));
+                const { data, error } = await Promise.race([loginPromise, timeoutPromise]);
 
                 if (!error && data && data.user) {
                     const profile = await this.getUserProfile(data.user.id);
@@ -102,7 +105,7 @@ const Auth = {
                     }
                 }
             } catch (err) {
-                console.warn('Supabase auth failed, switching to smart demo login:', err);
+                console.warn('Supabase auth unavailable, switching to smart demo login:', err);
             }
         }
 
@@ -170,8 +173,8 @@ const Auth = {
     async protectRoute(allowedRoles = []) {
         if (!window.db && typeof initSupabase === 'function') initSupabase();
 
-        // 1. فحص جلسة Supabase الحية إن وجدت
-        if (window.db) {
+        // 1. فحص جلسة Supabase الحية إن كانت مهيأة فعلياً
+        if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.db) {
             try {
                 const { data: { session } } = await window.db.auth.getSession();
                 if (session && session.user) {
