@@ -22,7 +22,7 @@ const SuperAdminApp = {
 
     async loadClinics() {
         try {
-            if (window.db && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
+            if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.db) {
                 const { data, error } = await window.db
                     .from('clinics')
                     .select('*, branches(count)')
@@ -181,7 +181,7 @@ const SuperAdminApp = {
         const newStatus = clinic.status === 'active' ? 'suspended' : 'active';
         clinic.status = newStatus;
 
-        if (window.db && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
+        if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.db) {
             await window.db.from('clinics').update({ status: newStatus }).eq('id', clinicId);
         }
 
@@ -206,7 +206,7 @@ const SuperAdminApp = {
                     created_at: new Date().toISOString()
                 };
 
-                if (window.db && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
+                if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.db) {
                     const { data, error } = await window.db.from('clinics').insert([{ name, status: 'active' }]).select();
                     if (error) {
                         Utils.showToast(error.message, 'error');
@@ -235,4 +235,10 @@ const SuperAdminApp = {
 };
 
 window.SuperAdminApp = SuperAdminApp;
-document.addEventListener('DOMContentLoaded', () => SuperAdminApp.init());
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => SuperAdminApp.init());
+    } else {
+        SuperAdminApp.init();
+    }
+}
