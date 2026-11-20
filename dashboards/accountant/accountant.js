@@ -341,4 +341,10 @@ const AccountantApp = {
 };
 
 window.AccountantApp = AccountantApp;
-document.addEventListener('DOMContentLoaded', () => AccountantApp.init());
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => AccountantApp.init());
+    } else {
+        AccountantApp.init();
+    }
+}
