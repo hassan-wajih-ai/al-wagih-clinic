@@ -299,4 +299,10 @@ const QueueApp = {
 };
 
 window.QueueApp = QueueApp;
-document.addEventListener('DOMContentLoaded', () => QueueApp.init());
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => QueueApp.init());
+    } else {
+        QueueApp.init();
+    }
+}
