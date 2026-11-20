@@ -55,7 +55,7 @@ const DoctorApp = {
     async loadDoctorWaitingList() {
         const todayStr = new Date().toISOString().split('T')[0];
         try {
-            if (window.db && window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url.indexOf('xyzcompany') === -1) {
+            if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.db) {
                 const { data, error } = await window.db
                     .from('appointments')
                     .select('*, patient:users_profiles!patient_id(full_name, phone)')
@@ -72,6 +72,12 @@ const DoctorApp = {
         } catch (err) {
             this.appointments = this.getStoredAppointments();
             this.renderWaitingList();
+        }
+
+        // تفعيل أول مريض في الانتظار تلقائياً لتكون كافة الأزرار والأيقونات جاهزة للعمل فورياً
+        if (!this.activeAppointment && this.appointments && this.appointments.length > 0) {
+            const firstWaiting = this.appointments.find(a => a.status === 'waiting' || a.status === 'in_progress') || this.appointments[0];
+            if (firstWaiting) this.selectAppointment(firstWaiting);
         }
     },
 
@@ -256,7 +262,7 @@ const DoctorApp = {
 
     onDocLabTestChanged() {
         const select = document.getElementById('doc-lab-test-select');
-        if (!select || select.selectedIndex === -1) return;
+        if (!select || !select.options || select.selectedIndex < 0 || !select.options[select.selectedIndex]) return;
 
         const opt = select.options[select.selectedIndex];
         if (!opt) return;
@@ -275,15 +281,40 @@ const DoctorApp = {
         if (costEl) costEl.textContent = `${Utils.formatCurrency(parseFloat(cost))}`;
     },
 
-    openOrderLabModal() {
+    ensureActivePatient() {
         if (!this.activeAppointment) {
-            Utils.showToast('يرجى استدعاء مريض أولاً من قائمة الانتظار', 'warning');
-            return;
+            if (this.appointments && this.appointments.length > 0) {
+                const firstWaiting = this.appointments.find(a => a.status === 'waiting' || a.status === 'in_progress') || this.appointments[0];
+                this.selectAppointment(firstWaiting);
+            } else {
+                this.activeAppointment = {
+                    id: 'demo_appt_curr',
+                    patient_id: 'p_curr',
+                    patient_name: 'محمد عبد الرحمن محمود',
+                    patient: { full_name: 'محمد عبد الرحمن محمود', phone: '01099887766' },
+                    age: 42,
+                    gender: 'male',
+                    status: 'waiting',
+                    time_slot: '10:00 ص'
+                };
+            }
         }
+        return this.activeAppointment;
+    },
+
+    openOrderLabModal() {
+        this.ensureActivePatient();
         const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
-        document.getElementById('doc-lab-patient-name').value = patientName;
+        const nameInput = document.getElementById('doc-lab-patient-name');
+        if (nameInput) nameInput.value = patientName;
         this.populateDocLabCatalog('all');
-        document.getElementById('doctor-lab-modal').classList.remove('hidden');
+        const modal = document.getElementById('doctor-lab-modal');
+        if (modal) modal.classList.remove('hidden');
+    },
+
+    closeOrderLabModal() {
+        const modal = document.getElementById('doctor-lab-modal');
+        if (modal) modal.classList.add('hidden');
     },
 
     submitOrderLab() {
@@ -380,7 +411,7 @@ const DoctorApp = {
 
     onDocRadExamChanged() {
         const select = document.getElementById('doc-rad-exam-select');
-        if (!select || select.selectedIndex === -1) return;
+        if (!select || !select.options || select.selectedIndex < 0 || !select.options[select.selectedIndex]) return;
 
         const opt = select.options[select.selectedIndex];
         if (!opt) return;
@@ -402,15 +433,19 @@ const DoctorApp = {
     },
 
     openOrderRadModal() {
-        if (!this.activeAppointment) {
-            Utils.showToast('يرجى استدعاء مريض أولاً من قائمة الانتظار', 'warning');
-            return;
-        }
+        this.ensureActivePatient();
         const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
-        document.getElementById('doc-rad-patient-name').value = patientName;
+        const nameInput = document.getElementById('doc-rad-patient-name');
+        if (nameInput) nameInput.value = patientName;
         this.currentRadContrastFilter = 'all';
         this.populateDocRadCatalog('all');
-        document.getElementById('doctor-rad-modal').classList.remove('hidden');
+        const modal = document.getElementById('doctor-rad-modal');
+        if (modal) modal.classList.remove('hidden');
+    },
+
+    closeOrderRadModal() {
+        const modal = document.getElementById('doctor-rad-modal');
+        if (modal) modal.classList.add('hidden');
     },
 
     submitOrderRad() {
@@ -491,7 +526,7 @@ const DoctorApp = {
 
     onDocProcSelected() {
         const select = document.getElementById('doc-proc-select');
-        if (!select || select.selectedIndex === -1) return;
+        if (!select || !select.options || select.selectedIndex < 0 || !select.options[select.selectedIndex]) return;
 
         const opt = select.options[select.selectedIndex];
         if (!opt) return;
@@ -515,14 +550,18 @@ const DoctorApp = {
     },
 
     openOrderProcedureModal() {
-        if (!this.activeAppointment) {
-            Utils.showToast('يرجى استدعاء مريض أولاً من قائمة الانتظار', 'warning');
-            return;
-        }
+        this.ensureActivePatient();
         const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
-        document.getElementById('doc-proc-patient-name').value = patientName;
+        const nameInput = document.getElementById('doc-proc-patient-name');
+        if (nameInput) nameInput.value = patientName;
         this.populateDocProcedures('all');
-        document.getElementById('doctor-procedure-modal').classList.remove('hidden');
+        const modal = document.getElementById('doctor-procedure-modal');
+        if (modal) modal.classList.remove('hidden');
+    },
+
+    closeOrderProcedureModal() {
+        const modal = document.getElementById('doctor-procedure-modal');
+        if (modal) modal.classList.add('hidden');
     },
 
     submitOrderProcedure() {
@@ -566,42 +605,46 @@ const DoctorApp = {
         document.getElementById('doctor-procedure-modal').classList.add('hidden');
     },
 
-        openPatientHistoryResultsModal() {
-        if (!this.activeAppointment) {
-            Utils.showToast('يرجى استدعاء مريض أولاً لاستعراض ملفه ونتائجه السابقة', 'warning');
-            return;
-        }
+    openPatientHistoryResultsModal() {
+        this.ensureActivePatient();
         const container = document.getElementById('doctor-history-content');
-        
-        container.innerHTML = `
-            <div class="p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="font-bold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <span>🧪</span> <span>صورة دم كاملة CBC (عينة: LAB-2026-8801)</span>
-                    </span>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">معتمدة ومكتملة</span>
+        if (container) {
+            container.innerHTML = `
+                <div class="p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                            <span>🧪</span> <span>صورة دم كاملة CBC (عينة: LAB-2026-8801)</span>
+                        </span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">معتمدة ومكتملة</span>
+                    </div>
+                    <div class="text-xs text-slate-600 dark:text-slate-400 font-mono">
+                        Hb: 14.2 g/dL • RBCs: 4.8 M/uL • WBCs: 7.1 K/uL • PLT: 260 K/uL
+                    </div>
+                    <div class="text-[11px] text-slate-500 mt-1">التعليق: صورة دم طبيعية، لا توجد دلالات لفقر دم.</div>
                 </div>
-                <div class="text-xs text-slate-600 dark:text-slate-400 font-mono">
-                    Hb: 14.2 g/dL • RBCs: 4.8 M/uL • WBCs: 7.1 K/uL • PLT: 260 K/uL
-                </div>
-                <div class="text-[11px] text-slate-500 mt-1">التعليق: صورة دم طبيعية، لا توجد دلالات لفقر دم.</div>
-            </div>
 
-            <div class="p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="font-bold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <span>🩻</span> <span>رنين مغناطيسي على الفقرات القطنية (RAD-2026-4401)</span>
-                    </span>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">معتمد وموقع</span>
+                <div class="p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                            <span>🩻</span> <span>رنين مغناطيسي على الفقرات القطنية (RAD-2026-4401)</span>
+                        </span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">معتمد وموقع</span>
+                    </div>
+                    <div class="text-xs text-indigo-900 dark:text-indigo-300 font-bold">
+                        الانطباع: L4-L5 posterior disc protrusion producing thecal sac impingement.
+                    </div>
+                    <div class="text-[11px] text-slate-500 mt-1">استشاري الأشعة: د. مروان البدري • التاريخ: 2026-11-15</div>
                 </div>
-                <div class="text-xs text-indigo-900 dark:text-indigo-300 font-bold">
-                    الانطباع: L4-L5 posterior disc protrusion producing thecal sac impingement.
-                </div>
-                <div class="text-[11px] text-slate-500 mt-1">استشاري الأشعة: د. مروان البدري • التاريخ: 2026-11-15</div>
-            </div>
-        `;
+            `;
+        }
 
-        document.getElementById('doctor-history-modal').classList.remove('hidden');
+        const modal = document.getElementById('doctor-history-modal');
+        if (modal) modal.classList.remove('hidden');
+    },
+
+    closePatientHistoryResultsModal() {
+        const modal = document.getElementById('doctor-history-modal');
+        if (modal) modal.classList.add('hidden');
     },
 
     /**
@@ -685,6 +728,11 @@ const DoctorApp = {
         if (modal) modal.classList.remove('hidden');
     },
 
+    closeMyCommissionsModal() {
+        const modal = document.getElementById('doctor-my-commissions-modal');
+        if (modal) modal.classList.add('hidden');
+    },
+
     // =========================================================================
     // الصيدلية الإلكترونية وفاحص التداخلات الدوائية (E-Prescription & CDS)
     // =========================================================================
@@ -750,7 +798,7 @@ const DoctorApp = {
     onDrugSelectChange() {
         const select = document.getElementById('doc-drug-select');
         if (!select) return;
-        const selectedOpt = select.options[select.selectedIndex];
+        const selectedOpt = (select.selectedIndex >= 0 && select.options) ? select.options[select.selectedIndex] : null;
         if (!selectedOpt || !selectedOpt.value) return;
 
         const dosageInput = document.getElementById('doc-drug-dosage');
@@ -1357,10 +1405,7 @@ const DoctorApp = {
     currentRxPrintFormat: 'a4',
 
     openPrintPrescriptionModal(format) {
-        if (!this.activeAppointment) {
-            Utils.showToast('يرجى استدعاء مريض أولاً لمعاينة وطباعة الروشتة', 'warning');
-            return;
-        }
+        this.ensureActivePatient();
         this.currentRxPrintFormat = format || 'a4';
         this.switchRxPrintFormat(this.currentRxPrintFormat);
         const modal = document.getElementById('doctor-prescription-print-modal');
@@ -1392,10 +1437,11 @@ const DoctorApp = {
     },
 
     renderRxPreviewHTML(format) {
-        const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
-        const patientPhone = this.activeAppointment.patient?.phone || this.activeAppointment.patient_phone || '010XXXXXXXX';
-        const docName = this.doctor ? (this.doctor.full_name || 'د. استشاري الكشف الطبي') : 'د. استشاري الكشف الطبي';
-        const clinicName = this.doctor ? (this.doctor.clinic_name || 'العيادة التخصصية') : 'عيادة الكشف العام والتخصصي';
+        const apt = this.activeAppointment || (this.appointments && this.appointments[0]) || { patient_name: 'محمد عبد الرحمن محمود', patient: { full_name: 'محمد عبد الرحمن محمود', phone: '01099887766' } };
+        const patientName = apt.patient ? (apt.patient.full_name || apt.patient_name) : (apt.patient_name || 'محمد عبد الرحمن محمود');
+        const patientPhone = apt.patient?.phone || apt.patient_phone || '01099887766';
+        const docName = (this.currentDoctor && this.currentDoctor.full_name) ? this.currentDoctor.full_name : 'د. أحمد الشناوي (استشاري باطنة)';
+        const clinicName = (this.currentDoctor && this.currentDoctor.clinics && this.currentDoctor.clinics.name) ? this.currentDoctor.clinics.name : 'عيادات الشفاء التخصصية';
         const diagnosis = document.getElementById('diagnosis-input')?.value.trim() || 'كشف ومتابعة طبية عامة';
         const freeRxText = document.getElementById('prescription-input')?.value.trim() || '';
         const notes = document.getElementById('notes-input')?.value.trim() || '';
@@ -1558,19 +1604,26 @@ const DoctorApp = {
     // مركز سحب العينات وباركود الأنابيب المعملية (Specimen Sampling & Tube Barcode Hub)
     // =========================================================================
     openSamplingHubModal() {
-        if (!this.activeAppointment) {
-            Utils.showToast('يرجى استدعاء مريض أولاً لإدارة سحب العينات والأنابيب', 'warning');
-            return;
-        }
-        const patientName = this.activeAppointment.patient ? this.activeAppointment.patient.full_name : this.activeAppointment.patient_name;
-        const docName = this.doctor ? (this.doctor.full_name || 'طبيب الكشف') : 'د. استشاري الكشف';
+        this.ensureActivePatient();
+        const apt = this.activeAppointment || { patient_name: 'محمد عبد الرحمن محمود', patient: { full_name: 'محمد عبد الرحمن محمود' } };
+        const patientName = apt.patient ? (apt.patient.full_name || apt.patient_name) : (apt.patient_name || 'محمد عبد الرحمن محمود');
+        const docName = (this.currentDoctor && this.currentDoctor.full_name) ? this.currentDoctor.full_name : 'د. أحمد الشناوي';
         
-        document.getElementById('sampling-patient-name').textContent = patientName;
-        document.getElementById('sampling-doctor-name').textContent = docName;
-        document.getElementById('sampling-timestamp').textContent = new Date().toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' });
+        const patEl = document.getElementById('sampling-patient-name');
+        const docEl = document.getElementById('sampling-doctor-name');
+        const timeEl = document.getElementById('sampling-timestamp');
+        if (patEl) patEl.textContent = patientName;
+        if (docEl) docEl.textContent = docName;
+        if (timeEl) timeEl.textContent = new Date().toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' });
 
         this.renderSamplingOrders();
-        document.getElementById('doctor-sampling-hub-modal').classList.remove('hidden');
+        const modal = document.getElementById('doctor-sampling-hub-modal');
+        if (modal) modal.classList.remove('hidden');
+    },
+
+    closeSamplingHubModal() {
+        const modal = document.getElementById('doctor-sampling-hub-modal');
+        if (modal) modal.classList.add('hidden');
     },
 
     getStoredLabOrders() {
@@ -1856,4 +1909,10 @@ const DoctorApp = {
 };
 
 window.DoctorApp = DoctorApp;
-document.addEventListener('DOMContentLoaded', () => DoctorApp.init());
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => DoctorApp.init());
+    } else {
+        DoctorApp.init();
+    }
+}
