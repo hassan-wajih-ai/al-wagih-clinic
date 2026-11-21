@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="../../css/style.css">
     <script src="../../js/i18n.js"></script>
     <script src="../../js/medical_catalog.js"></script>
+    <script src="../../js/enterprise_systems.js"></script>
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300">
     <!-- Navbar -->
@@ -110,6 +111,48 @@
                 </div>
                 <div class="text-2xl font-black text-purple-900 mt-2" id="kpi-contracts-count">0 شركات</div>
                 <div class="text-xs text-slate-500 mt-1">بنسب خصم وتحمل معتمدة</div>
+            </div>
+        </div>
+
+        
+        <!-- Master Enterprise Suite Header (Pillars 1 to 5) -->
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl border border-indigo-500/30 shadow-xl p-4 mb-4 text-white animate-fade-in">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-3 pb-3 border-b border-indigo-800/40">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-10 h-10 rounded-2xl bg-indigo-600/80 border border-indigo-400/40 flex items-center justify-center text-xl font-black shadow-inner animate-pulse">⚡</span>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm font-black text-indigo-100">الأنظمة المؤسسية الخمسة المتقدمة (Enterprise Systems Suite 360°)</h3>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">Executive AI & ERP v4.0</span>
+                        </div>
+                        <p class="text-[11px] text-indigo-300/80">أتمتة الاستقبال «صفر غياب»، القيادة المالية وRCM، المخزون والجدولة بالطلب، التوسع والنمو، والتشغيل الرقمي 360°</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="ClinicAdminApp.openChatbotTesterModal()" class="btn-press px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-indigo-600/30">
+                        <span>🤖</span> <span>المساعد الذكي (Chatbot)</span>
+                    </button>
+                    <button type="button" onclick="ClinicAdminApp.openDailyExecutiveDigestModal()" class="btn-press px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/30">
+                        <span>📊</span> <span>ملخص الإغلاق اليومي</span>
+                    </button>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-3">
+                <button type="button" id="tab-btn-zeroshow" onclick="ClinicAdminApp.switchTab('zeroshow')" class="btn-press px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-800/90 text-indigo-200 border border-indigo-700/50 hover:bg-indigo-600 hover:text-white transition flex items-center gap-1.5 shadow-sm">
+                    <span>🎯</span> <span>1. نظام «صفر غياب» وأتمتة الاستقبال</span>
+                </button>
+                <button type="button" id="tab-btn-fincommand" onclick="ClinicAdminApp.switchTab('fincommand')" class="btn-press px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-800/90 text-emerald-200 border border-emerald-700/50 hover:bg-emerald-600 hover:text-white transition flex items-center gap-1.5 shadow-sm">
+                    <span>💼</span> <span>2. القيادة المالية ودورة الإيرادات RCM</span>
+                </button>
+                <button type="button" id="tab-btn-smartops" onclick="ClinicAdminApp.switchTab('smartops')" class="btn-press px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-800/90 text-amber-200 border border-amber-700/50 hover:bg-amber-600 hover:text-white transition flex items-center gap-1.5 shadow-sm">
+                    <span>📦</span> <span>3. المخزون الذكي والجدولة بالطلب</span>
+                </button>
+                <button type="button" id="tab-btn-growth" onclick="ClinicAdminApp.switchTab('growth')" class="btn-press px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-800/90 text-purple-200 border border-purple-700/50 hover:bg-purple-600 hover:text-white transition flex items-center gap-1.5 shadow-sm">
+                    <span>🚀</span> <span>4. المخطط الاستراتيجي ونمو العيادة</span>
+                </button>
+                <button type="button" id="tab-btn-cockpit360" onclick="ClinicAdminApp.switchTab('cockpit360')" class="btn-press px-3.5 py-2 text-xs font-black rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 text-white border border-sky-400/40 hover:from-sky-500 hover:to-indigo-500 transition flex items-center gap-1.5 shadow-md shadow-indigo-900/40">
+                    <span>🌐</span> <span>5. مركز التشغيل الرقمي الموحد 360°</span>
+                </button>
             </div>
         </div>
 
@@ -2073,6 +2116,656 @@
                 </div>
             </div>
         </div>
+
+        <!-- =================================================================== -->
+        <!-- 1. نظام تدفق المرضى وأتمتة الاستقبال «صفر غياب» (Zero No-Show System) -->
+        <!-- =================================================================== -->
+        <div id="tab-content-zeroshow" class="hidden space-y-6 animate-fade-in">
+            <!-- Header Row -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>🎯</span>
+                        <span>نظام تدفق المرضى وأتمتة الاستقبال «صفر غياب» (Zero No-Show System)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">مسار آلي متكامل للاستقبال، التذكيرات الذكية (قبل 48h و2h)، قائمة الانتظار البديلة، والمساعد الذكي لتقليص الغياب بنسبة 40%</p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" onclick="ClinicAdminApp.openPrivacyProtocolModal()" class="btn-press px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs border border-slate-200 dark:border-slate-700 transition flex items-center gap-1.5">
+                        <span>🔒</span> <span>دليل خصوصية PII</span>
+                    </button>
+                    <button type="button" onclick="ClinicAdminApp.openRoiSlidesModal()" class="btn-press px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 font-bold text-xs border border-indigo-200 dark:border-indigo-800 transition flex items-center gap-1.5">
+                        <span>📊</span> <span>عرض العائد الاستثماري (ROI)</span>
+                    </button>
+                    <button type="button" onclick="ClinicAdminApp.openChatbotTesterModal()" class="btn-press px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/25 transition flex items-center gap-1.5">
+                        <span>🤖</span> <span>تجربة المساعد الذكي</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4 KPIs Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">معدل الغياب الحالي</span>
+                        <span class="p-2 rounded-xl bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-300 text-sm">📉</span>
+                    </div>
+                    <div class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-2">14.0%</div>
+                    <div class="text-xs text-slate-400 mt-1">الهدف بعد الأتمتة: أقل من 8.5% (-40%)</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">المواعيد المستردة شهرياً</span>
+                        <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-300 text-sm">🔄</span>
+                    </div>
+                    <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">28 موعد</div>
+                    <div class="text-xs text-slate-400 mt-1">تسكين فوري عبر قائمة الانتظار الذكية</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">الإيراد الشهري المسترد</span>
+                        <span class="p-2 rounded-xl bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-300 text-sm">💰</span>
+                    </div>
+                    <div class="text-2xl font-black text-sky-600 dark:text-sky-400 mt-2">+21,840 ج.م</div>
+                    <div class="text-xs text-slate-400 mt-1">عائد استثماري 480% خلال 90 يوماً</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">متوسط وقت انتظار المريض</span>
+                        <span class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-300 text-sm">⏱️</span>
+                    </div>
+                    <div class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2">14 دقيقة</div>
+                    <div class="text-xs text-slate-400 mt-1">معدل الإشغال اليومي: 91.5%</div>
+                </div>
+            </div>
+
+            <!-- Two Columns: Left (Peak Hours & Specialties Analytics), Right (Smart Waitlist & Active Reminders) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Column 1: Historical Analytics -->
+                <div class="lg:col-span-6 space-y-6">
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                <span>📈</span> <span>تحليل ساعات الذروة ونسب الغياب (سجل 6 أشهر - 1,840 موعد)</span>
+                            </h3>
+                            <span class="text-[10px] text-slate-400 font-bold">معادلات ذكية محلية</span>
+                        </div>
+                        <div class="space-y-3" id="zeroshow-peakhours-container">
+                            <!-- Populated via admin.js / enterprise_systems.js -->
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                <span>🩺</span> <span>نسب الغياب حسب التخصص الطبي وأسباب الخطورة</span>
+                            </h3>
+                            <span class="text-[10px] text-indigo-600 font-bold">الأكثر عرضة للغياب</span>
+                        </div>
+                        <div class="space-y-2.5" id="zeroshow-specialties-container">
+                            <!-- Populated via admin.js / enterprise_systems.js -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column 2: Reminders & Smart Waitlist -->
+                <div class="lg:col-span-6 space-y-6">
+                    <!-- Smart Waitlist -->
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <div>
+                                <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                    <span>⚡</span> <span>قائمة الانتظار الذكية (Smart Waitlist Engine)</span>
+                                </h3>
+                                <p class="text-[10px] text-slate-400 mt-0.5">تسكين فوري عند اعتذار أو إلغاء أي موعد وفق مقياس الأولوية</p>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">4 حالات بالانتظار</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-right text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-950 text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                        <th class="py-2.5 px-3">المريض والتخصص</th>
+                                        <th class="py-2.5 px-3">الوقت المفضل</th>
+                                        <th class="py-2.5 px-3 text-center">درجة الأولوية</th>
+                                        <th class="py-2.5 px-3 text-center">إجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="zeroshow-waitlist-tbody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                    <!-- Populated via admin.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Active Reminders Queue -->
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <div>
+                                <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                    <span>📲</span> <span>طابور تذكيرات الواتساب الآلية (قبل 48h و2h)</span>
+                                </h3>
+                                <p class="text-[10px] text-slate-400 mt-0.5">إرسال يدوي مؤكد مع زر تأكيد الحضور المباشر</p>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">نشط الآن</span>
+                        </div>
+                        <div class="space-y-2.5" id="zeroshow-reminders-container">
+                            <!-- Populated via admin.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- 2. مركز القيادة المالية ودورة الإيرادات للعيادة (Financial Command Center & RCM) -->
+        <!-- =================================================================== -->
+        <div id="tab-content-fincommand" class="hidden space-y-6 animate-fade-in">
+            <!-- Header Row -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>💼</span>
+                        <span>مركز القيادة المالية ودورة الإيرادات (Financial Command Center & RCM)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">مراقبة الأداء المالي، قائمة الأرباح والخسائر (P&L)، تدقيق مطالبات التأمين المرفوضة، وتوقعات التدفقات النقدية بـ 3 سيناريوهات</p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" onclick="ClinicAdminApp.openFinancialDeckModal()" class="btn-press px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 font-bold text-xs border border-emerald-200 dark:border-emerald-800 transition flex items-center gap-1.5">
+                        <span>📑</span> <span>عرض المراجعة المالية للإدارة</span>
+                    </button>
+                    <button type="button" onclick="ClinicAdminApp.openAppealLetterModal()" class="btn-press px-3.5 py-2 rounded-xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white font-bold text-xs transition flex items-center gap-1.5">
+                        <span>📄</span> <span>توليد خطاب اعتراض تأمين</span>
+                    </button>
+                    <button type="button" onclick="ClinicAdminApp.exportPAndLExcel()" class="btn-press px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5">
+                        <span>📊</span> <span>تصدير قائمة P&L (Excel)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4 KPIs Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">إجمالي الإيرادات الشهرية</span>
+                        <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-300 text-sm">💵</span>
+                    </div>
+                    <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">446,000 ج.م</div>
+                    <div class="text-xs text-slate-400 mt-1">كشوفات، إجراءات، معمل، أشعة وصيدلية</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">مجمل الربح (Gross Profit)</span>
+                        <span class="p-2 rounded-xl bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-300 text-sm">📈</span>
+                    </div>
+                    <div class="text-2xl font-black text-sky-600 dark:text-sky-400 mt-2">218,400 ج.م</div>
+                    <div class="text-xs text-slate-400 mt-1">هامش ربح إجمالي: 48.97%</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">الأرباح التشغيلية (EBITDA)</span>
+                        <span class="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-300 text-sm">⚡</span>
+                    </div>
+                    <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-2">76,400 ج.م</div>
+                    <div class="text-xs text-slate-400 mt-1">بعد استقطاع 142 ألف مصروفات تشغيل OpEx</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">صافي الربح النهائي (Net Profit)</span>
+                        <span class="p-2 rounded-xl bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-300 text-sm">💎</span>
+                    </div>
+                    <div class="text-2xl font-black text-teal-600 dark:text-teal-400 mt-2">62,000 ج.م</div>
+                    <div class="text-xs text-slate-400 mt-1">هامش ربح صافي: 13.9%</div>
+                </div>
+            </div>
+
+            <!-- Detailed P&L Statement and Denial / Cashflow Analysis -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Column 1: P&L Model -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                <span>📊</span> <span>قائمة الأرباح والخسائر الشهرية التفصيلية (P&L Model - أكتوبر 2026)</span>
+                            </h3>
+                            <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-md">معتمدة محاسبياً</span>
+                        </div>
+                        <div class="space-y-4" id="fincommand-pandl-container">
+                            <!-- Populated via admin.js -->
+                        </div>
+                    </div>
+
+                    <!-- 3 Immediate Margin Boost Decisions -->
+                    <div class="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-3xl p-5 text-white shadow-lg space-y-3">
+                        <h3 class="font-black text-xs text-indigo-200 flex items-center gap-2">
+                            <span>🚀</span> <span>القرارات الإدارية الفورية الـ 3 لرفع هامش الربح بمقدار 18%</span>
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1" id="fincommand-decisions-container">
+                            <!-- Populated via admin.js -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column 2: Claims Denials, AR Aging, and Cashflow -->
+                <div class="lg:col-span-5 space-y-6">
+                    <!-- Insurance Denial Codes Management -->
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <div>
+                                <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                    <span>🛡️</span> <span>تدقيق مرفوضات التأمين (Denial Management)</span>
+                                </h3>
+                                <p class="text-[10px] text-slate-400 mt-0.5">تحليل أسباب الرفض واستراتيجية الاسترداد</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">38,200 ج.م معلقة</span>
+                        </div>
+                        <div class="space-y-2.5" id="fincommand-denials-container">
+                            <!-- Populated via admin.js -->
+                        </div>
+                    </div>
+
+                    <!-- AR Aging Report -->
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                <span>⏳</span> <span>أعمار الديون ومطالبات الشركات (AR Aging)</span>
+                            </h3>
+                            <span class="text-[10px] text-slate-400 font-mono">الإجمالي: 237,000 ج.م</span>
+                        </div>
+                        <div class="space-y-2.5" id="fincommand-araging-container">
+                            <!-- Populated via admin.js -->
+                        </div>
+                    </div>
+
+                    <!-- Cashflow 3 Scenarios -->
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                <span>🔮</span> <span>توقعات التدفقات النقدية بـ 3 سيناريوهات (Q1 2027)</span>
+                            </h3>
+                            <span class="text-[10px] text-indigo-600 font-bold">استشراف مالي</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-center" id="fincommand-cashflow-container">
+                            <!-- Populated via admin.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- 3. محرك المخزون الذكي وجدولة الموظفين بناءً على الطلب (Smart Inventory & On-Demand Staffing) -->
+        <!-- =================================================================== -->
+        <div id="tab-content-smartops" class="hidden space-y-6 animate-fade-in">
+            <!-- Header Row -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>📦</span>
+                        <span>محرك المخزون الذكي وجدولة الموظفين بناءً على الطلب (Smart Inventory & Scheduling)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">تتبع نقاط إعادة الطلب (ROP)، أتمتة أوامر الشراء، وجدول نوبات عمل ديناميكي يطابق حركة المرضى بالساعة</p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" onclick="ClinicAdminApp.openPurchaseOrderModal()" class="btn-press px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5">
+                        <span>📋</span> <span>توليد مسودة أمر شراء آلي (PO)</span>
+                    </button>
+                    <button type="button" onclick="ClinicAdminApp.openSavingsProposalModal()" class="btn-press px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 font-bold text-xs border border-indigo-200 dark:border-indigo-800 transition flex items-center gap-1.5">
+                        <span>💡</span> <span>مقترح ترشيد النفقات للإدارة</span>
+                    </button>
+                    <button type="button" onclick="ClinicAdminApp.exportSmartInventoryExcel()" class="btn-press px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5">
+                        <span>📊</span> <span>تصدير المخزون (Excel)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4 KPIs Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">معدل دوران المخزون</span>
+                        <span class="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-300 text-sm">🔄</span>
+                    </div>
+                    <div class="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-2">4.8 دورة/سنة</div>
+                    <div class="text-xs text-slate-400 mt-1">كفاءة عالية تمنع ركود رأس المال</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">أصناف تحت حد الطلب (ROP)</span>
+                        <span class="p-2 rounded-xl bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-300 text-sm">⚠️</span>
+                    </div>
+                    <div class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-2">3 أصناف</div>
+                    <div class="text-xs text-slate-400 mt-1">قفازات، أنابيب جل، وإلكترودات ECG</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">أصناف قاربت الصلاحية (&lt;60 يوم)</span>
+                        <span class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-300 text-sm">⏳</span>
+                    </div>
+                    <div class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2">2 صنف</div>
+                    <div class="text-xs text-slate-400 mt-1">تنبيه استهلاك عاجل FIFO</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">الوفورات الشهرية المتوقعة</span>
+                        <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-300 text-sm">💵</span>
+                    </div>
+                    <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">18,000 ج.م</div>
+                    <div class="text-xs text-slate-400 mt-1">ترشيد الإضافي والهالك وخصم الموردين</div>
+                </div>
+            </div>
+
+            <!-- Two Sections: Consumables ROP Table and Demand-Driven Shifts Heatmap -->
+            <div class="space-y-6">
+                <!-- Consumables Table -->
+                <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <div>
+                            <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                <span>🩺</span> <span>سجل مراقبة المستهلكات الطبية ونقاط إعادة الطلب (ROP = d × L + SS)</span>
+                            </h3>
+                            <p class="text-[10px] text-slate-400 mt-0.5">يراقب الأرصدة، مهل التوريد، وتواريخ الصلاحية آلياً</p>
+                        </div>
+                        <span class="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-bold">FIFO Enabled</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-950 text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                    <th class="py-3 px-3">كود الصنف</th>
+                                    <th class="py-3 px-3">اسم المستهلك الطبي</th>
+                                    <th class="py-3 px-3">الرصيد المتاح</th>
+                                    <th class="py-3 px-3">حد الطلب (ROP)</th>
+                                    <th class="py-3 px-3">مهلة التوريد</th>
+                                    <th class="py-3 px-3 font-mono">سعر الوحدة</th>
+                                    <th class="py-3 px-3 font-mono">تاريخ الصلاحية</th>
+                                    <th class="py-3 px-3">المورد المعتمد</th>
+                                    <th class="py-3 px-3 text-center">حالة المخزون</th>
+                                </tr>
+                            </thead>
+                            <tbody id="smartops-consumables-tbody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Populated via admin.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Demand-Driven Hourly Staffing Heatmap -->
+                <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <div>
+                            <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                <span>👥</span> <span>جدول نوبات العمل المرنة المبني على كثافة المرضى (Demand-Driven Staffing)</span>
+                            </h3>
+                            <p class="text-[10px] text-slate-400 mt-0.5">مواءمة نوبات الاستقبال والتمريض بالساعة لمنع التكدس في ساعات الذروة وترشيد الإضافي</p>
+                        </div>
+                        <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">تغطية ذكية 100%</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3" id="smartops-heatmap-container">
+                        <!-- Populated via admin.js -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- 4. المخطط الاستراتيجي للتوسع والنمو السنوي للعيادة (Annual Growth & Strategic Expansion Masterplan) -->
+        <!-- =================================================================== -->
+        <div id="tab-content-growth" class="hidden space-y-6 animate-fade-in">
+            <!-- Header Row -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>🚀</span>
+                        <span>المخطط الاستراتيجي للتوسع والنمو السنوي للعيادة (Annual Growth Masterplan)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">دراسة تنفيذية متكاملة تشمل تحليل SWOT، إطار الأهداف ومؤشرات الأداء OKRs، نموذج نقطة التعادل، وخارطة طريق 90 يوماً</p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" onclick="ClinicAdminApp.openPitchDeckModal()" class="btn-press px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-600/25 transition flex items-center gap-1.5">
+                        <span>💡</span> <span>العرض الاستثماري للنمو (Pitch Deck)</span>
+                    </button>
+                    <button type="button" onclick="ClinicAdminApp.openBreakEvenCalculatorModal()" class="btn-press px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 font-bold text-xs border border-indigo-200 dark:border-indigo-800 transition flex items-center gap-1.5">
+                        <span>📈</span> <span>حاسبة نقطة التعادل التفاعلية</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4 KPIs Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">النمو السنوي المستهدف</span>
+                        <span class="p-2 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-300 text-sm">🎯</span>
+                    </div>
+                    <div class="text-2xl font-black text-purple-600 dark:text-purple-400 mt-2">+28%</div>
+                    <div class="text-xs text-slate-400 mt-1">الوصول لـ 650 ألف ج.م شهرياً</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">نقطة تعادل الوحدة الجديدة</span>
+                        <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-300 text-sm">⚖️</span>
+                    </div>
+                    <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">7 جلسات/يوم</div>
+                    <div class="text-xs text-slate-400 mt-1">165 جلسة شهرياً لتغطية الـ OpEx</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">فترة استرداد رأس المال (CapEx)</span>
+                        <span class="p-2 rounded-xl bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-300 text-sm">⌛</span>
+                    </div>
+                    <div class="text-2xl font-black text-sky-600 dark:text-sky-400 mt-2">8 أشهر</div>
+                    <div class="text-xs text-slate-400 mt-1">استرداد 280 ألف ج.م استثمار رأسمالي</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">معدل الاحتفاظ بالمرضى</span>
+                        <span class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-300 text-sm">🌟</span>
+                    </div>
+                    <div class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2">65%</div>
+                    <div class="text-xs text-slate-400 mt-1">المستهدف عبر برنامج الرعاية الممتدة</div>
+                </div>
+            </div>
+
+            <!-- SWOT Matrix and 12-Month Balanced Scorecard -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Column 1: SWOT Matrix -->
+                <div class="lg:col-span-6 space-y-6">
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                <span>🧭</span> <span>مصفوفة التحليل الاستراتيجي الرباعي (SWOT Matrix)</span>
+                            </h3>
+                            <span class="text-[10px] text-purple-600 font-bold">بوصلة التوسع</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="growth-swot-container">
+                            <!-- Populated via admin.js -->
+                        </div>
+                    </div>
+
+                    <!-- 90-Day Execution Roadmap -->
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                <span>🗺️</span> <span>خارطة الطريق التنفيذية لأول 90 يوماً (Execution Roadmap)</span>
+                            </h3>
+                            <span class="text-[10px] text-emerald-600 font-bold">جاهزية التنفيذ</span>
+                        </div>
+                        <div class="space-y-3" id="growth-roadmap-container">
+                            <!-- Populated via admin.js -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column 2: Balanced Scorecard OKRs & Break-Even Feasibility -->
+                <div class="lg:col-span-6 space-y-6">
+                    <!-- Balanced Scorecard 12-Month OKRs -->
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                <span>🎯</span> <span>إطار الأهداف ومؤشرات الأداء السنوية (Balanced Scorecard 12-Month OKRs)</span>
+                            </h3>
+                            <span class="text-[10px] text-indigo-600 font-bold">4 مناظير استراتيجية</span>
+                        </div>
+                        <div class="space-y-3" id="growth-scorecard-container">
+                            <!-- Populated via admin.js -->
+                        </div>
+                    </div>
+
+                    <!-- Break-Even Feasibility Card -->
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                <span>⚖️</span> <span>دراسة الجدوى المالية للوحدة الجديدة (CapEx / OpEx & Break-Even)</span>
+                            </h3>
+                            <span class="text-[10px] text-slate-400">العلاج الطبيعي والتأهيل</span>
+                        </div>
+                        <div class="space-y-3" id="growth-breakeven-container">
+                            <!-- Populated via admin.js -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================== -->
+        <!-- 5. نظام التشغيل الرقمي الشامل للعيادة 360° (Clinic 360° Digital Operating System) -->
+        <!-- =================================================================== -->
+        <div id="tab-content-cockpit360" class="hidden space-y-6 animate-fade-in">
+            <!-- Header Row -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div>
+                    <h2 class="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>🌐</span>
+                        <span>مركز التشغيل الرقمي الشامل للعيادة 360° (Clinic 360° Digital Operating System)</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">مركز إدارة موحد يربط عمليات الاستقبال، الإدارة التشغيلية، الأداء المالي، وحوكمة الذكاء الاصطناعي في منظومة واحدة</p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" onclick="ClinicAdminApp.openDailyExecutiveDigestModal()" class="btn-press px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5">
+                        <span>📤</span> <span>إرسال ملخص الإغلاق اليومي للمدير (WhatsApp)</span>
+                    </button>
+                    <button type="button" onclick="ClinicAdminApp.openAiGovernanceModal()" class="btn-press px-3.5 py-2 rounded-xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white font-bold text-xs transition flex items-center gap-1.5">
+                        <span>🛡️</span> <span>خريطة حوكمة الذكاء الاصطناعي</span>
+                    </button>
+                    <button type="button" onclick="ClinicAdminApp.openExecutiveOnePagerModal()" class="btn-press px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 font-bold text-xs border border-indigo-200 dark:border-indigo-800 transition flex items-center gap-1.5">
+                        <span>📄</span> <span>خطة العمل الربع سنوية التنفيذية</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4 Live Cockpit KPIs -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">صحة المنظومة والتشغيل</span>
+                        <span class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-300 text-sm">🛡️</span>
+                    </div>
+                    <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">94 / 100</div>
+                    <div class="text-xs text-slate-400 mt-1">كافة الأنظمة متصلة وتعمل بكفاءة ممتازة</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">حالات الكشف اليومية المنجزة</span>
+                        <span class="p-2 rounded-xl bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-300 text-sm">👥</span>
+                    </div>
+                    <div class="text-2xl font-black text-sky-600 dark:text-sky-400 mt-2">68 مريض</div>
+                    <div class="text-xs text-slate-400 mt-1">نسبة الالتزام بالمواعيد: 91.2%</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">إيرادات اليوم اللحظية</span>
+                        <span class="p-2 rounded-xl bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-300 text-sm">💰</span>
+                    </div>
+                    <div class="text-2xl font-black text-teal-600 dark:text-teal-400 mt-2">22,450 ج.م</div>
+                    <div class="text-xs text-slate-400 mt-1">كاش وفيزا: 14.8 ألف | تأمين: 7.65 ألف</div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">مؤشر رضا المرضى (CSAT)</span>
+                        <span class="p-2 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-300 text-sm">⭐</span>
+                    </div>
+                    <div class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2">4.9 / 5</div>
+                    <div class="text-xs text-slate-400 mt-1">بناءً على 42 تقييم استبيان بعد الزيارة</div>
+                </div>
+            </div>
+
+            <!-- Two Columns: Left (Executive 360 Streams), Right (AI Governance & Two Practical Automation Workflows) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Column 1: Unified Data Streams -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <h3 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-2">
+                                <span>🌐</span> <span>قمرة القيادة التنفيذية اللحظية (Executive Unified Streams)</span>
+                            </h3>
+                            <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded">مزامنة سحابية حية</span>
+                        </div>
+                        <div class="space-y-3" id="cockpit360-streams-container">
+                            <!-- Populated via admin.js -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column 2: AI Governance & 2 Practical Automations -->
+                <div class="lg:col-span-5 space-y-6">
+                    <!-- Workflow 1: Patient Post-Visit Automation -->
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-3">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                            <h4 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-1.5">
+                                <span>1️⃣</span> <span>مسار المريض: استبيان الرضا بعد الزيارة (NPS Loop)</span>
+                            </h4>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">تلقائي بعد ساعتين</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">يرسل النظام رسالة واتساب أنيقة للمريض لتقييم التجربة وتوجيه التقييمات الممتازة لصفحة Google Reviews.</p>
+                        <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300 font-mono leading-relaxed" id="cockpit-patient-nps-preview">
+                            <!-- Populated via admin.js -->
+                        </div>
+                    </div>
+
+                    <!-- Workflow 2: Internal Executive Automation -->
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-3">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                            <h4 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-1.5">
+                                <span>2️⃣</span> <span>المسار الداخلي: ملخص الإغلاق اليومي للمدير (Daily Digest)</span>
+                            </h4>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800">10:00 مساءً يومياً</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">تقرير تنفيذي ملخص يوضح الكشوفات والإيرادات والمصروفات ونواقص المخزون لملاك العيادة عبر واتساب.</p>
+                        <button type="button" onclick="ClinicAdminApp.openDailyExecutiveDigestModal()" class="w-full py-2 px-3 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <span>📲</span> <span>معاينة وإرسال تقرير إغلاق اليوم</span>
+                        </button>
+                    </div>
+
+                    <!-- AI Governance Matrix Quick Summary -->
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-3">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                            <h4 class="font-black text-slate-900 dark:text-white text-xs flex items-center gap-1.5">
+                                <span>🛡️</span> <span>حوكمة الذكاء الاصطناعي (AI Governance)</span>
+                            </h4>
+                            <button type="button" onclick="ClinicAdminApp.openAiGovernanceModal()" class="text-xs text-indigo-600 font-bold hover:underline">عرض الدليل الكامل</button>
+                        </div>
+                        <p class="text-[11px] text-slate-500">ضوابط صارمة تحدد الاستخدامات المعتمدة والمحظورة لكل دور (الاستقبال، التمريض، الأطباء، المحاسبة، والإدارة).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Modal: Add CRM Patient -->
@@ -3601,6 +4294,236 @@
     <script src="../../js/utils.js"></script>
     <script src="../../js/auth.js"></script>
     <script src="../../js/reports.js"></script>
+    <script src="../../js/enterprise_systems.js"></script>
     <script src="admin.js"></script>
+
+    <!-- Modal 1: Privacy Protocol & PII Masking Guide -->
+    <div id="admin-privacy-protocol-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold">🔒</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm">بروتوكول خصوصية البيانات وإخفاء الهوية (PII Masking)</h4>
+                        <p class="text-[10px] text-slate-400">دليل عملي معتمد للامتثال لمعايير HIPAA وGDPR للذكاء الاصطناعي الطبي</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('admin-privacy-protocol-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <div class="space-y-3 text-xs leading-relaxed" id="admin-privacy-protocol-content">
+                <!-- Populated via admin.js -->
+            </div>
+            <div class="p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">تجربة دالة حجب الهوية المباشرة (Live PII Masking Test):</label>
+                <input type="text" id="privacy-test-input" value="المريض أحمد محمد محمود هاتف 01012345678 ورقم قومي 29501010101234 حضر للكشف" oninput="ClinicAdminApp.testPIIMask()" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                <div class="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800" id="privacy-test-output"></div>
+            </div>
+            <div class="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="document.getElementById('admin-privacy-protocol-modal').classList.add('hidden')" class="px-5 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-xl transition">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: ROI Executive Presentation Slides (Zero No-Show) -->
+    <div id="admin-roi-slides-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">📊</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm">عرض العائد على الاستثمار لملاك العيادة (ROI Presentation)</h4>
+                        <p class="text-[10px] text-slate-400">تبرير تكلفة نظام «صفر غياب» والإيرادات الشهرية المستردة</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('admin-roi-slides-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <div id="admin-roi-slide-box" class="p-6 rounded-3xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 min-h-[240px] flex flex-col justify-between">
+                <!-- Rendered dynamically -->
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="ClinicAdminApp.prevRoiSlide()" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300">السابق</button>
+                    <button type="button" onclick="ClinicAdminApp.nextRoiSlide()" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white">التالي</button>
+                    <span class="text-xs font-mono text-slate-400 mr-2" id="roi-slide-counter">الشريحة 1 من 5</span>
+                </div>
+                <button type="button" onclick="document.getElementById('admin-roi-slides-modal').classList.add('hidden')" class="px-5 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-xl transition">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Smart Reception Chatbot Simulator -->
+    <div id="admin-chatbot-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col h-[560px]">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-lg shadow-md shadow-indigo-600/30">🤖</div>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-xs">مساعد الاستقبال الذكي (Smart AI Receptionist)</h4>
+                        <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> متصل وجاهز للخدمة
+                        </p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('admin-chatbot-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <!-- Chat Stream Box -->
+            <div id="chatbot-stream-box" class="flex-1 overflow-y-auto p-3 space-y-3 my-2 text-xs">
+                <!-- Initial messages populated via admin.js -->
+            </div>
+            <!-- Chat Input Box -->
+            <form id="chatbot-form" onsubmit="ClinicAdminApp.submitChatbotMessage(event)" class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                <input type="text" id="chatbot-user-input" placeholder="اكتب سؤالك (مواعيد، تأمين، صيام، حجز دكتور)..." class="flex-1 px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <button type="submit" class="btn-press px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1">
+                    <span>إرسال</span> <span>←</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 4: Insurance Appeal Letter Generator -->
+    <div id="admin-appeal-letter-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold">📄</span>
+                    <h4 class="font-black text-slate-900 dark:text-white text-sm">نموذج خطاب الاعتراض القياسي لشركات التأمين</h4>
+                </div>
+                <button type="button" onclick="document.getElementById('admin-appeal-letter-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">شركة التأمين</label>
+                        <select id="appeal-company-select" onchange="ClinicAdminApp.regenerateAppealText()" class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-bold">
+                            <option value="أكسا للرعاية الصحية (AXA)">أكسا للرعاية الصحية (AXA)</option>
+                            <option value="ميتلايف أليكو (MetLife)">ميتلايف أليكو (MetLife)</option>
+                            <option value="شركة مصر للتأمين">شركة مصر للتأمين</option>
+                            <option value="نقابة المهندسين المصرية">نقابة المهندسين المصرية</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">كود الرفض المعترض عليه</label>
+                        <select id="appeal-code-select" onchange="ClinicAdminApp.regenerateAppealText()" class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white font-bold">
+                            <option value="CO-16">CO-16 (نقص موافقة مسبقة أو مستند سريري)</option>
+                            <option value="CO-18">CO-18 (مطالبة مكررة بالخطأ)</option>
+                            <option value="CO-50">CO-50 (خدمة طبية غير مغطاة)</option>
+                            <option value="PR-204">PR-204 (انتهاء صلاحية التغطية)</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1 text-xs">نص الخطاب الرسمي الجاهز للطباعة والختم</label>
+                    <textarea id="appeal-letter-textarea" rows="12" class="w-full p-3 font-mono text-xs rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 leading-relaxed"></textarea>
+                </div>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="ClinicAdminApp.printAppealLetter()" class="btn-press px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md">
+                    <span>🖨️</span> <span>طباعة الخطاب الرسمي والختم</span>
+                </button>
+                <button type="button" onclick="document.getElementById('admin-appeal-letter-modal').classList.add('hidden')" class="px-5 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-xl transition">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 5: Purchase Order Draft (Smart Inventory) -->
+    <div id="admin-po-draft-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold">📋</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm" id="po-draft-title">مسودة أمر شراء آلي للأصناف الناقصة</h4>
+                        <p class="text-[10px] text-slate-400">توليد تلقائي بناءً على نقاط إعادة الطلب (ROP)</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('admin-po-draft-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <div id="po-draft-content" class="space-y-3 text-xs">
+                <!-- Populated via admin.js -->
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="ClinicAdminApp.confirmPurchaseOrder()" class="btn-press px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md">
+                    <span>💾</span> <span>اعتماد وإصدار أمر الشراء</span>
+                </button>
+                <button type="button" onclick="document.getElementById('admin-po-draft-modal').classList.add('hidden')" class="px-5 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-xl transition">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 6: Investor Growth Pitch Deck (Strategic Expansion) -->
+    <div id="admin-pitch-deck-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold">💡</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm">العرض الاستثماري لملاك العيادة (Growth Pitch Deck)</h4>
+                        <p class="text-[10px] text-slate-400">خطة التوسع لعام 2027 وخارطة طريق الـ 90 يوماً</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('admin-pitch-deck-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <div id="admin-pitch-slide-box" class="p-6 rounded-3xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 min-h-[250px] flex flex-col justify-between">
+                <!-- Rendered dynamically -->
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="ClinicAdminApp.prevPitchSlide()" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300">السابق</button>
+                    <button type="button" onclick="ClinicAdminApp.nextPitchSlide()" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white">التالي</button>
+                    <span class="text-xs font-mono text-slate-400 mr-2" id="pitch-slide-counter">الشريحة 1 من 4</span>
+                </div>
+                <button type="button" onclick="document.getElementById('admin-pitch-deck-modal').classList.add('hidden')" class="px-5 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-xl transition">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 7: Daily Executive WhatsApp Digest (Clinic 360) -->
+    <div id="admin-daily-digest-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold">📲</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm">ملخص الإغلاق اليومي التنفيذي للمدير العام</h4>
+                        <p class="text-[10px] text-slate-400">إرسال تقرير الكشوفات والإيرادات اليومية بواتساب بضغطة زر</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('admin-daily-digest-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">نص الملخص التنفيذي المعد للإرسال:</label>
+                <textarea id="daily-digest-textarea" rows="11" class="w-full p-3 font-mono text-xs rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 leading-relaxed"></textarea>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="ClinicAdminApp.sendDailyDigestWhatsApp()" class="btn-press px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/30">
+                    <span>💬</span> <span>إرسال عبر الواتساب للمدير (زر يدوي)</span>
+                </button>
+                <button type="button" onclick="document.getElementById('admin-daily-digest-modal').classList.add('hidden')" class="px-5 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-xl transition">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 8: AI Governance & Role Matrix -->
+    <div id="admin-ai-governance-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="card-hover bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">🛡️</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 dark:text-white text-sm">مصفوفة حوكمة وضوابط الذكاء الاصطناعي الطبي (AI Governance Matrix)</h4>
+                        <p class="text-[10px] text-slate-400">توزيع الصلاحيات والاستخدامات المعتمدة والمحظورة حسب الدور الوظيفي</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('admin-ai-governance-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 flex items-center justify-center text-sm">✕</button>
+            </div>
+            <div class="space-y-4" id="admin-ai-governance-content">
+                <!-- Populated via admin.js -->
+            </div>
+            <div class="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button type="button" onclick="document.getElementById('admin-ai-governance-modal').classList.add('hidden')" class="px-5 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-xl transition">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
