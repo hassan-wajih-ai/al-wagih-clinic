@@ -153,11 +153,18 @@ const ClinicAdminApp = {
         this.populateLabCatalogSelect();
         this.populateRadExamSelect();
         this.updateKPIs();
+        if (typeof EnterpriseSystems !== 'undefined') {
+            this.renderZeroNoShow();
+            this.renderFinCommand();
+            this.renderSmartOps();
+            this.renderGrowth();
+            this.renderCockpit360();
+        }
     },
 
     switchTab(tabId) {
         this.activeTab = tabId;
-        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports', 'lab', 'radiology', 'queue', 'commissions', 'pharmacy', 'surgery', 'multibranch', 'procedures'];
+        const tabs = ['crm', 'hr_biometric', 'procurement', 'contracts', 'inventory', 'reports', 'lab', 'radiology', 'queue', 'commissions', 'pharmacy', 'surgery', 'multibranch', 'procedures', 'zeroshow', 'fincommand', 'smartops', 'growth', 'cockpit360'];
         tabs.forEach(t => {
             const el = document.getElementById(`tab-content-${t}`);
             const btn = document.getElementById(`tab-btn-${t}`);
@@ -188,6 +195,16 @@ const ClinicAdminApp = {
             this.renderAdminMultiBranch();
         } else if (tabId === 'procedures') {
             this.renderClinicProcedures();
+        } else if (tabId === 'zeroshow') {
+            this.renderZeroNoShow();
+        } else if (tabId === 'fincommand') {
+            this.renderFinCommand();
+        } else if (tabId === 'smartops') {
+            this.renderSmartOps();
+        } else if (tabId === 'growth') {
+            this.renderGrowth();
+        } else if (tabId === 'cockpit360') {
+            this.renderCockpit360();
         }
     },
 
@@ -5140,7 +5157,1057 @@ const ClinicAdminApp = {
                 insurance_claim: 0
             }
         ];
-    }
+    },
+
+    // ==========================================
+    // 1. نظام تدفق المرضى وأتمتة الاستقبال «صفر غياب» (Zero No-Show System)
+    // ==========================================
+    currentRoiSlideIndex: 0,
+    currentPitchSlideIndex: 0,
+    chatbotHistory: [],
+
+    renderZeroNoShow() {
+        if (typeof EnterpriseSystems === 'undefined' || !EnterpriseSystems.zeroNoShow) return;
+        const zns = EnterpriseSystems.zeroNoShow;
+
+        // 1. Render Peak Hours
+        const peakContainer = document.getElementById('zeroshow-peakhours-container');
+        if (peakContainer && zns.historicalData && zns.historicalData.peakHours) {
+            peakContainer.innerHTML = zns.historicalData.peakHours.map(ph => {
+                const isHigh = ph.riskLevel === 'high';
+                const badgeColor = isHigh ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200';
+                return `
+                <div class="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-black text-slate-900 dark:text-white">${ph.hour}</span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full border ${badgeColor} font-bold">${isHigh ? 'عالي الخطورة (ذروة)' : 'مخاطرة معتدلة'}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-1">متوسط المواعيد: <strong class="text-slate-800 dark:text-slate-200">${ph.appointments} موعد</strong> | الإجراء: ${ph.recommendation}</p>
+                    </div>
+                    <div class="text-left font-mono">
+                        <span class="text-xs text-slate-400 block">نسبة الغياب</span>
+                        <span class="text-base font-black ${isHigh ? 'text-rose-600' : 'text-emerald-600'}">${ph.noShowRate}%</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // 2. Render Specialty Risk
+        const specContainer = document.getElementById('zeroshow-specialties-container');
+        if (specContainer && zns.historicalData && zns.historicalData.specialtyRisk) {
+            specContainer.innerHTML = zns.historicalData.specialtyRisk.map(sr => {
+                const rateColor = sr.rate > 15 ? 'text-rose-600' : (sr.rate > 10 ? 'text-amber-600' : 'text-emerald-600');
+                const barColor = sr.rate > 15 ? 'bg-rose-500' : (sr.rate > 10 ? 'bg-amber-500' : 'bg-emerald-500');
+                return `
+                <div class="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black text-slate-900 dark:text-white">${sr.specialty}</span>
+                        <span class="text-xs font-black font-mono ${rateColor}">${sr.rate}% غياب</span>
+                    </div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div class="${barColor} h-2 rounded-full transition-all duration-500" style="width: ${sr.rate * 3.5}%"></div>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] text-slate-400">
+                        <span>النوع الأكثر تغيباً: <strong class="text-slate-600 dark:text-slate-300">${sr.topRiskVisit}</strong></span>
+                        <span>مستوى الخطر: ${sr.riskLevel}</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // 3. Render Smart Waitlist
+        const waitlistTbody = document.getElementById('zeroshow-waitlist-tbody');
+        if (waitlistTbody && zns.waitlist) {
+            waitlistTbody.innerHTML = zns.waitlist.map(w => {
+                const urgencyBadge = w.urgency === 'حرجة' 
+                    ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">🚨 حرجة (أولوية 1)</span>'
+                    : (w.urgency === 'عاجل'
+                        ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">⚡ عاجل (أولوية 2)</span>'
+                        : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300">⏳ روتيني</span>');
+                
+                const isBackfilled = w.status === 'backfilled';
+                return `
+                <tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                    <td class="p-3 font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold font-mono">${w.score}</span>
+                        <div>
+                            <span class="font-bold block">${w.patientName}</span>
+                            <span class="text-[10px] text-slate-400 font-mono">${w.phone}</span>
+                        </div>
+                    </td>
+                    <td class="p-3 text-slate-700 dark:text-slate-300 font-medium">${w.clinic}</td>
+                    <td class="p-3 text-slate-600 dark:text-slate-400 font-mono text-[11px]">${w.desiredSlot}</td>
+                    <td class="p-3">${urgencyBadge}</td>
+                    <td class="p-3 text-center">
+                        ${isBackfilled 
+                            ? '<span class="px-2.5 py-1 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">✅ تم التسكين</span>'
+                            : `<button type="button" onclick="ClinicAdminApp.backfillWaitlistPatient('${w.id}')" class="btn-press px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition flex items-center gap-1 mx-auto">
+                                <span>⚡</span> <span>تسكين فوري</span>
+                               </button>`
+                        }
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        // 4. Render Reminders Queue
+        const remindersContainer = document.getElementById('zeroshow-reminders-container');
+        if (remindersContainer && zns.remindersQueue) {
+            remindersContainer.innerHTML = zns.remindersQueue.map(rq => {
+                const triggerBadge = rq.trigger === 'قبل 48 ساعة'
+                    ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700 border border-sky-200">⏱️ قبل 48 ساعة (تأكيد الحضور)</span>'
+                    : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">🔔 قبل ساعتين (تعليمات الكشف)</span>';
+                
+                return `
+                <div class="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <strong class="text-xs text-slate-900 dark:text-white">${rq.patientName}</strong>
+                            ${triggerBadge}
+                        </div>
+                        <p class="text-[11px] text-slate-500">
+                            العيادة: <strong class="text-slate-700 dark:text-slate-300">${rq.clinic}</strong> | الموعد: <span class="font-mono text-slate-600 dark:text-slate-400">${rq.time}</span> | وقت الإرسال: <span class="font-mono text-indigo-600">${rq.scheduledSend}</span>
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2 self-end sm:self-center">
+                        <button type="button" onclick="ClinicAdminApp.sendManualWhatsAppReminder('${rq.phone}', '${encodeURIComponent(rq.messageTemplate)}')" class="btn-press px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                            <span>💬</span> <span>إرسال واتساب (يدوي)</span>
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+    },
+
+    backfillWaitlistPatient(waitlistId) {
+        if (typeof EnterpriseSystems === 'undefined') return;
+        const item = EnterpriseSystems.zeroNoShow.waitlist.find(w => w.id === waitlistId);
+        if (!item) return;
+        item.status = 'backfilled';
+        this.renderZeroNoShow();
+        alert(`✅ تم تسكين المريض (${item.patientName}) بنجاح في الموعد الشاغر بعيادة (${item.clinic})!
+تم تجهيز رسالة التأكيد التلقائية على رقمه: ${item.phone}`);
+    },
+
+    sendManualWhatsAppReminder(phone, encodedText) {
+        const text = decodeURIComponent(encodedText);
+        const cleanPhone = phone.replace(/[^0-9]/g, '');
+        const waPhone = cleanPhone.startsWith('0') ? '2' + cleanPhone : cleanPhone;
+        const url = `https://wa.me/${waPhone}?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    },
+
+    openPrivacyProtocolModal() {
+        const modal = document.getElementById('admin-privacy-protocol-modal');
+        const contentBox = document.getElementById('admin-privacy-protocol-content');
+        if (modal) modal.classList.remove('hidden');
+        if (contentBox && typeof EnterpriseSystems !== 'undefined' && EnterpriseSystems.zeroNoShow) {
+            const p = EnterpriseSystems.zeroNoShow.privacyProtocol || EnterpriseSystems.zeroNoShow.protocolDoc || {};
+            const principles = p.principles || p.rules || [];
+            contentBox.innerHTML = `
+                <div class="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <strong class="text-xs text-indigo-950 dark:text-indigo-200">${p.title || 'بروتوكول حماية خصوصية بيانات المرضى'}</strong>
+                        <span class="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono">${p.version || 'v2.1'} | HIPAA / GDPR</span>
+                    </div>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-300">دليل عملي ملزم لكافة الأقسام لضبط تشفير وإخفاء بيانات المرضى الحساسة قبل التعامل معها عبر تقنيات الذكاء الاصطناعي.</p>
+                </div>
+                <div class="space-y-2 pt-2">
+                    <h5 class="text-xs font-black text-slate-900 dark:text-white">المبادئ الأربعة الإلزامية لحماية الهوية (Mandatory De-identification):</h5>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        ${principles.map(r => `
+                            <div class="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-1">
+                                <span class="text-[11px] font-black text-indigo-600 block">🔒 ${r.rule}</span>
+                                <div class="text-[10px] text-slate-500 leading-relaxed">${r.desc || (r.raw ? '❌ خام: ' + r.raw + ' ➔ ' + r.masked : '')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border border-amber-200 dark:border-amber-900/60 text-[11px] text-amber-800 dark:text-amber-200">
+                    <strong>⚠️ تعهد الأمان:</strong> لا يتم تمرير أي رقم قومي أو هاتف أو اسم ثلاثي إلى أي نموذج خارجي؛ تجري عمليات التحليل دائماً على معرفات رمزية مجهولة (Tokenized Anonymized IDs).
+                </div>
+            `;
+            this.testPIIMask();
+        }
+    },
+
+    testPIIMask() {
+        const input = document.getElementById('privacy-test-input');
+        const output = document.getElementById('privacy-test-output');
+        if (input && output && typeof EnterpriseSystems !== 'undefined' && EnterpriseSystems.zeroNoShow) {
+            const zns = EnterpriseSystems.zeroNoShow;
+            const maskFn = zns.privacyProtocol && zns.privacyProtocol.maskPII ? zns.privacyProtocol.maskPII : zns.maskPII;
+            const masked = maskFn ? maskFn(input.value) : input.value;
+            output.textContent = masked || 'لا يوجد نص للاختبار';
+        }
+    },
+
+    openRoiSlidesModal() {
+        this.currentRoiSlideIndex = 0;
+        const modal = document.getElementById('admin-roi-slides-modal');
+        if (modal) modal.classList.remove('hidden');
+        this.renderRoiSlide();
+    },
+
+    renderRoiSlide() {
+        if (typeof EnterpriseSystems === 'undefined') return;
+        const slides = EnterpriseSystems.zeroNoShow.roiSlides || EnterpriseSystems.zeroNoShow.roiPresentation || [];
+        if (!slides || slides.length === 0) return;
+        const slide = slides[this.currentRoiSlideIndex] || slides[0];
+        const box = document.getElementById('admin-roi-slide-box');
+        const counter = document.getElementById('roi-slide-counter');
+        if (counter) counter.textContent = `الشريحة ${this.currentRoiSlideIndex + 1} من ${slides.length}`;
+        if (box) {
+            const bulletsHtml = slide.bullets ? `
+                <ul class="space-y-2 text-xs text-slate-700 dark:text-slate-300">
+                    ${slide.bullets.map(b => `<li class="flex items-start gap-2"><span class="text-indigo-600 font-bold mt-0.5">🔹</span> <span>${b}</span></li>`).join('')}
+                </ul>
+            ` : `<div class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">${slide.content || ''}</div>`;
+
+            box.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                        <span class="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">${slide.badge || slide.subtitle || 'دراسة الجدوى والعائد'}</span>
+                        <span class="text-[10px] text-slate-400 font-mono">Al Wagih ROI Engine</span>
+                    </div>
+                    <h3 class="text-base font-black text-slate-900 dark:text-white leading-snug">${slide.title}</h3>
+                    <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        ${bulletsHtml}
+                    </div>
+                </div>
+                <div class="mt-4 p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 flex items-center justify-between text-xs">
+                    <span class="font-bold text-indigo-950 dark:text-indigo-200">الاستنتاج المالي الرئيسي:</span>
+                    <strong class="text-indigo-600 dark:text-indigo-400 font-black">${slide.takeaway || slide.goal || 'استرداد استثماري فوري خلال أقل من 30 يوماً'}</strong>
+                </div>
+            `;
+        }
+    },
+
+    nextRoiSlide() {
+        if (typeof EnterpriseSystems === 'undefined') return;
+        const slides = EnterpriseSystems.zeroNoShow.roiSlides || EnterpriseSystems.zeroNoShow.roiPresentation || [];
+        if (!slides.length) return;
+        this.currentRoiSlideIndex = (this.currentRoiSlideIndex + 1) % slides.length;
+        this.renderRoiSlide();
+    },
+
+    prevRoiSlide() {
+        if (typeof EnterpriseSystems === 'undefined') return;
+        const slides = EnterpriseSystems.zeroNoShow.roiSlides || EnterpriseSystems.zeroNoShow.roiPresentation || [];
+        if (!slides.length) return;
+        this.currentRoiSlideIndex = (this.currentRoiSlideIndex - 1 + slides.length) % slides.length;
+        this.renderRoiSlide();
+    },
+
+    openChatbotTesterModal() {
+        const modal = document.getElementById('admin-chatbot-modal');
+        if (modal) modal.classList.remove('hidden');
+        if (this.chatbotHistory.length === 0) {
+            this.chatbotHistory.push({
+                sender: 'bot',
+                text: 'مرحباً بك في مساعد الاستقبال الذكي لمركز الوجيه الطبي! 🏥 كيف يمكنني مساعدتك اليوم؟ يمكنك الاستفسار عن مواعيد العيادات، تعليمات التحاليل والأشعة، أو تأكيد الحجز.'
+            });
+        }
+        this.renderChatbotMessages();
+    },
+
+    renderChatbotMessages() {
+        const stream = document.getElementById('chatbot-stream-box');
+        if (!stream) return;
+        stream.innerHTML = this.chatbotHistory.map(msg => {
+            const isBot = msg.sender === 'bot';
+            return `
+            <div class="flex ${isBot ? 'justify-start' : 'justify-end'}">
+                <div class="max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed ${isBot ? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tr-none' : 'bg-indigo-600 text-white rounded-tl-none font-medium'} shadow-sm">
+                    ${isBot ? '<div class="text-[10px] font-bold text-indigo-500 mb-1">🤖 مساعد الوجيه الذكي</div>' : ''}
+                    <div>${msg.text}</div>
+                </div>
+            </div>`;
+        }).join('');
+        stream.scrollTop = stream.scrollHeight;
+    },
+
+    submitChatbotMessage(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const input = document.getElementById('chatbot-user-input');
+        if (!input || !input.value.trim()) return;
+        const userText = input.value.trim();
+        this.chatbotHistory.push({ sender: 'user', text: userText });
+        input.value = '';
+        this.renderChatbotMessages();
+
+        setTimeout(() => {
+            let botReply = 'عذراً، لم أتعرف بدقة على استفسارك. هل يمكنك كتابته بصيغة أخرى، أو طلب التحدث مع موظف الاستقبال؟';
+            if (typeof EnterpriseSystems !== 'undefined' && EnterpriseSystems.zeroNoShow) {
+                botReply = EnterpriseSystems.zeroNoShow.askChatbot(userText);
+            }
+            this.chatbotHistory.push({ sender: 'bot', text: botReply });
+            this.renderChatbotMessages();
+        }, 400);
+    },
+
+    // ==========================================
+    // 2. مركز القيادة المالية ودورة الإيرادات (Financial Command Center & RCM)
+    // ==========================================
+    renderFinCommand() {
+        if (typeof EnterpriseSystems === 'undefined' || !EnterpriseSystems.financialCommand) return;
+        const fc = EnterpriseSystems.financialCommand;
+
+        // 1. Render P&L
+        const pAndLContainer = document.getElementById('fincommand-pandl-container');
+        if (pAndLContainer && fc.monthlyPAndL) {
+            const pl = fc.monthlyPAndL;
+            pAndLContainer.innerHTML = `
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-center">
+                        <span class="text-[10px] text-slate-400 font-bold block">إجمالي الإيرادات</span>
+                        <span class="text-base font-black text-slate-900 dark:text-white font-mono">${pl.grossRevenue.toLocaleString()} ج.م</span>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-center">
+                        <span class="text-[10px] text-slate-400 font-bold block">التكاليف المباشرة (COGS)</span>
+                        <span class="text-base font-black text-rose-600 font-mono">${pl.directCosts.toLocaleString()} ج.م</span>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-center">
+                        <span class="text-[10px] text-slate-400 font-bold block">مجمل الربح (Gross Margin)</span>
+                        <span class="text-base font-black text-emerald-600 font-mono">${pl.grossMargin.toLocaleString()} ج.م (${pl.grossMarginPct}%)</span>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-center">
+                        <span class="text-[10px] text-slate-400 font-bold block">المصروفات التشغيلية (OpEx)</span>
+                        <span class="text-base font-black text-amber-600 font-mono">${pl.opex.toLocaleString()} ج.م</span>
+                    </div>
+                    <div class="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-center col-span-2 sm:col-span-1">
+                        <span class="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold block">صافي الربح الشهري</span>
+                        <span class="text-base font-black text-emerald-600 font-mono">${pl.netProfit.toLocaleString()} ج.م (${pl.netMarginPct}%)</span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 mt-4">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
+                            <tr>
+                                <th class="p-2.5">البند المالي</th>
+                                <th class="p-2.5">التصنيف</th>
+                                <th class="p-2.5 text-left font-mono">القيمة الشهرية (ج.م)</th>
+                                <th class="p-2.5 text-left font-mono">النسبة من الإيراد</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            ${pl.breakdown.map(b => `
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                    <td class="p-2.5 font-bold text-slate-800 dark:text-slate-200">${b.item}</td>
+                                    <td class="p-2.5 text-[11px] text-slate-500">${b.category}</td>
+                                    <td class="p-2.5 text-left font-mono font-bold text-slate-900 dark:text-white">${b.amount.toLocaleString()} ج.م</td>
+                                    <td class="p-2.5 text-left font-mono text-slate-500">${b.pctOfRevenue}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 2. Render Margin Improvement Decisions
+        const decContainer = document.getElementById('fincommand-decisions-container');
+        if (decContainer && fc.marginImprovementDecisions) {
+            decContainer.innerHTML = fc.marginImprovementDecisions.map((dec, idx) => `
+                <div class="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-2.5">
+                        <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold font-mono mt-0.5">${idx + 1}</span>
+                        <div>
+                            <h5 class="text-xs font-black text-slate-900 dark:text-white">${dec.title}</h5>
+                            <p class="text-[11px] text-slate-500 mt-0.5">${dec.description}</p>
+                            <span class="inline-block mt-1 text-[10px] text-slate-400 font-mono">آلية التنفيذ: ${dec.action}</span>
+                        </div>
+                    </div>
+                    <div class="text-left font-mono whitespace-nowrap">
+                        <span class="text-[10px] text-slate-400 block">الأثر المالي المتوقع</span>
+                        <span class="text-xs font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-xl border border-emerald-200 dark:border-emerald-800 block">
+                            ${dec.monthlyImpact}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 3. Render Insurance Denials
+        const denContainer = document.getElementById('fincommand-denials-container');
+        if (denContainer && fc.denialsCatalog) {
+            denContainer.innerHTML = fc.denialsCatalog.map(dc => `
+                <div class="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded-md font-mono text-[11px] font-bold bg-rose-100 text-rose-700 border border-rose-200">${dc.code}</span>
+                            <strong class="text-xs text-slate-900 dark:text-white">${dc.title}</strong>
+                            <span class="text-[10px] text-slate-400 font-mono">(${dc.frequency} من إجمالي المرفوضات)</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500">السبب الشائع: ${dc.rootCause} | مسار الاسترداد: <strong class="text-indigo-600">${dc.recoveryAction}</strong></p>
+                    </div>
+                    <button type="button" onclick="ClinicAdminApp.openAppealLetterModal('${dc.code}')" class="btn-press px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-1.5 self-end sm:self-center shadow-sm">
+                        <span>📝</span> <span>تجهيز خطاب اعتراض</span>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // 4. Render AR Aging
+        const arContainer = document.getElementById('fincommand-araging-container');
+        if (arContainer && fc.arAging) {
+            arContainer.innerHTML = fc.arAging.buckets.map(b => {
+                const isLate = b.days === '61 - 90 يوم' || b.days === 'أكثر من 90 يوم';
+                return `
+                <div class="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black text-slate-900 dark:text-white">${b.days}</span>
+                        <span class="text-xs font-black font-mono ${isLate ? 'text-rose-600' : 'text-slate-800 dark:text-slate-200'}">${b.amount.toLocaleString()} ج.م (${b.percentage}%)</span>
+                    </div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div class="${isLate ? 'bg-rose-500' : 'bg-emerald-500'} h-2 rounded-full" style="width: ${b.percentage}%"></div>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] text-slate-400">
+                        <span>الشركات المتأخرة: ${b.companies}</span>
+                        <span class="font-bold ${isLate ? 'text-rose-500' : 'text-slate-500'}">${b.riskLevel}</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // 5. Render Cashflow Forecasts
+        const cfContainer = document.getElementById('fincommand-cashflow-container');
+        if (cfContainer && fc.cashFlowForecast && fc.cashFlowForecast.scenarios) {
+            cfContainer.innerHTML = fc.cashFlowForecast.scenarios.map(sc => {
+                const borderClass = sc.type === 'متفائل' ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-950/20' : (sc.type === 'متحفظ' ? 'border-amber-300 dark:border-amber-800 bg-amber-50/40 dark:bg-amber-950/20' : 'border-sky-300 dark:border-sky-800 bg-sky-50/40 dark:bg-sky-950/20');
+                return `
+                <div class="p-4 rounded-2xl border ${borderClass} space-y-2">
+                    <div class="flex items-center justify-between">
+                        <strong class="text-xs font-black text-slate-900 dark:text-white">السيناريو ${sc.type}</strong>
+                        <span class="text-[10px] font-mono text-slate-500">${sc.growthAssumption}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-center pt-1">
+                        <div class="p-2 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/50 dark:border-slate-800/50">
+                            <span class="text-[9px] text-slate-400 block font-bold">إيراد Q1 المتوقع</span>
+                            <strong class="text-xs font-mono font-black text-slate-900 dark:text-white">${sc.q1Revenue.toLocaleString()} ج.م</strong>
+                        </div>
+                        <div class="p-2 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/50 dark:border-slate-800/50">
+                            <span class="text-[9px] text-slate-400 block font-bold">رصيد السيولة بنهاية Q2</span>
+                            <strong class="text-xs font-mono font-black text-emerald-600">${sc.q2EndingCash.toLocaleString()} ج.م</strong>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500">${sc.commentary}</p>
+                </div>`;
+            }).join('');
+        }
+    },
+
+    openAppealLetterModal(denialCode) {
+        const modal = document.getElementById('admin-appeal-letter-modal');
+        if (modal) modal.classList.remove('hidden');
+        const codeSelect = document.getElementById('appeal-code-select');
+        if (codeSelect && denialCode) {
+            codeSelect.value = denialCode;
+        }
+        this.regenerateAppealText();
+    },
+
+    regenerateAppealText() {
+        if (typeof EnterpriseSystems === 'undefined') return;
+        const compSelect = document.getElementById('appeal-company-select');
+        const codeSelect = document.getElementById('appeal-code-select');
+        const textarea = document.getElementById('appeal-letter-textarea');
+        if (!textarea) return;
+
+        const company = compSelect ? compSelect.value : 'شركة بوبا للتأمين الطبي';
+        const code = codeSelect ? codeSelect.value : 'CO-16';
+
+        const letter = EnterpriseSystems.financialCommand.generateAppealLetter({
+            claimId: 'CLM-2026-9412',
+            patientName: 'أشرف محمود رضوان',
+            patientInsuranceId: 'BUP-8849201',
+            companyName: company,
+            denialCode: code,
+            serviceDescription: 'كشف استشاري قلب وأوعية دموية + رسم قلب بالمجهود (Stress ECG)',
+            claimAmount: 1850,
+            dateOfService: '2026-11-18'
+        });
+
+        textarea.value = letter;
+    },
+
+    printAppealLetter() {
+        const textarea = document.getElementById('appeal-letter-textarea');
+        if (!textarea || !textarea.value) return;
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html dir="rtl" lang="ar">
+            <head>
+                <title>خطاب اعتراض وتدقيق مطالبة طبية - مركز الوجيه الطبي</title>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; padding: 40px; color: #1e293b; line-height: 1.8; font-size: 13px; }
+                    .header { border-bottom: 2px solid #0284c7; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+                    .letter-body { white-space: pre-wrap; font-family: monospace, sans-serif; font-size: 12px; background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #cbd5e1; }
+                    .footer { margin-top: 40px; text-align: left; font-weight: bold; }
+                    @media print { body { padding: 0; } }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div>
+                        <h2 style="margin: 0; color: #0369a1;">مركز الوجيه الطبي التخصصي</h2>
+                        <span style="font-size: 11px; color: #64748b;">إدارة المراجعة الطبية والفوترة والتأمين</span>
+                    </div>
+                    <div style="text-align: left; font-size: 11px;">
+                        <span>التاريخ: ${new Date().toLocaleDateString('ar-EG')}</span><br>
+                        <span>الرقم المرجعي: AP-2026-081</span>
+                    </div>
+                </div>
+                <div class="letter-body">${textarea.value}</div>
+                <div class="footer">
+                    <div>اعتماد مدير الدورة المالية والتأمين الطبي: _________________</div>
+                    <div style="font-size: 10px; color: #94a3b8; margin-top: 5px;">مختوم بالخاتم الرسمي للعيادة ومرفق به المستندات المؤيدة</div>
+                </div>
+                <script>window.onload = function() { window.print(); }</script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    },
+
+    exportPAndLExcel() {
+        if (typeof EnterpriseSystems === 'undefined' || typeof XLSX === 'undefined') {
+            alert('أداة التصدير غير مهيأة.');
+            return;
+        }
+        const pl = EnterpriseSystems.financialCommand.monthlyPAndL;
+        const rows = [
+            ['مركز الوجيه الطبي - قائمة الأرباح والخسائر الشهرية (P&L Model)'],
+            ['التاريخ:', new Date().toLocaleDateString('ar-EG')],
+            [''],
+            ['البند المالي', 'التصنيف', 'القيمة الشهرية (ج.م)', 'النسبة من الإيراد'],
+            ...pl.breakdown.map(b => [b.item, b.category, b.amount, b.pctOfRevenue + '%']),
+            [''],
+            ['إجمالي الإيرادات', 'Gross Revenue', pl.grossRevenue, '100%'],
+            ['إجمالي التكاليف المباشرة', 'COGS', pl.directCosts, (pl.directCosts / pl.grossRevenue * 100).toFixed(1) + '%'],
+            ['مجمل الربح', 'Gross Profit', pl.grossMargin, pl.grossMarginPct + '%'],
+            ['المصروفات التشغيلية', 'OpEx', pl.opex, (pl.opex / pl.grossRevenue * 100).toFixed(1) + '%'],
+            ['الأرباح التشغيلية قبل الإهلاك', 'EBITDA', pl.ebitda, pl.ebitdaPct + '%'],
+            ['صافي الربح النهائي', 'Net Profit', pl.netProfit, pl.netMarginPct + '%']
+        ];
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'P&L Model');
+        XLSX.writeFile(wb, 'Al_Wagih_P_and_L_Statement_2026.xlsx');
+    },
+
+    // ==========================================
+    // 3. محرك المخزون الذكي وجدولة الموظفين (Smart Inventory & On-Demand Staffing)
+    // ==========================================
+    renderSmartOps() {
+        if (typeof EnterpriseSystems === 'undefined' || !EnterpriseSystems.smartInventoryStaffing) return;
+        const so = EnterpriseSystems.smartInventoryStaffing;
+
+        // 1. Render Consumables Table
+        const consTbody = document.getElementById('smartops-consumables-tbody');
+        if (consTbody && so.consumables) {
+            consTbody.innerHTML = so.consumables.map(c => {
+                const stock = c.current_stock !== undefined ? c.current_stock : (c.currentStock || 0);
+                const rop = c.rop || 100;
+                const leadTime = c.lead_time_days || c.leadTimeDays || 3;
+                const expiry = c.expiry || c.expiryDate || '2027-12-31';
+
+                const isLow = c.status === 'low_stock' || stock <= rop;
+                const isExpiring = c.status === 'expiring_soon';
+                const statusBadge = isLow 
+                    ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 animate-pulse">🚨 قرب نفاد / إعادة طلب</span>'
+                    : (isExpiring 
+                        ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">⚠️ قرب انتهاء الصلاحية</span>'
+                        : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">✅ آمن وصالح</span>');
+
+                return `
+                <tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                    <td class="p-3 font-medium text-slate-900 dark:text-white">
+                        <strong class="block">${c.name}</strong>
+                        <span class="text-[10px] text-slate-400">${c.category} | المورد: ${c.supplier}</span>
+                    </td>
+                    <td class="p-3 font-mono font-bold text-slate-800 dark:text-slate-200">${stock} ${c.unit}</td>
+                    <td class="p-3 font-mono font-bold text-indigo-600">${rop} ${c.unit}</td>
+                    <td class="p-3 font-mono text-[11px] text-slate-500">${leadTime} أيام</td>
+                    <td class="p-3 font-mono text-[11px] text-slate-600 dark:text-slate-400">${expiry}</td>
+                    <td class="p-3">${statusBadge}</td>
+                    <td class="p-3 text-center">
+                        <button type="button" onclick="ClinicAdminApp.openPurchaseOrderModal('${c.id}')" class="btn-press px-2.5 py-1 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold shadow-sm transition flex items-center gap-1 mx-auto">
+                            <span>📦</span> <span>مسودة أمر توريد</span>
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        // 2. Render Staffing Heatmap
+        const heatContainer = document.getElementById('smartops-heatmap-container');
+        if (heatContainer && so.hourlyFootfallHeatmap) {
+            heatContainer.innerHTML = so.hourlyFootfallHeatmap.map(hm => {
+                const timeStr = hm.time || hm.hour || '';
+                const loadStr = hm.patientLoad || (hm.patientsExpected ? (hm.patientsExpected + ' مريض') : '');
+                const recCount = hm.receptionistsNeeded || hm.recommendedReception || 2;
+                const nurseCount = hm.nursesNeeded || hm.recommendedNurses || 2;
+                const isPeak = hm.status === 'busy' || hm.status === 'peak' || recCount >= 3;
+                const barWidth = isPeak ? 90 : (recCount === 2 ? 60 : 35);
+                const barColor = isPeak ? 'bg-rose-500' : (recCount === 2 ? 'bg-amber-500' : 'bg-sky-500');
+
+                return `
+                <div class="p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex items-center justify-between gap-4">
+                    <div class="w-32">
+                        <span class="text-xs font-black text-slate-900 dark:text-white block font-mono">${timeStr}</span>
+                        ${isPeak ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-rose-100 text-rose-700 font-bold">ذروة إقبال</span>' : ''}
+                    </div>
+                    <div class="flex-1 space-y-1">
+                        <div class="flex justify-between text-[10px] text-slate-500">
+                            <span>حجم الإقبال المتوقع: <strong class="text-slate-800 dark:text-slate-200">${loadStr}</strong></span>
+                            <span>الكوادر الموصى بها: الاستقبال (${recCount}) - التمريض (${nurseCount})</span>
+                        </div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div class="${barColor} h-2 rounded-full transition-all duration-500" style="width: ${barWidth}%"></div>
+                        </div>
+                    </div>
+                    <div class="text-left font-mono text-[11px] font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        ${recCount + nurseCount} موظفين
+                    </div>
+                </div>`;
+            }).join('');
+        }
+    },
+
+    openPurchaseOrderModal(supplierOrItemId) {
+        if (typeof EnterpriseSystems === 'undefined') return;
+        const modal = document.getElementById('admin-po-draft-modal');
+        const contentBox = document.getElementById('po-draft-content');
+        if (modal) modal.classList.remove('hidden');
+
+        const so = EnterpriseSystems.smartInventoryStaffing;
+        const targetItem = so.consumables.find(c => c.id === supplierOrItemId);
+        const supplier = targetItem ? targetItem.supplier : (typeof supplierOrItemId === 'string' && supplierOrItemId.length > 5 && !supplierOrItemId.startsWith('MED') ? supplierOrItemId : null);
+        const po = so.generatePurchaseOrderDraft ? so.generatePurchaseOrderDraft(supplier) : { poNumber: 'PO-882190', date: new Date().toISOString().split('T')[0], supplier: supplier || 'الشركة المصرية للأجهزة الطبية', items: [], totalEstimatedCost: 14500 };
+
+        const itemsList = po.items && po.items.length > 0 ? po.items : (targetItem ? [{
+            name: targetItem.name,
+            needed_quantity: Math.max((targetItem.rop * 2) - targetItem.current_stock, 100),
+            unit: targetItem.unit,
+            unit_cost: targetItem.unit_cost,
+            total_cost: Math.max((targetItem.rop * 2) - targetItem.current_stock, 100) * targetItem.unit_cost
+        }] : [
+            { name: 'قفازات لاتكس فحص معقمة', needed_quantity: 150, unit: 'علبة', unit_cost: 95, total_cost: 14250 }
+        ]);
+
+        const totalCost = po.totalEstimatedCost || itemsList.reduce((acc, it) => acc + (it.total_cost || 0), 0);
+
+        if (contentBox) {
+            contentBox.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                        <strong class="text-xs text-indigo-600 font-mono">رقم مسودة الأمر: ${po.poNumber || 'PO-2026-901'}</strong>
+                        <span class="text-[10px] text-slate-400">تاريخ الإصدار: ${po.date || new Date().toISOString().split('T')[0]}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div><strong>المورد:</strong> <span class="text-slate-600 dark:text-slate-400">${po.supplier || 'المورد المعتمد'}</span></div>
+                        <div><strong>مهلة التوريد المقدرة:</strong> <span class="text-slate-600 dark:text-slate-400 font-mono">2 - 4 أيام عمل</span></div>
+                    </div>
+                    <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                        <table class="w-full text-right text-xs">
+                            <thead class="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">
+                                <tr>
+                                    <th class="p-2">الصنف</th>
+                                    <th class="p-2 font-mono">الكمية المقترحة</th>
+                                    <th class="p-2 font-mono">سعر الوحدة</th>
+                                    <th class="p-2 font-mono">الإجمالي</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                ${itemsList.map(it => `
+                                    <tr>
+                                        <td class="p-2 font-medium text-slate-900 dark:text-white">${it.name}</td>
+                                        <td class="p-2 font-mono text-indigo-600 font-bold">${it.needed_quantity} ${it.unit}</td>
+                                        <td class="p-2 font-mono">${it.unit_cost} ج.م</td>
+                                        <td class="p-2 font-mono font-bold text-emerald-600">${(it.total_cost || 0).toLocaleString()} ج.م</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-xs">
+                        <strong class="text-emerald-900 dark:text-emerald-200">إجمالي قيمة أمر الشراء التقديري:</strong>
+                        <span class="text-sm font-mono font-black text-emerald-600">${totalCost.toLocaleString()} ج.م</span>
+                    </div>
+                    <div class="p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-[10px] text-slate-500">
+                        <strong>شروط الاستلام:</strong> فحص تاريخ الصلاحية بحيث لا يقل عن 18 شهراً من تاريخ التوريد، ومطابقة معايير هيئة الدواء المصرية (EDA).
+                    </div>
+                </div>
+            `;
+        }
+    },
+
+    confirmPurchaseOrder() {
+        const modal = document.getElementById('admin-po-draft-modal');
+        if (modal) modal.classList.add('hidden');
+        alert(`✅ تم اعتماد وإرسال مسودة أمر الشراء للمورد عبر البريد والواتساب بنجاح!\nتم حجز بند الميزانية التشغيلية للشهر الجاري.`);
+    },
+
+    openSavingsProposalModal() {
+        if (typeof EnterpriseSystems === 'undefined') return;
+        const prop = EnterpriseSystems.smartInventoryStaffing.savingsProposal;
+        alert(`📊 دراسة وفورات المخزون وجدولة الموظفين المرفوعة للإدارة:
+
+1. وفر خفض هالك ومستلزمات الصلاحية: ${prop.consumableWasteSavings.toLocaleString()} ج.م / سنوياً.
+2. وفر ترشيد ساعات العمل الإضافي ومواءمة النوبات: ${prop.overtimeSavings.toLocaleString()} ج.م / سنوياً.
+
+🎯 إجمالي الوفورات السنوية المستردة: ${prop.totalAnnualSavings.toLocaleString()} ج.م!
+(مرفوعة للملاك ضمن موازنة Q1).`);
+    },
+
+    exportSmartInventoryExcel() {
+        if (typeof EnterpriseSystems === 'undefined' || typeof XLSX === 'undefined') {
+            alert('أداة التصدير غير مهيأة.');
+            return;
+        }
+        const items = EnterpriseSystems.smartInventoryStaffing.consumables;
+        const rows = [
+            ['مركز الوجيه الطبي - تقرير الجرد الطبي الذكي وحساب نقاط إعادة الطلب (ROP)'],
+            ['تاريخ الاستخراج:', new Date().toLocaleDateString('ar-EG')],
+            ['المعادلة المعتمدة:', 'ROP = (الاستهلاك اليومي d × مهلة التوريد L) + مخزون الأمان SS'],
+            [''],
+            ['اسم المستلزم الطبي', 'التصنيف', 'الرصيد المتاح', 'نقطة إعادة الطلب (ROP)', 'الوحدة', 'مهلة التوريد (أيام)', 'تاريخ انتهاء الصلاحية', 'حالة المخزون', 'المورد المعتمد'],
+            ...items.map(it => [it.name, it.category, it.currentStock, it.rop, it.unit, it.leadTimeDays, it.expiryDate, it.status === 'urgent' ? 'قرب نفاد' : (it.status === 'reorder_needed' ? 'تنبيه إعادة طلب' : 'آمن'), it.supplier])
+        ];
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Medical Consumables ROP');
+        XLSX.writeFile(wb, 'Al_Wagih_Smart_Inventory_ROP_2026.xlsx');
+    },
+
+    // ==========================================
+    // 4. المخطط الاستراتيجي للتوسع والنمو السنوي (Strategic Expansion & Break-Even)
+    // ==========================================
+    renderGrowth() {
+        if (typeof EnterpriseSystems === 'undefined' || !EnterpriseSystems.strategicGrowth) return;
+        const sg = EnterpriseSystems.strategicGrowth;
+
+        // 1. Render SWOT
+        const swotContainer = document.getElementById('growth-swot-container');
+        if (swotContainer && sg.swot) {
+            swotContainer.innerHTML = `
+                <div class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-2">
+                    <h5 class="text-xs font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                        <span>💪</span> <span>نقاط القوة (Strengths)</span>
+                    </h5>
+                    <ul class="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 list-disc list-inside">
+                        ${sg.swot.strengths.map(s => `<li>${s}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 space-y-2">
+                    <h5 class="text-xs font-black text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+                        <span>⚠️</span> <span>نقاط الضعف (Weaknesses)</span>
+                    </h5>
+                    <ul class="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 list-disc list-inside">
+                        ${sg.swot.weaknesses.map(w => `<li>${w}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="p-4 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 space-y-2">
+                    <h5 class="text-xs font-black text-sky-800 dark:text-sky-300 flex items-center gap-1.5">
+                        <span>🚀</span> <span>الفرص الواعدة (Opportunities)</span>
+                    </h5>
+                    <ul class="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 list-disc list-inside">
+                        ${sg.swot.opportunities.map(o => `<li>${o}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 space-y-2">
+                    <h5 class="text-xs font-black text-rose-800 dark:text-rose-300 flex items-center gap-1.5">
+                        <span>🛡️</span> <span>التهديدات المحتملة (Threats)</span>
+                    </h5>
+                    <ul class="text-[11px] text-slate-600 dark:text-slate-300 space-y-1 list-disc list-inside">
+                        ${sg.swot.threats.map(t => `<li>${t}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        // 2. Render 90-Day Roadmap
+        const roadContainer = document.getElementById('growth-roadmap-container');
+        const roadmapList = sg.roadmap90Days || sg.ninetyDayRoadmap || [];
+        if (roadContainer && roadmapList.length > 0) {
+            roadContainer.innerHTML = roadmapList.map(phase => `
+                <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                        <strong class="text-xs font-black text-slate-900 dark:text-white">${phase.month}: ${phase.milestone || phase.theme || ''}</strong>
+                        <span class="text-[10px] text-indigo-600 font-mono font-bold">${phase.deliverable || 'إنجاز مرحلي'}</span>
+                    </div>
+                    <ul class="text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
+                        ${(phase.tasks || phase.milestones || []).map(m => `<li class="flex items-center gap-1.5"><span class="text-indigo-500 font-bold">✓</span> <span>${m}</span></li>`).join('')}
+                    </ul>
+                </div>
+            `).join('');
+        }
+
+        // 3. Render Balanced Scorecard OKRs
+        const scoreContainer = document.getElementById('growth-scorecard-container');
+        if (scoreContainer && sg.balancedScorecard) {
+            scoreContainer.innerHTML = sg.balancedScorecard.map(bsc => `
+                <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <h5 class="text-xs font-black text-slate-900 dark:text-white">${bsc.perspective}</h5>
+                        <span class="text-[10px] font-mono text-indigo-600 font-bold">إنجاز ${bsc.progress || 75}%</span>
+                    </div>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-400 font-medium">الهدف (Objective): ${bsc.objective}</p>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div class="bg-indigo-600 h-2 rounded-full" style="width: ${bsc.progress || 75}%"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+                        <span>المستهدف: ${bsc.target}</span>
+                        <span>الحالي: ${bsc.current}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 4. Render Break-Even Model Interactive Preview
+        const beContainer = document.getElementById('growth-breakeven-container');
+        if (beContainer && sg.breakEvenModel) {
+            const bem = sg.breakEvenModel;
+            const capexVal = bem.capitalExpenditure ? bem.capitalExpenditure.total : (bem.capex || 280000);
+            const opexVal = bem.monthlyOperatingExpenses ? bem.monthlyOperatingExpenses.total : (bem.fixedOpexMonthly || 42000);
+            const priceVal = bem.unitEconomics ? bem.unitEconomics.averageSessionPrice : (bem.pricePerSession || 300);
+            const varCostVal = bem.unitEconomics ? bem.unitEconomics.variableCostPerSession : (bem.variableCostPerSession || 45);
+            const marginVal = priceVal - varCostVal;
+            const calc = bem.calculateBreakEven ? bem.calculateBreakEven() : {
+                breakEvenSessionsMonthly: Math.ceil(opexVal / marginVal),
+                breakEvenSessionsDaily: Math.ceil((opexVal / marginVal) / 26),
+                breakEvenRevenueMonthly: Math.ceil(opexVal / marginVal) * priceVal,
+                paybackPeriodMonths: Math.ceil(capexVal / ((Math.ceil(opexVal / marginVal) * priceVal) * 0.4))
+            };
+
+            beContainer.innerHTML = `
+                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <strong class="text-xs font-bold text-slate-900 dark:text-white">${bem.projectName || bem.newSpecialty || 'وحدة العلاج الطبيعي والتأهيل'}</strong>
+                        <span class="text-[10px] text-emerald-600 font-mono font-bold">دراسة جدوى معتمدة</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+                        <div class="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                            <span class="text-[10px] text-slate-400 block">الاستثمار الرأسمالي (CapEx)</span>
+                            <span class="font-mono font-bold text-slate-900 dark:text-white">${capexVal.toLocaleString()} ج.م</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                            <span class="text-[10px] text-slate-400 block">المصاريف الثابتة شهرياً</span>
+                            <span class="font-mono font-bold text-slate-900 dark:text-white">${opexVal.toLocaleString()} ج.م</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                            <span class="text-[10px] text-slate-400 block">سعر الجلسة / الهامش</span>
+                            <span class="font-mono font-bold text-indigo-600">${priceVal} ج.م (${marginVal} ج.م ربح)</span>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800">
+                            <span class="text-[10px] text-emerald-700 dark:text-emerald-300 block font-bold">نقطة التعادل الشهرية</span>
+                            <span class="font-mono font-bold text-emerald-600">${calc.breakEvenSessionsMonthly} جلسة / شهر</span>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-300 flex items-center justify-between">
+                        <span>معدل التشغيل المطلوب يومياً: <strong class="text-indigo-600 font-mono font-black">${calc.breakEvenSessionsDaily} جلسات يومياً</strong> فقط (سعة 2 كابينة)</span>
+                        <span class="text-slate-400">فترة استرداد رأس المال: <strong class="text-emerald-600 font-mono">${calc.paybackPeriodMonths || 14} شهراً</strong></span>
+                    </div>
+                </div>
+            `;
+        }
+    },
+
+    openPitchDeckModal() {
+        this.currentPitchSlideIndex = 0;
+        const modal = document.getElementById('admin-pitch-deck-modal');
+        if (modal) modal.classList.remove('hidden');
+        this.renderPitchSlide();
+    },
+
+    renderPitchSlide() {
+        if (typeof EnterpriseSystems === 'undefined') return;
+        const slides = EnterpriseSystems.strategicGrowth.investmentPitchDeck || EnterpriseSystems.strategicGrowth.growthPitchDeck || [];
+        if (!slides || slides.length === 0) return;
+        const slide = slides[this.currentPitchSlideIndex] || slides[0];
+        const box = document.getElementById('admin-pitch-slide-box');
+        const counter = document.getElementById('pitch-slide-counter');
+        if (counter) counter.textContent = `الشريحة ${this.currentPitchSlideIndex + 1} من ${slides.length}`;
+        if (box) {
+            const bulletsHtml = slide.bullets ? `
+                <ul class="space-y-2 text-xs text-slate-700 dark:text-slate-300">
+                    ${slide.bullets.map(b => `<li class="flex items-start gap-2"><span class="text-purple-600 font-bold mt-0.5">🚀</span> <span>${b}</span></li>`).join('')}
+                </ul>
+            ` : `<div class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">${slide.content || ''}</div>`;
+
+            box.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                        <span class="text-[11px] font-bold text-purple-600 uppercase tracking-wider">${slide.badge || slide.subtitle || 'مخطط التوسع الاستراتيجي'}</span>
+                        <span class="text-[10px] text-slate-400 font-mono">Al Wagih Expansion Deck</span>
+                    </div>
+                    <h3 class="text-base font-black text-slate-900 dark:text-white leading-snug">${slide.title}</h3>
+                    <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        ${bulletsHtml}
+                    </div>
+                </div>
+                <div class="mt-4 p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 flex items-center justify-between text-xs">
+                    <span class="font-bold text-purple-950 dark:text-purple-200">الهدف الاستثماري:</span>
+                    <strong class="text-purple-600 dark:text-purple-400 font-black">${slide.goal || 'تحقيق نمو 45% في صافي أرباح العيادة السنوية'}</strong>
+                </div>
+            `;
+        }
+    },
+
+    nextPitchSlide() {
+        if (typeof EnterpriseSystems === 'undefined') return;
+        const slides = EnterpriseSystems.strategicGrowth.investmentPitchDeck || EnterpriseSystems.strategicGrowth.growthPitchDeck || [];
+        if (!slides.length) return;
+        this.currentPitchSlideIndex = (this.currentPitchSlideIndex + 1) % slides.length;
+        this.renderPitchSlide();
+    },
+
+    prevPitchSlide() {
+        if (typeof EnterpriseSystems === 'undefined') return;
+        const slides = EnterpriseSystems.strategicGrowth.investmentPitchDeck || EnterpriseSystems.strategicGrowth.growthPitchDeck || [];
+        if (!slides.length) return;
+        this.currentPitchSlideIndex = (this.currentPitchSlideIndex - 1 + slides.length) % slides.length;
+        this.renderPitchSlide();
+    },
+
+    // ==========================================
+    // 5. نظام التشغيل الرقمي الشامل 360° (Clinic 360° Digital Operating System)
+    // ==========================================
+    renderCockpit360() {
+        if (typeof EnterpriseSystems === 'undefined' || !EnterpriseSystems.clinic360) return;
+        const c360 = EnterpriseSystems.clinic360;
+
+        // 1. Render Stream Cards
+        const streamContainer = document.getElementById('cockpit360-streams-container');
+        if (streamContainer) {
+            streamContainer.innerHTML = `
+                <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">1. مسار المرضى والحجوزات</span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    </div>
+                    <div class="text-xl font-black text-slate-900 dark:text-white font-mono">89.2%</div>
+                    <p class="text-[11px] text-emerald-600 font-medium">↑ تحسن الحضور بنسبة +24% مع انعدام الغياب المفاجئ</p>
+                    <div class="text-[10px] text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">قائمة الانتظار الذكية: 5 مرضى جاهزون للتسكين</div>
+                </div>
+
+                <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">2. الرقابة المالية ومطالبات التأمين</span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                    </div>
+                    <div class="text-xl font-black text-slate-900 dark:text-white font-mono">28,400 ج.م</div>
+                    <p class="text-[11px] text-indigo-600 font-medium">معدل التحصيل اليومي | نسبة القبول 94.2%</p>
+                    <div class="text-[10px] text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">4 خطابات اعتراض جاهزة للاسترداد الفوري</div>
+                </div>
+
+                <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">3. كفاءة المستلزمات ونوبات العمل</span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                    </div>
+                    <div class="text-xl font-black text-slate-900 dark:text-white font-mono">100%</div>
+                    <p class="text-[11px] text-slate-600 dark:text-slate-300 font-medium">تغطية النوبات لساعات الذروة بنجاح تام</p>
+                    <div class="text-[10px] text-amber-500 pt-1 border-t border-slate-100 dark:border-slate-800">2 صنف يحتاجان إطلاق أمر شراء وقائي</div>
+                </div>
+
+                <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-500">4. النمو والتوسع الاستراتيجي</span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                    </div>
+                    <div class="text-xl font-black text-slate-900 dark:text-white font-mono">78%</div>
+                    <p class="text-[11px] text-purple-600 font-medium">نسبة إنجاز مستهدفات بطاقة الأداء المتوازن (OKR)</p>
+                    <div class="text-[10px] text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">وحدة العلاج الطبيعي جاهزة للتشغيل التجريبي</div>
+                </div>
+            `;
+        }
+
+        // 2. Render Patient NPS Preview
+        const npsBox = document.getElementById('cockpit-patient-nps-preview');
+        if (npsBox && c360.generatePatientPostVisitMessage) {
+            const sampleMsg = c360.generatePatientPostVisitMessage('محمود سالم', 'د. طارق العريان', 'عيادة القلب والأوعية الدموية', 'BK-89021');
+            npsBox.innerHTML = `
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">مسودة رسالة تقييم التجربة (WhatsApp Post-Visit Survey):</span>
+                        <span class="text-[10px] text-emerald-600 font-mono">يُرسل بعد ساعتين من المغادرة</span>
+                    </div>
+                    <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 font-mono text-xs whitespace-pre-line text-slate-700 dark:text-slate-300 leading-relaxed">
+                        ${sampleMsg}
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" onclick="ClinicAdminApp.sendManualWhatsAppReminder('01012345678', '${encodeURIComponent(sampleMsg)}')" class="btn-press px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                            <span>💬</span> <span>تجربة الإرسال بالواتساب (يدوي)</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    },
+
+    openDailyExecutiveDigestModal() {
+        if (typeof EnterpriseSystems === 'undefined') return;
+        const modal = document.getElementById('admin-daily-digest-modal');
+        const textarea = document.getElementById('daily-digest-textarea');
+        if (modal) modal.classList.remove('hidden');
+
+        if (textarea) {
+            const digest = EnterpriseSystems.clinic360.generateDailyExecutiveDigest();
+            textarea.value = digest;
+        }
+    },
+
+    sendDailyDigestWhatsApp() {
+        const textarea = document.getElementById('daily-digest-textarea');
+        if (!textarea || !textarea.value) return;
+        const text = textarea.value;
+        const directorPhone = '201000000000'; // Default Director phone
+        const url = `https://wa.me/${directorPhone}?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    },
+
+    openAiGovernanceModal() {
+        if (typeof EnterpriseSystems === 'undefined') return;
+        const modal = document.getElementById('admin-ai-governance-modal');
+        const contentBox = document.getElementById('admin-ai-governance-content');
+        if (modal) modal.classList.remove('hidden');
+
+        const matrix = EnterpriseSystems.clinic360.aiGovernanceMatrix || (EnterpriseSystems.clinic360.aiGovernance && EnterpriseSystems.clinic360.aiGovernance.roles) || [];
+        if (contentBox && matrix.length > 0) {
+            contentBox.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    ${matrix.map(r => `
+                        <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2">
+                            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                                <strong class="text-xs font-black text-slate-900 dark:text-white">${r.role} ${r.title ? '(' + r.title + ')' : ''}</strong>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-bold">صلاحية معتمدة</span>
+                            </div>
+                            <div class="text-[11px] space-y-1">
+                                <div class="text-emerald-600 font-bold">✅ الاستخدامات المعتمدة:</div>
+                                <ul class="list-disc list-inside text-slate-600 dark:text-slate-400 pr-2">
+                                    ${(r.approvedUses || r.permittedAI || []).map(p => `<li>${p}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="text-[11px] space-y-1">
+                                <div class="text-rose-600 font-bold">❌ المحظورات الصارمة:</div>
+                                <ul class="list-disc list-inside text-slate-600 dark:text-slate-400 pr-2">
+                                    ${(r.prohibitedUses || r.prohibitedAI || []).map(pr => `<li>${pr}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-[10px] text-slate-500">
+                                <strong>ضوابط المراقبة والحجب:</strong> ${r.complianceCheck || r.dataMasking || 'حجب كامل لبيانات الهوية PII'}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+    },
+
 };
 
 window.ClinicAdminApp = ClinicAdminApp;
