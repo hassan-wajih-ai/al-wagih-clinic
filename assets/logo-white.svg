@@ -1,114 +1,179 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 160" width="100%" height="100%" dir="rtl">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 180" width="100%" height="100%">
   <defs>
-    <!-- Background Gradient for Icon Shield -->
-    <linearGradient id="wagihLogoBgDark" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0284c7" />
-      <stop offset="60%" stop-color="#0f766e" />
-      <stop offset="100%" stop-color="#0d9488" />
+    <!-- H Letter Royal Blue -->
+    <linearGradient id="hGradW" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa" />
+      <stop offset="60%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#1d4ed8" />
     </linearGradient>
 
-    <!-- Teal-Cyan to Emerald Gradient -->
-    <linearGradient id="wagihTealGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- W Letter Cyan Neon -->
+    <linearGradient id="wGradW" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#ffffff" />
-      <stop offset="50%" stop-color="#67e8f9" />
-      <stop offset="100%" stop-color="#38bdf8" />
+      <stop offset="40%" stop-color="#67e8f9" />
+      <stop offset="100%" stop-color="#06b6d4" />
     </linearGradient>
 
-    <filter id="softGlowDark" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="4" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
+    <!-- Pulse Gradient -->
+    <linearGradient id="pulseGradW" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="50%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#67e8f9" />
+    </linearGradient>
 
-    <filter id="iconShadowDark" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#38bdf8" flood-opacity="0.4" />
+    <!-- Glow Filter -->
+    <filter id="hwGlowW" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur1" />
+      <feMerge>
+        <feMergeNode in="blur1" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
     </filter>
   </defs>
 
-  <!-- ==================== EMBLEM (RIGHT SIDE FOR RTL) ==================== -->
-  <g transform="translate(520, 10)">
-    <!-- Base Shield -->
-    <rect x="0" y="0" width="140" height="140" rx="38" fill="url(#wagihLogoBgDark)" stroke="rgba(255,255,255,0.4)" stroke-width="2" filter="url(#iconShadowDark)" />
-
-    <!-- Ambient Ring -->
-    <circle cx="70" cy="70" r="58" fill="none" stroke="#67e8f9" stroke-width="1.2" stroke-opacity="0.4" stroke-dasharray="4 3" />
-
-    <!-- Stylized Arabic Waw (و) Loop -->
-    <path d="M 70 34 
-             C 88 34, 102 48, 102 66
-             C 102 82, 88 94, 72 96
-             C 56 98, 46 86, 46 72
-             C 46 52, 56 34, 70 34 Z" 
-          fill="none" 
-          stroke="url(#wagihTealGradDark)" 
-          stroke-width="11" 
-          stroke-linecap="round" 
-          filter="url(#softGlowDark)" />
-
-    <!-- Sweeping Tail of Waw -->
-    <path d="M 72 96
-             C 68 104, 62 112, 52 118
-             C 40 124, 28 122, 22 114
-             C 19 110, 21 104, 27 102
-             C 33 100, 39 104, 46 104
-             C 56 102, 64 96, 70 86"
-          fill="none" 
-          stroke="url(#wagihTealGradDark)" 
-          stroke-width="9" 
-          stroke-linecap="round" />
-
-    <!-- Medical Cross Core -->
-    <g transform="translate(70, 65)">
-      <rect x="-4.5" y="-16" width="9" height="32" rx="4.5" fill="#ffffff" />
-      <rect x="-16" y="-4.5" width="32" height="9" rx="4.5" fill="#ffffff" />
-      <circle cx="0" cy="0" r="3.5" fill="#0284c7" />
+  <!-- ==================== LEFT: THE HW MONOGRAM & ECG PULSE ==================== -->
+  <g transform="translate(30, 15)">
+    <!-- Tech Frame Behind HW -->
+    <g opacity="0.3" stroke="#38bdf8" stroke-width="1">
+      <rect x="15" y="15" width="200" height="120" fill="none" stroke-dasharray="4 4" rx="12" />
+      <circle cx="15" cy="15" r="2.5" fill="#38bdf8" />
+      <circle cx="215" cy="15" r="2.5" fill="#38bdf8" />
+      <circle cx="15" cy="135" r="2.5" fill="#38bdf8" />
+      <circle cx="215" cy="135" r="2.5" fill="#38bdf8" />
     </g>
 
-    <!-- Pulse Line (ECG) -->
-    <path d="M 22 70 
-             L 42 70 
-             L 50 58 
-             L 58 86 
-             L 68 50 
-             L 76 78 
-             L 84 66 
-             L 90 70 
-             L 118 70" 
-          fill="none" 
-          stroke="#ffffff" 
-          stroke-width="3" 
-          stroke-linecap="round" 
-          stroke-linejoin="round" />
+    <!-- 'H' Letter (Royal Blue / Cyan Stroke) -->
+    <g>
+      <rect x="35" y="24" width="16" height="102" rx="4" fill="url(#hGradW)" stroke="#93c5fd" stroke-width="1.5" />
+      <rect x="73" y="24" width="16" height="102" rx="4" fill="url(#hGradW)" stroke="#93c5fd" stroke-width="1.5" />
+      <rect x="45" y="67" width="34" height="16" fill="url(#hGradW)" stroke="#93c5fd" stroke-width="1.2" />
+      <line x1="43" y1="40" x2="43" y2="110" stroke="#ffffff" stroke-width="1" opacity="0.5" stroke-dasharray="2 3" />
+      <line x1="81" y1="40" x2="81" y2="110" stroke="#ffffff" stroke-width="1" opacity="0.5" stroke-dasharray="2 3" />
+    </g>
 
-    <!-- Sparkle Star of Quality -->
-    <path d="M 106 28 Q 106 36 114 36 Q 106 36 106 44 Q 106 36 98 36 Q 106 36 106 28 Z" fill="#ffffff" />
+    <!-- 'W' Letter (Bright Cyan Neon) -->
+    <g>
+      <path d="M 78 28 
+               L 95 124 
+               L 112 60 
+               L 129 124 
+               L 146 28" 
+            fill="none" 
+            stroke="url(#wGradW)" 
+            stroke-width="16" 
+            stroke-linecap="round" 
+            stroke-linejoin="round"
+            filter="url(#hwGlowW)" />
+      <path d="M 78 28 
+               L 95 124 
+               L 112 60 
+               L 129 124 
+               L 146 28" 
+            fill="none" 
+            stroke="#ffffff" 
+            stroke-width="3" 
+            stroke-linecap="round" 
+            stroke-linejoin="round" />
+    </g>
+
+    <!-- Glowing Heartbeat ECG Pulse Line slicing through HW -->
+    <g filter="url(#hwGlowW)">
+      <path d="M 0 75 
+               L 18 75 
+               L 26 62 
+               L 34 88 
+               L 42 45 
+               L 52 105 
+               L 60 70 
+               L 68 75 
+               L 104 75 
+               L 110 60 
+               L 118 90 
+               L 126 68 
+               L 132 75 
+               L 215 75" 
+            fill="none" 
+            stroke="url(#pulseGradW)" 
+            stroke-width="4.5" 
+            stroke-linecap="round" 
+            stroke-linejoin="round" />
+      <path d="M 0 75 
+               L 18 75 
+               L 26 62 
+               L 34 88 
+               L 42 45 
+               L 52 105 
+               L 60 70 
+               L 68 75 
+               L 104 75 
+               L 110 60 
+               L 118 90 
+               L 126 68 
+               L 132 75 
+               L 215 75" 
+            fill="none" 
+            stroke="#ffffff" 
+            stroke-width="2" 
+            stroke-linecap="round" 
+            stroke-linejoin="round" />
+    </g>
   </g>
 
-  <!-- ==================== TYPOGRAPHY (LEFT SIDE - WHITE THEME) ==================== -->
-  <g transform="translate(0, 0)">
-    <!-- Primary Title (Arabic) -->
-    <text x="495" y="70" text-anchor="end" font-family="'Segoe UI', Tahoma, Cairo, 'Noto Sans Arabic', sans-serif" font-size="44" font-weight="900" fill="#ffffff" letter-spacing="-0.5">
-      نِظَامُ الوَجِيه
-    </text>
+  <!-- Connecting Pulse Lead into the Text -->
+  <path d="M 245 90 L 290 90 L 296 80 L 304 100 L 312 85 L 318 90 L 340 90" 
+        fill="none" 
+        stroke="#38bdf8" 
+        stroke-width="2.5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round" 
+        opacity="0.8" 
+        filter="url(#hwGlowW)" />
 
-    <!-- Decorative Accent Capsule Badge -->
-    <g transform="translate(130, 38)">
-      <rect x="0" y="0" width="82" height="24" rx="12" fill="#38bdf8" fill-opacity="0.2" stroke="#38bdf8" stroke-width="1.2" />
-      <text x="41" y="16" text-anchor="middle" font-family="'Segoe UI', Tahoma, sans-serif" font-size="11" font-weight="800" fill="#67e8f9" letter-spacing="0.5">
-        ERP 2026
+  <!-- ==================== RIGHT: ARABIC "الوجيه" & ENGLISH "AL WAGIH" ==================== -->
+  <g transform="translate(340, 20)">
+    <g transform="translate(0, 0)">
+      <text x="375" y="82" 
+            text-anchor="end" 
+            font-family="'Segoe UI', Tahoma, Cairo, 'Noto Sans Arabic', sans-serif" 
+            font-size="68" 
+            font-weight="900" 
+            fill="#ffffff" 
+            stroke="#38bdf8" 
+            stroke-width="1.8" 
+            stroke-linejoin="round"
+            letter-spacing="1">
+        الـوجـيـه
       </text>
+
+      <!-- Custom Double Circle Dots for 'ي' -->
+      <g transform="translate(195, 96)">
+        <circle cx="0" cy="0" r="4.5" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5" filter="url(#hwGlowW)" />
+        <circle cx="13" cy="0" r="4.5" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5" filter="url(#hwGlowW)" />
+      </g>
     </g>
 
-    <!-- Arabic Subtitle -->
-    <text x="495" y="105" text-anchor="end" font-family="'Segoe UI', Tahoma, Cairo, sans-serif" font-size="19" font-weight="700" fill="#cbd5e1">
-      لإدارة العيادات والمراكز الطبية والمستشفيات
-    </text>
+    <!-- ENGLISH "AL WAGIH" -->
+    <g transform="translate(0, 96)">
+      <text x="375" y="32" 
+            text-anchor="end" 
+            font-family="'Segoe UI', 'Montserrat', -apple-system, sans-serif" 
+            font-size="30" 
+            font-weight="900" 
+            fill="#38bdf8" 
+            letter-spacing="5"
+            filter="url(#hwGlowW)">
+        AL WAGIH
+      </text>
 
-    <!-- English Secondary Subtitle -->
-    <text x="495" y="132" text-anchor="end" font-family="'Segoe UI', -apple-system, Roboto, sans-serif" font-size="13" font-weight="700" fill="#2dd4bf" letter-spacing="1.8">
-      AL WAGIH HEALTHCARE ENTERPRISE
-    </text>
-
-    <!-- Small Cyan Dot Divider -->
-    <circle cx="218" cy="128" r="3" fill="#38bdf8" />
+      <text x="375" y="47" 
+            text-anchor="end" 
+            font-family="'Segoe UI', -apple-system, sans-serif" 
+            font-size="10" 
+            font-weight="700" 
+            fill="#cbd5e1" 
+            letter-spacing="1.5">
+        CLINIC &amp; HOSPITAL ENTERPRISE ERP
+      </text>
+    </g>
   </g>
 </svg>
