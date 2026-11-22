@@ -5651,9 +5651,12 @@ const ClinicAdminApp = {
             </head>
             <body>
                 <div class="header">
-                    <div>
-                        <h2 style="margin: 0; color: #0369a1;">مركز الوجيه الطبي التخصصي</h2>
-                        <span style="font-size: 11px; color: #64748b;">إدارة المراجعة الطبية والفوترة والتأمين</span>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <img src="../../assets/logo-mark.svg" style="width: 52px; height: 52px; border-radius: 12px;" alt="شعار الوجيه">
+                        <div>
+                            <h2 style="margin: 0; color: #0369a1;">مركز الوجيه الطبي التخصصي</h2>
+                            <span style="font-size: 11px; color: #64748b;">إدارة المراجعة الطبية والفوترة والتأمين</span>
+                        </div>
                     </div>
                     <div style="text-align: left; font-size: 11px;">
                         <span>التاريخ: ${new Date().toLocaleDateString('ar-EG')}</span><br>
