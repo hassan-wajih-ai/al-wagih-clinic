@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="favBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0d9488" />
+    </linearGradient>
+    <linearGradient id="favWaw" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#67e8f9" />
+    </linearGradient>
+  </defs>
+
+  <rect width="64" height="64" rx="18" fill="url(#favBg)" />
+
+  <!-- Arabic Waw Loop -->
+  <path d="M 32 14 C 41 14, 48 21, 48 30 C 48 38, 41 44, 33 45 C 25 46, 20 40, 20 33 C 20 23, 25 14, 32 14 Z" fill="none" stroke="url(#favWaw)" stroke-width="5" stroke-linecap="round" />
+  
+  <!-- Tail -->
+  <path d="M 33 45 C 31 49, 28 53, 23 55 C 18 57, 13 55, 10 51 C 12 50, 16 50, 20 49 C 25 48, 29 45, 32 40" fill="none" stroke="url(#favWaw)" stroke-width="4.5" stroke-linecap="round" />
+
+  <!-- Mini Cross -->
+  <rect x="30" y="24" width="4" height="12" rx="2" fill="#ffffff" />
+  <rect x="26" y="28" width="12" height="4" rx="2" fill="#ffffff" />
+</svg>
