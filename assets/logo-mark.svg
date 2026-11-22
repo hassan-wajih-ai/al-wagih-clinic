@@ -1,117 +1,151 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
   <defs>
     <!-- Background Gradient -->
-    <linearGradient id="wagihBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="50%" stop-color="#0369a1" />
-      <stop offset="100%" stop-color="#0d9488" />
+    <linearGradient id="opt1Bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070d18" />
+      <stop offset="50%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#081e36" />
     </linearGradient>
 
-    <!-- Main Emblem Gradient (Teal-Cyan to Royal Sapphire) -->
-    <linearGradient id="wagihWawGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- 'H' Letter Royal Blue Gradient -->
+    <linearGradient id="opt1HGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="50%" stop-color="#1d4ed8" />
+      <stop offset="100%" stop-color="#1e3a8a" />
+    </linearGradient>
+
+    <!-- 'W' Letter Cyan Neon Gradient -->
+    <linearGradient id="opt1WGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#67e8f9" />
+      <stop offset="40%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#0891b2" />
+    </linearGradient>
+
+    <!-- Glowing Heartbeat Pulse Line Gradient -->
+    <linearGradient id="opt1PulseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#38bdf8" />
-      <stop offset="45%" stop-color="#2dd4bf" />
-      <stop offset="100%" stop-color="#10b981" />
+      <stop offset="50%" stop-color="#22d3ee" />
+      <stop offset="100%" stop-color="#a5f3fc" />
     </linearGradient>
 
-    <!-- Glow Gradient for Cross & Heartbeat -->
-    <linearGradient id="wagihCrossGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#ffffff" />
-      <stop offset="100%" stop-color="#e0f2fe" />
-    </linearGradient>
-
-    <!-- Golden Sparkle Accent -->
-    <linearGradient id="wagihStarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38bdf8" />
-      <stop offset="100%" stop-color="#67e8f9" />
-    </linearGradient>
-
-    <!-- Drop Shadows & Filters -->
-    <filter id="wagihGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="6" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    <!-- Glow Filter for Neon Pulse -->
+    <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur1" />
+      <feGaussianBlur stdDeviation="8" result="blur2" />
+      <feMerge>
+        <feMergeNode in="blur2" />
+        <feMergeNode in="blur1" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
     </filter>
 
-    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0284c7" flood-opacity="0.35" />
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0284c7" flood-opacity="0.35" />
     </filter>
   </defs>
 
-  <!-- Base Rounded Shield Container -->
-  <rect x="12" y="12" width="176" height="176" rx="48" fill="url(#wagihBgGrad)" stroke="rgba(255,255,255,0.18)" stroke-width="2.5" filter="url(#softShadow)" />
+  <!-- Container Box -->
+  <rect x="10" y="10" width="180" height="180" rx="44" fill="url(#opt1Bg)" stroke="rgba(56, 189, 248, 0.35)" stroke-width="2" filter="url(#cardShadow)" />
 
-  <!-- Inner Ambient Circle -->
-  <circle cx="100" cy="100" r="76" fill="none" stroke="url(#wagihWawGrad)" stroke-width="1.5" stroke-opacity="0.25" stroke-dasharray="6 4" />
-
-  <!-- Background Decorative Medical Caduceus / Cross Aura -->
-  <g opacity="0.12" fill="#ffffff">
-    <rect x="91" y="42" width="18" height="116" rx="9" />
-    <rect x="42" y="91" width="116" height="18" rx="9" />
+  <!-- Digital Tech Grid Background Pattern -->
+  <g opacity="0.18" stroke="#38bdf8" stroke-width="1">
+    <line x1="30" y1="50" x2="170" y2="50" stroke-dasharray="3 5" />
+    <line x1="30" y1="150" x2="170" y2="150" stroke-dasharray="3 5" />
+    <line x1="50" y1="30" x2="50" y2="170" stroke-dasharray="3 5" />
+    <line x1="150" y1="30" x2="150" y2="170" stroke-dasharray="3 5" />
+    <!-- Tech nodes -->
+    <circle cx="50" cy="50" r="2.5" fill="#38bdf8" />
+    <circle cx="150" cy="50" r="2.5" fill="#38bdf8" />
+    <circle cx="50" cy="150" r="2.5" fill="#38bdf8" />
+    <circle cx="150" cy="150" r="2.5" fill="#38bdf8" />
   </g>
 
-  <!-- The Iconic Stylized Arabic Waw (و) forming a Protective Caring Healthcare Embrace -->
-  <!-- Upper Loop of the Waw (Head) -->
-  <path d="M 100 48 
-           C 124 48, 142 66, 142 90
-           C 142 110, 126 126, 104 128
-           C 82 130, 68 116, 68 96
-           C 68 70, 82 48, 100 48 Z" 
-        fill="none" 
-        stroke="url(#wagihWawGrad)" 
-        stroke-width="15" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"
-        filter="url(#wagihGlow)" />
-
-  <!-- Dynamic Sweeping Tail of the Waw curving into an embracing foundation -->
-  <path d="M 104 126
-           C 100 136, 92 148, 80 156
-           C 64 166, 46 164, 38 152
-           C 34 146, 36 138, 44 136
-           C 52 134, 60 140, 70 138
-           C 82 136, 94 126, 102 114"
-        fill="none" 
-        stroke="url(#wagihWawGrad)" 
-        stroke-width="13" 
-        stroke-linecap="round" />
-
-  <!-- Central Glowing Medical Cross in the center of the Waw Loop -->
-  <g transform="translate(100, 88)" filter="url(#wagihGlow)">
-    <!-- Vertical Bar -->
-    <rect x="-6" y="-22" width="12" height="44" rx="6" fill="url(#wagihCrossGrad)" />
-    <!-- Horizontal Bar -->
-    <rect x="-22" y="-6" width="44" height="12" rx="6" fill="url(#wagihCrossGrad)" />
-    <!-- Center Core -->
-    <circle cx="0" cy="0" r="4.5" fill="#0284c7" />
+  <!-- ==================== LETTER 'H' (Royal Blue) ==================== -->
+  <g>
+    <!-- Left Vertical Stem -->
+    <rect x="42" y="48" width="18" height="104" rx="5" fill="url(#opt1HGrad)" stroke="#60a5fa" stroke-width="1.5" />
+    <!-- Right Vertical Stem -->
+    <rect x="80" y="48" width="18" height="104" rx="5" fill="url(#opt1HGrad)" stroke="#60a5fa" stroke-width="1.5" />
+    <!-- Horizontal Crossbar -->
+    <rect x="52" y="91" width="36" height="18" fill="url(#opt1HGrad)" stroke="#60a5fa" stroke-width="1.2" />
+    <!-- Inner Digital Circuit Details on H -->
+    <line x1="51" y1="65" x2="51" y2="135" stroke="#93c5fd" stroke-width="1" opacity="0.4" stroke-dasharray="2 3" />
+    <line x1="89" y1="65" x2="89" y2="135" stroke="#93c5fd" stroke-width="1" opacity="0.4" stroke-dasharray="2 3" />
   </g>
 
-  <!-- Heartbeat ECG Pulse Line traversing through the medical emblem -->
-  <path d="M 32 100 
-           L 62 100 
-           L 72 84 
-           L 84 122 
-           L 96 74 
-           L 106 112 
-           L 116 94 
-           L 126 100 
-           L 168 100" 
-        fill="none" 
-        stroke="#ffffff" 
-        stroke-width="4.5" 
-        stroke-linecap="round" 
-        stroke-linejoin="round" 
-        stroke-opacity="0.95" />
+  <!-- ==================== LETTER 'W' (Vibrant Cyan Neon) ==================== -->
+  <g>
+    <path d="M 86 52 
+             L 104 148 
+             L 122 84 
+             L 140 148 
+             L 158 52" 
+          fill="none" 
+          stroke="url(#opt1WGrad)" 
+          stroke-width="17" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+          filter="url(#neonGlow)" />
+    <!-- Sharp highlight core inside W -->
+    <path d="M 86 52 
+             L 104 148 
+             L 122 84 
+             L 140 148 
+             L 158 52" 
+          fill="none" 
+          stroke="#ffffff" 
+          stroke-width="3" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+          opacity="0.8" />
+  </g>
 
-  <!-- Sparkling Star of Excellence (Top Right) -->
-  <path d="M 148 42 
-           Q 148 54 160 54 
-           Q 148 54 148 66 
-           Q 148 54 136 54 
-           Q 148 54 148 42 Z" 
-        fill="url(#wagihStarGrad)" 
-        filter="url(#wagihGlow)" />
-  <circle cx="148" cy="54" r="2" fill="#ffffff" />
+  <!-- ==================== GLOWING ECG HEARTBEAT PULSE LINE ==================== -->
+  <!-- Slices horizontally across HW -->
+  <g filter="url(#neonGlow)">
+    <path d="M 16 100 
+             L 32 100 
+             L 38 86 
+             L 46 116 
+             L 54 68 
+             L 64 130 
+             L 72 92 
+             L 78 100 
+             L 112 100 
+             L 118 84 
+             L 126 118 
+             L 134 92 
+             L 140 100 
+             L 184 100" 
+          fill="none" 
+          stroke="url(#opt1PulseGrad)" 
+          stroke-width="4.5" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" />
+    <!-- Bright white core for intense electrical pulse effect -->
+    <path d="M 16 100 
+             L 32 100 
+             L 38 86 
+             L 46 116 
+             L 54 68 
+             L 64 130 
+             L 72 92 
+             L 78 100 
+             L 112 100 
+             L 118 84 
+             L 126 118 
+             L 134 92 
+             L 140 100 
+             L 184 100" 
+          fill="none" 
+          stroke="#ffffff" 
+          stroke-width="2" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" />
+  </g>
 
-  <!-- Small Ambient Accent Dot (Bottom Left) -->
-  <circle cx="46" cy="62" r="3.5" fill="#38bdf8" opacity="0.8" />
+  <!-- Ambient Light Sparks -->
+  <circle cx="54" cy="68" r="3" fill="#ffffff" filter="url(#neonGlow)" />
+  <circle cx="64" cy="130" r="3" fill="#ffffff" filter="url(#neonGlow)" />
+  <circle cx="126" cy="118" r="2.5" fill="#ffffff" filter="url(#neonGlow)" />
 </svg>
