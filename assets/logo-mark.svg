@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="wagihBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="50%" stop-color="#0369a1" />
+      <stop offset="100%" stop-color="#0d9488" />
+    </linearGradient>
+
+    <!-- Main Emblem Gradient (Teal-Cyan to Royal Sapphire) -->
+    <linearGradient id="wagihWawGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="45%" stop-color="#2dd4bf" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+
+    <!-- Glow Gradient for Cross & Heartbeat -->
+    <linearGradient id="wagihCrossGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#e0f2fe" />
+    </linearGradient>
+
+    <!-- Golden Sparkle Accent -->
+    <linearGradient id="wagihStarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#67e8f9" />
+    </linearGradient>
+
+    <!-- Drop Shadows & Filters -->
+    <filter id="wagihGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0284c7" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Base Rounded Shield Container -->
+  <rect x="12" y="12" width="176" height="176" rx="48" fill="url(#wagihBgGrad)" stroke="rgba(255,255,255,0.18)" stroke-width="2.5" filter="url(#softShadow)" />
+
+  <!-- Inner Ambient Circle -->
+  <circle cx="100" cy="100" r="76" fill="none" stroke="url(#wagihWawGrad)" stroke-width="1.5" stroke-opacity="0.25" stroke-dasharray="6 4" />
+
+  <!-- Background Decorative Medical Caduceus / Cross Aura -->
+  <g opacity="0.12" fill="#ffffff">
+    <rect x="91" y="42" width="18" height="116" rx="9" />
+    <rect x="42" y="91" width="116" height="18" rx="9" />
+  </g>
+
+  <!-- The Iconic Stylized Arabic Waw (و) forming a Protective Caring Healthcare Embrace -->
+  <!-- Upper Loop of the Waw (Head) -->
+  <path d="M 100 48 
+           C 124 48, 142 66, 142 90
+           C 142 110, 126 126, 104 128
+           C 82 130, 68 116, 68 96
+           C 68 70, 82 48, 100 48 Z" 
+        fill="none" 
+        stroke="url(#wagihWawGrad)" 
+        stroke-width="15" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        filter="url(#wagihGlow)" />
+
+  <!-- Dynamic Sweeping Tail of the Waw curving into an embracing foundation -->
+  <path d="M 104 126
+           C 100 136, 92 148, 80 156
+           C 64 166, 46 164, 38 152
+           C 34 146, 36 138, 44 136
+           C 52 134, 60 140, 70 138
+           C 82 136, 94 126, 102 114"
+        fill="none" 
+        stroke="url(#wagihWawGrad)" 
+        stroke-width="13" 
+        stroke-linecap="round" />
+
+  <!-- Central Glowing Medical Cross in the center of the Waw Loop -->
+  <g transform="translate(100, 88)" filter="url(#wagihGlow)">
+    <!-- Vertical Bar -->
+    <rect x="-6" y="-22" width="12" height="44" rx="6" fill="url(#wagihCrossGrad)" />
+    <!-- Horizontal Bar -->
+    <rect x="-22" y="-6" width="44" height="12" rx="6" fill="url(#wagihCrossGrad)" />
+    <!-- Center Core -->
+    <circle cx="0" cy="0" r="4.5" fill="#0284c7" />
+  </g>
+
+  <!-- Heartbeat ECG Pulse Line traversing through the medical emblem -->
+  <path d="M 32 100 
+           L 62 100 
+           L 72 84 
+           L 84 122 
+           L 96 74 
+           L 106 112 
+           L 116 94 
+           L 126 100 
+           L 168 100" 
+        fill="none" 
+        stroke="#ffffff" 
+        stroke-width="4.5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round" 
+        stroke-opacity="0.95" />
+
+  <!-- Sparkling Star of Excellence (Top Right) -->
+  <path d="M 148 42 
+           Q 148 54 160 54 
+           Q 148 54 148 66 
+           Q 148 54 136 54 
+           Q 148 54 148 42 Z" 
+        fill="url(#wagihStarGrad)" 
+        filter="url(#wagihGlow)" />
+  <circle cx="148" cy="54" r="2" fill="#ffffff" />
+
+  <!-- Small Ambient Accent Dot (Bottom Left) -->
+  <circle cx="46" cy="62" r="3.5" fill="#38bdf8" opacity="0.8" />
+</svg>
