@@ -1456,7 +1456,8 @@ const DoctorApp = {
             return `
             <div class="max-w-[360px] mx-auto p-4 bg-white text-slate-900 font-mono text-xs rounded-xl shadow border border-slate-200">
                 <div class="text-center pb-2 border-b-2 border-dashed border-slate-300 space-y-1">
-                    <div class="text-base font-black tracking-wider">مجمع الواجح الطبي التخصصي</div>
+                    <img src="../../assets/logo-mark.svg" alt="شعار الوجيه" class="w-10 h-10 mx-auto object-contain">
+                    <div class="text-base font-black tracking-wider">مجمع الوجيه الطبي التخصصي</div>
                     <div class="text-[11px] font-bold text-slate-600">${clinicName}</div>
                     <div class="text-[10px] text-slate-500">${docName} — ترخيص مزاولة: 94812</div>
                     <div class="text-[9px] text-slate-400">رقم الروشتة: ${rxNumber}</div>
@@ -1500,13 +1501,13 @@ const DoctorApp = {
             <!-- ترويسة الروشتة الرسمية -->
             <div class="flex items-center justify-between pb-4 border-b-2 border-purple-600">
                 <div class="text-right space-y-1">
-                    <h2 class="text-lg font-black text-purple-900">مجمع عيادات الواجح الطبي التخصصي</h2>
+                    <h2 class="text-lg font-black text-purple-900">مجمع عيادات الوجيه الطبي التخصصي</h2>
                     <h3 class="text-xs font-bold text-slate-700">${clinicName}</h3>
                     <p class="text-[11px] text-slate-500 font-medium">${docName} — استشاري التخصص</p>
                     <p class="text-[10px] text-slate-400 font-mono">ترخيص وزارة الصحة: 94812/2026</p>
                 </div>
                 <div class="text-center">
-                    <div class="w-16 h-16 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-black text-2xl shadow-md mx-auto">و</div>
+                    <img src="../../assets/logo-mark.svg" alt="شعار الوجيه" class="w-14 h-14 rounded-2xl object-contain mx-auto shadow-sm">
                     <span class="text-[9px] text-purple-700 font-black block mt-1">AL WAGIH CLINIC</span>
                 </div>
                 <div class="text-left space-y-1 font-mono text-xs">
